@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Shop — Донат Supercell</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #18222c;
+      color: #e0e6ed;
+    }
+    header {
+      text-align: center;
+      position: relative;
+    }
+    header img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .section {
+      padding: 30px 20px;
+    }
+    .section-title {
+      font-size: 2em;
+      text-align: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 4px;
+      background-color: #00d991;
+      margin: 8px auto 0;
+      border-radius: 2px;
+    }
+    .games {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .game-icon {
+      width: 100px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .game-icon:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    }
+    .game-icon img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 15px;
+      background: #24303f;
+      padding: 5px;
+    }
+    .game-icon div {
+      margin-top: 8px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .offers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .offer-card {
+      background-color: #24303f;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .offer-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    .offer-banner {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+    .offer-details {
+      padding: 15px;
+    }
+    .offer-title {
+      font-size: 1.2em;
+      margin-bottom: 8px;
+    }
+    .offer-price {
+      font-size: 1.1em;
+      color: #00d991;
+      font-weight: bold;
+    }
+    @media (max-width: 600px) {
+      .section {
+        padding: 20px 10px;
+      }
+      .section-title {
+        font-size: 1.6em;
+      }
+      .game-icon {
+        width: 80px;
+      }
+      .game-icon img {
+        height: 80px;
+      }
+      .offer-banner {
+        aspect-ratio: 1 / 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/LifeShopBanner.png" alt="Life Shop Banner" />
+  </header>
+
+  <section class="section">
+    <div class="section-title">🎮 Игры</div>
+    <div class="games">
+      <div class="game-icon" onclick="location.href='https://bahrgames.github.io/BrawlStarsOffers.html'">
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/BrawlStarsLogo.png" alt="Brawl Stars" />
+        <div>Brawl Stars</div>
+      </div>
+      <div class="game-icon" onclick="location.href='https://bahrgames.github.io/ClashRoyaleOffers.html'">
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/ClashRoyaleLogo.png" alt="Clash Royale" />
+        <div>Clash Royale</div>
+      </div>
+      <div class="game-icon" onclick="location.href='https://bahrgames.github.io/SquadBustersOffers.html'">
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/SquadBustersLogo.png" alt="Squad Busters" />
+        <div>Squad Busters</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 10px;">
+    <div class="section-title">🔥 Популярное</div>
+    <div class="offers">
+      <div class="offer-card" onclick="location.href='https://bahrgames.github.io/Offer100000.html'">
+        <img class="offer-banner" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/100000Banner.PNG" alt="Pass Royale" />
+        <div class="offer-details">
+          <div class="offer-title">Алмазный Pass Royale</div>
+          <div class="offer-price">1072₽</div>
+        </div>
+      </div>
+      <div class="offer-card" onclick="location.href='https://bahrgames.github.io/Offer100001.html'">
+        <img class="offer-banner" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/100001Banner.PNG" alt="Brawl Pass" />
+        <div class="offer-details">
+          <div class="offer-title">Brawl Pass</div>
+          <div class="offer-price">649₽</div>
+        </div>
+      </div>
+      <!-- Новый товар: скопируй .offer-card, измени ID/изображение/название/цену -->
+    </div>
+  </section>
+
+</body>
+</html>
