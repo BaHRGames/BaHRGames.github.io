@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clash Royale - Товары</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #18222c;
+      color: white;
+    }
+    .banner {
+      width: 100%;
+      height: auto;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      display: block;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h2 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+    .offers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .offer {
+      background-color: #24303f;
+      border-radius: 15px;
+      overflow: hidden;
+      text-decoration: none;
+      color: white;
+      transition: transform 0.2s ease;
+    }
+    .offer:hover {
+      transform: scale(1.02);
+    }
+    .offer-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 0;
+    }
+    .offer-info {
+      padding: 10px 15px;
+    }
+    .offer-title {
+      font-size: 1.1em;
+      margin-bottom: 5px;
+    }
+    .offer-price {
+      color: #88ffbd;
+      font-size: 1em;
+    }
+    @media (max-width: 600px) {
+      h2 {
+        font-size: 1.5em;
+      }
+      .offer-img {
+        height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <img class="banner" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/ClashRoyaleBanner.png" alt="Clash Royale Banner">
+  <div class="container">
+    <h2>Товары Brawl Stars</h2>
+    <div class="offers">
+      <!-- Пример товара -->
+      <a class="offer" href="https://bahrgames.github.io/Offer100001.html">
+        <img class="offer-img" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/100000Banner.PNG" alt="Алмазный пропуск">
+        <div class="offer-info">
+          <div class="offer-title">Алмазный пропуск</div>
+          <div class="offer-price">1072₽</div>
+        </div>
+      </a>
+
+      <a class="offer" href="https://bahrgames.github.io/Offer100002.html">
+        <img class="offer-img" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/100004Banner.PNG" alt="Кристаллы">
+        <div class="offer-info">
+          <div class="offer-title">Кристаллы</div>
+          <div class="offer-price">от 102₽</div>
+        </div>
+      </a>
+      <!-- Добавляй товары по этому шаблону -->
+    </div>
+  </div>
+</body>
+</html>
