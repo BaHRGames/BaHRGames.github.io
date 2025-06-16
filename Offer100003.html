@@ -169,7 +169,7 @@
 
       <div class="id">ID товара: <span id="offer-id">100003</span></div>
 
-      <a id="buy-link" href="https://bahrgames.github.io/OfferPurchase.html/?off={\"ID\":\"100003\",\"Button\":\"По входу на аккаунт\",\"Price\":\"930\"}" class="buy-btn">Купить</a>
+      <a id="buy-link" href="https://t.me/bahrik228?text={\"ID\":\"100003\",\"Button\":\"По входу на аккаунт\",\"Price\":\"930\"}" class="buy-btn">Купить</a>
       
       <div class="reviews">
   <h3>Отзывы:</h3>
@@ -193,7 +193,7 @@
       btn.classList.add('active');
 
       const id = document.getElementById('offer-id').innerText;
-      const link = `https://bahrgames.github.io/OfferPurchase.html/?off=${encodeURIComponent(JSON.stringify({ ID: id, Button: label, Price: price }))}`;
+      const link = `https://t.me/bahrik228?text=${encodeURIComponent(JSON.stringify({ ID: id, Button: label, Price: price }))}`;
       document.getElementById('buy-link').href = link;
     }
 
