@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Просмотр Товара</title>
+  <style>
+    body {
+      background-color: #18222c;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+    }
+    .carousel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .carousel img.active {
+      display: block;
+    }
+    .carousel-buttons {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+      padding: 0 10px;
+    }
+    .carousel-buttons button {
+      background-color: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+    }
+    .info {
+      margin-top: 20px;
+    }
+    .title {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+    .price {
+      font-size: 1.4em;
+      color: #88ffbd;
+      margin-bottom: 15px;
+    }
+    .options button {
+      margin: 5px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
+      background-color: #24303f;
+      color: white;
+      cursor: pointer;
+    }
+    .options button.active {
+      background-color: #88ffbd;
+      color: #18222c;
+    }
+    .description {
+      margin: 15px 0;
+      line-height: 1.5;
+    }
+    .id {
+      color: #888;
+      font-size: 0.9em;
+    }
+    .buy-btn {
+      margin-top: 20px;
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background-color: #00d991;
+      color: #18222c;
+      font-weight: bold;
+      font-size: 1.1em;
+      text-align: center;
+      border-radius: 12px;
+      text-decoration: none;
+    }
+    .reviews {
+      margin-top: 30px;
+    }
+    .reviews h3 {
+      margin-bottom: 10px;
+    }
+    .review {
+      background-color: #24303f;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .review img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    .review .text {
+      flex: 1;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 10px;
+      }
+      .title {
+        font-size: 1.4em;
+      }
+      .price {
+        font-size: 1.2em;
+      }
+      .buy-btn {
+        font-size: 1em;
+        padding: 12px;
+      }
+      .options button {
+        padding: 8px 10px;
+        font-size: 0.9em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="https://bahrgames.github.io/LifeShop.html" style="display:inline-block;margin:15px 0;padding:10px 16px;background:#24303f;color:#fff;text-decoration:none;border-radius:10px;">← Назад</a>
+  <div class="container">
+    <div class="carousel">
+      <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/100005Banner.PNG" class="active" alt="Banner 1">
+      <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/100005Banner2.PNG" alt="Banner 2">
+      <div class="carousel-buttons">
+        <button onclick="changeSlide(-1)">&#8249;</button>
+        <button onclick="changeSlide(1)">&#8250;</button>
+      </div>
+    </div>
+
+    <div class="info">
+      <div class="title">Кристаллы</div>
+      <div class="price" id="price">220₽</div>
+
+      <div class="options">
+        <button onclick="selectOption(220, '30 кристаллов', this)" class="active">30 кристаллов</button>
+        <button onclick="selectOption(406, '80 кристаллов', this)">80 кристаллов</button>
+        <button onclick="selectOption(871, '170 кристаллов', this)">170 кристаллов</button>
+        <button onclick="selectOption(1690, '360 кристаллов', this)">360 кристаллов</button>
+        <button onclick="selectOption(4206, '950 кристаллов', this)">950 кристаллов</button>
+        <button onclick="selectOption(7743, '2000 кристаллов', this)">2000 кристаллов</button>
+      </div>
+
+      <div class="description">
+        Кристаллы — валюта, получаемая в Brawl Pass или в Магазине и используемая для покупки скинов, удвоителей боевого опыта, монет, ежедневных предложений и акций.
+      </div>
+
+      <div class="id">ID товара: <span id="offer-id">100005</span></div>
+
+      <a id="buy-link" href="https://t.me/bahrik228?text={\"ID\":\"100005\",\"Button\":\"30 кристаллов\",\"Price\":\"220\"}" class="buy-btn">Купить</a>
+      
+      <div class="reviews">
+  <h3>Отзывы:</h3>
+  <div class="review">
+
+  <script>
+    let currentIndex = 0;
+    function changeSlide(dir) {
+      const images = document.querySelectorAll('.carousel img');
+      images[currentIndex].classList.remove('active');
+      currentIndex = (currentIndex + dir + images.length) % images.length;
+      images[currentIndex].classList.add('active');
+    }
+
+    function selectOption(price, label, btn) {
+      document.getElementById('price').innerText = price + '₽';
+      document.querySelectorAll('.options button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const id = document.getElementById('offer-id').innerText;
+      const link = `https://t.me/bahrik228?text=${encodeURIComponent(JSON.stringify({ ID: id, Button: label, Price: price }))}`;
+      document.getElementById('buy-link').href = link;
+    }
+
+    // При загрузке автоматически активируем первую кнопку
+    window.addEventListener('load', () => {
+      const firstButton = document.querySelector('.options button');
+      if (firstButton) {
+        firstButton.click();
+      }
+    });
+  </script>
+</body>
+</html>
