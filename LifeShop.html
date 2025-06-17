@@ -103,6 +103,20 @@
       color: #00d991;
       font-weight: bold;
     }
+    .reviews-button {
+      display: inline-block;
+      padding: 12px 20px;
+      background-color: #24303f;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+    .reviews-button:hover {
+      background-color: #2e3a4a;
+    }
     @media (max-width: 600px) {
       .section {
         padding: 20px 10px;
@@ -124,6 +138,10 @@
 </head>
 <body>
 
+  <header>
+    <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/LifeShopBanner.png" alt="Life Shop Banner" />
+  </header>
+
   <section class="section">
     <div class="section-title">🎮 Игры</div>
     <div class="games">
@@ -140,22 +158,14 @@
         <div>Squad Busters</div>
       </div>
     </div>
+
+    <!-- Кнопка просмотра отзывов -->
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="https://t.me/akchotzivi" target="_blank" class="reviews-button">
+        💬 Смотреть отзывы
+      </a>
+    </div>
   </section>
-  
-  <a href="https://t.me/akchotzivi" target="_blank" style="
-  display: inline-block;
-  padding: 12px 20px;
-  margin: 30px auto 0;
-  background-color: #24303f;
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  text-align: center;
-">
-  💬 Смотреть отзывы
-</a>
 
   <section class="section" style="padding-top: 10px;">
     <div class="section-title">🔥 Популярное</div>
@@ -174,7 +184,6 @@
           <div class="offer-price">629₽</div>
         </div>
       </div>
-      <!-- Новый товар: скопируй .offer-card, измени ID/изображение/название/цену -->
     </div>
   </section>
 
