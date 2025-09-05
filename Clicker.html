@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Clicker Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 2px solid #fff;
+        }
+        
+        .user-details {
+            flex-grow: 1;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .user-clicks {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .click-area {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .click-area:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .click-button {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .click-count {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 15px 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .prizes-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .prizes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .prize-item {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .prize-item:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .prize-icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+        
+        .prize-name {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .prize-cost {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .leaderboard-position {
+            font-weight: bold;
+            margin-right: 10px;
+            width: 25px;
+        }
+        
+        .leaderboard-name {
+            flex-grow: 1;
+        }
+        
+        .leaderboard-score {
+            font-weight: bold;
+        }
+        
+        @media (max-width: 500px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .click-count {
+                font-size: 36px;
+            }
+            
+            .prizes-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Кликер с Призами</h1>
+            <p>Кликай и получай награды!</p>
+        </div>
+        
+        <div class="user-info">
+            <img id="user-avatar" class="user-avatar" src="" alt="Аватар">
+            <div class="user-details">
+                <div id="user-name" class="user-name">Загрузка...</div>
+                <div class="user-clicks">Кликов: <span id="user-clicks-count">0</span></div>
+            </div>
+        </div>
+        
+        <div class="click-area" id="click-area">
+            <div class="click-button">КЛИКАЙ!</div>
+            <div class="click-count" id="click-count">0</div>
+            <div>Кликов</div>
+        </div>
+        
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-value" id="clicks-per-second">0</div>
+                <div class="stat-label">Кликов/сек</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-prizes">0</div>
+                <div class="stat-label">Получено призов</div>
+            </div>
+        </div>
+        
+        <div class="prizes-section">
+            <div class="section-title">🎁 Доступные призы</div>
+            <div class="prizes-grid">
+                <div class="prize-item" data-cost="10">
+                    <div class="prize-icon">🍬</div>
+                    <div class="prize-name">Конфета</div>
+                    <div class="prize-cost">10 кликов</div>
+                </div>
+                <div class="prize-item" data-cost="50">
+                    <div class="prize-icon">☕</div>
+                    <div class="prize-name">Кофе</div>
+                    <div class="prize-cost">50 кликов</div>
+                </div>
+                <div class="prize-item" data-cost="100">
+                    <div class="prize-icon">🎮</div>
+                    <div class="prize-name">Игра</div>
+                    <div class="prize-cost">100 кликов</div>
+                </div>
+                <div class="prize-item" data-cost="200">
+                    <div class="prize-icon">🍕</div>
+                    <div class="prize-name">Пицца</div>
+                    <div class="prize-cost">200 кликов</div>
+                </div>
+                <div class="prize-item" data-cost="500">
+                    <div class="prize-icon">🎁</div>
+                                       <div class="prize-name">Подарок</div>
+                    <div class="prize-cost">500 кликов</div>
+                </div>
+                <div class="prize-item" data-cost="1000">
+                    <div class="prize-icon">🏆</div>
+                    <div class="prize-name">Трофей</div>
+                    <div class="prize-cost">1000 кликов</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="leaderboard">
+            <div class="section-title">🏆 Топ игроков</div>
+            <div id="leaderboard-list">
+                <div class="leaderboard-item">
+                    <div class="leaderboard-position">1</div>
+                    <div class="leaderboard-name">Загрузка...</div>
+                    <div class="leaderboard-score">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+        
+        // Данные пользователя
+        let user = tg.initDataUnsafe.user;
+        let clicks = 0;
+        let clicksPerSecond = 0;
+        let prizes = 0;
+        
+        // Элементы DOM
+        const clickCountElement = document.getElementById('click-count');
+        const userClicksCountElement = document.getElementById('user-clicks-count');
+        const userNameElement = document.getElementById('user-name');
+        const userAvatarElement = document.getElementById('user-avatar');
+        const clicksPerSecondElement = document.getElementById('clicks-per-second');
+        const totalPrizesElement = document.getElementById('total-prizes');
+        const clickArea = document.getElementById('click-area');
+        const prizeItems = document.querySelectorAll('.prize-item');
+        
+        // Инициализация пользователя
+        if (user) {
+            userNameElement.textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username;
+            userAvatarElement.src = user.photo_url || 'https://via.placeholder.com/50';
+            
+            // Загрузка данных пользователя из localStorage
+            const savedData = localStorage.getItem(`tg_user_${user.id}`);
+            if (savedData) {
+                const userData = JSON.parse(savedData);
+                clicks = userData.clicks || 0;
+                clicksPerSecond = userData.clicksPerSecond || 0;
+                prizes = userData.prizes || 0;
+            }
+            
+            updateUI();
+        } else {
+            userNameElement.textContent = "Гость";
+        }
+        
+        // Обработчик кликов
+        clickArea.addEventListener('click', () => {
+            clicks++;
+            updateUI();
+            saveUserData();
+            
+            // Анимация клика
+            clickArea.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                clickArea.style.transform = 'scale(1)';
+            }, 100);
+            
+            // Создание эффекта "+1"
+            const plusOne = document.createElement('div');
+            plusOne.textContent = '+1';
+            plusOne.style.position = 'absolute';
+            plusOne.style.color = '#fff';
+            plusOne.style.fontWeight = 'bold';
+            plusOne.style.fontSize = '20px';
+            plusOne.style.pointerEvents = 'none';
+            plusOne.style.animation = 'floatUp 1s ease-out forwards';
+            
+            // Позиционирование относительно области клика
+            const rect = clickArea.getBoundingClientRect();
+            plusOne.style.left = `${rect.width / 2}px`;
+            plusOne.style.top = `${rect.height / 2}px`;
+            
+            clickArea.style.position = 'relative';
+            clickArea.appendChild(plusOne);
+            
+            setTimeout(() => {
+                clickArea.removeChild(plusOne);
+            }, 1000);
+        });
+        
+        // Обработчики для призов
+        prizeItems.forEach(prize => {
+            prize.addEventListener('click', () => {
+                const cost = parseInt(prize.getAttribute('data-cost'));
+                if (clicks >= cost) {
+                    clicks -= cost;
+                    prizes++;
+                    updateUI();
+                    saveUserData();
+                    
+                    // Анимация получения приза
+                    prize.style.backgroundColor = 'rgba(255, 215, 0, 0.3)';
+                    setTimeout(() => {
+                        prize.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                    }, 300);
+                    
+                    // Показать уведомление
+                    tg.showPopup({
+                        title: 'Поздравляем! 🎉',
+                        message: `Вы получили приз: ${prize.querySelector('.prize-name').textContent}`,
+                        buttons: [{type: 'ok'}]
+                    });
+                } else {
+                    // Недостаточно кликов
+                    prize.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                    setTimeout(() => {
+                        prize.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                    }, 300);
+                    
+                    tg.showPopup({
+                        title: 'Недостаточно кликов 😢',
+                        message: `Нужно еще ${cost - clicks} кликов для этого приза`,
+                        buttons: [{type: 'ok'}]
+                    });
+                }
+            });
+        });
+        
+        // Функция обновления интерфейса
+        function updateUI() {
+            clickCountElement.textContent = clicks;
+            userClicksCountElement.textContent = clicks;
+            clicksPerSecondElement.textContent = clicksPerSecond;
+            totalPrizesElement.textContent = prizes;
+            
+            // Обновление состояния призов
+            prizeItems.forEach(prize => {
+                const cost = parseInt(prize.getAttribute('data-cost'));
+                if (clicks >= cost) {
+                    prize.style.opacity = '1';
+                    prize.style.cursor = 'pointer';
+                } else {
+                    prize.style.opacity = '0.6';
+                    prize.style.cursor = 'not-allowed';
+                }
+            });
+        }
+        
+        // Сохранение данных пользователя
+        function saveUserData() {
+            if (user) {
+                const userData = {
+                    clicks: clicks,
+                    clicksPerSecond: clicksPerSecond,
+                    prizes: prizes,
+                    lastUpdate: new Date().getTime()
+                };
+                localStorage.setItem(`tg_user_${user.id}`, JSON.stringify(userData));
+            }
+        }
+        
+        // Загрузка лидерборда
+        function loadLeaderboard() {
+            // В реальном приложении здесь был бы запрос к серверу
+            // Для демо мы просто сгенерируем фиктивные данные
+            const leaderboardList = document.getElementById('leaderboard-list');
+            leaderboardList.innerHTML = '';
+            
+            // Добавляем текущего пользователя в начало
+            if (user) {
+                const userItem = document.createElement('div');
+                userItem.className = 'leaderboard-item';
+                userItem.innerHTML = `
+                    <div class="leaderboard-position">-</div>
+                    <div class="leaderboard-name">${user.first_name || user.username}</div>
+                    <div class="leaderboard-score">${clicks}</div>
+                `;
+                leaderboardList.appendChild(userItem);
+            }
+            
+            // Добавляем других "игроков"
+            const fakeUsers = [
+                {name: "Анна", score: 1250},
+                {name: "Иван", score: 980},
+                {name: "Мария", score: 765},
+                {name: "Алексей", score: 542},
+                {name: "Ольга", score: 321}
+            ];
+            
+            fakeUsers.forEach((user, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                item.innerHTML = `
+                    <div class="leaderboard-position">${index + 1}</div>
+                    <div class="leaderboard-name">${user.name}</div>
+                    <div class="leaderboard-score">${user.score}</div>
+                `;
+                leaderboardList.appendChild(item);
+            });
+        }
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLeaderboard();
+            
+            // Автоклики (каждую секунду)
+            setInterval(() => {
+                clicks += clicksPerSecond;
+                updateUI();
+                saveUserData();
+            }, 1000);
+            
+            // Покупка улучшений (для демонстрации)
+            setTimeout(() => {
+                tg.showPopup({
+                    title: 'Улучшение доступно! ⚡',
+                    message: 'Вы можете купить авто-кликер за 200 кликов',
+                    buttons: [{type: 'cancel'}, {type: 'default', text: 'Купить'}]
+                }).then(buttonId => {
+                    if (buttonId === 1 && clicks >= 200) {
+                        clicks -= 200;
+                        clicksPerSecond += 1;
+                        updateUI();
+                        saveUserData();
+                        tg.showPopup({
+                            title: 'Успех!',
+                            message: 'Теперь вы получаете 1 клик в секунду',
+                            buttons: [{type: 'ok'}]
+                        });
+                    }
+                });
+            }, 10000);
+        });
+        
+        // Добавляем стили для анимации
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes floatUp {
+                0% { 
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                100% { 
+                    opacity: 0;
+                    transform: translateY(-30px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
