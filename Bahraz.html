@@ -253,6 +253,24 @@
             opacity: 0.8;
         }
 
+        .sell-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
         /* Стили для профиля */
         .profile-header {
             display: flex;
@@ -329,6 +347,7 @@
             background-color: var(--bg-secondary);
             border-radius: 16px;
             padding: 20px;
+            margin-bottom: 24px;
         }
 
         .promo-input {
@@ -354,6 +373,170 @@
             padding: 0 20px;
             cursor: pointer;
             font-weight: 500;
+        }
+
+        .subscribe-section {
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .subscribe-btn {
+            background: linear-gradient(45deg, var(--accent), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Стили для мини-игр */
+        .minigames-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .minigame-item {
+            background-color: var(--bg-tertiary);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .minigame-item:active {
+            transform: scale(0.97);
+        }
+
+        .minigame-icon {
+            font-size: 40px;
+            margin-bottom: 16px;
+        }
+
+        .minigame-name {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .minigame-reward {
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .play-btn {
+            background: linear-gradient(45deg, var(--accent), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 10px 0;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Игра "2048" */
+        .game-2048-container {
+            margin-top: 20px;
+        }
+
+        .game-2048-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .game-2048-score {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .game-2048-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 8px;
+            background-color: var(--bg-secondary);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            aspect-ratio: 1/1;
+        }
+
+        .game-2048-cell {
+            background-color: var(--bg-tertiary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .game-2048-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .game-control-btn {
+            background: var(--bg-tertiary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1/1;
+        }
+
+        .game-control-btn:active {
+            background: var(--accent);
+        }
+
+        /* Игра "Пазл" */
+        .puzzle-container {
+            margin-top: 20px;
+        }
+
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 4px;
+            background-color: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            aspect-ratio: 1/1;
+        }
+
+        .puzzle-piece {
+            background-color: var(--accent);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .puzzle-piece.empty {
+            background-color: transparent;
         }
 
         /* Анимация рулетки */
@@ -529,6 +712,22 @@
             color: var(--text-primary);
         }
 
+        /* Кнопка покупки звезд */
+        .buy-stars-btn {
+            background: linear-gradient(45deg, #ff6b00, #ffa500);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         /* Анимации */
         @keyframes celebrate {
             0% { transform: scale(1); }
@@ -549,7 +748,7 @@
 
         /* Адаптивность */
         @media (max-width: 360px) {
-            .shop-items {
+            .shop-items, .minigames-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -613,6 +812,12 @@
                         <button class="buy-btn" data-type="mythical">Купить и открыть</button>
                     </div>
                 </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="buy-stars-btn" id="buy-stars-btn">
+                        <i>⭐</i> Купить 1,000,000 монет за 1 звезду
+                    </button>
+                </div>
             </div>
 
             <!-- Вкладка инвентаря -->
@@ -626,6 +831,64 @@
                 </div>
                 <div class="inventory-grid" id="inventory-grid">
                     <!-- Элементы инвентаря будут добавляться здесь -->
+                </div>
+            </div>
+
+            <!-- Вкладка мини-игр -->
+            <div id="minigames-tab" class="tab-content">
+                <h2>Мини-игры</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Играйте и зарабатывайте монеты</p>
+                
+                <div class="minigames-grid">
+                    <div class="minigame-item" data-game="2048">
+                        <div class="minigame-icon">🧩</div>
+                        <div class="minigame-name">2048</div>
+                        <div class="minigame-reward">До 500 монет</div>
+                        <button class="play-btn" data-game="2048">Играть</button>
+                    </div>
+                    <div class="minigame-item" data-game="puzzle">
+                        <div class="minigame-icon">🔀</div>
+                        <div class="minigame-name">Пазл</div>
+                        <div class="minigame-reward">До 300 монет</div>
+                        <button class="play-btn" data-game="puzzle">Играть</button>
+                    </div>
+                </div>
+
+                <!-- Игра 2048 -->
+                <div id="game-2048" class="game-2048-container" style="display: none;">
+                    <div class="game-2048-header">
+                        <div class="game-2048-score">Счет: <span id="2048-score">0</span></div>
+                        <button class="combine-btn" id="2048-back">
+                            <i>←</i> Назад
+                        </button>
+                    </div>
+                    <div class="game-2048-grid" id="2048-grid">
+                        <!-- Игровое поле 2048 -->
+                    </div>
+                    <div class="game-2048-controls">
+                        <div></div>
+                        <button class="game-control-btn" id="2048-up">↑</button>
+                        <div></div>
+                        <button class="game-control-btn" id="2048-left">←</button>
+                        <div></div>
+                        <button class="game-control-btn" id="2048-right">→</button>
+                        <div></div>
+                        <button class="game-control-btn" id="2048-down">↓</button>
+                        <div></div>
+                    </div>
+                </div>
+
+                <!-- Игра Пазл -->
+                <div id="game-puzzle" class="puzzle-container" style="display: none;">
+                    <div class="game-2048-header">
+                        <div>Ходы: <span id="puzzle-moves">0</span></div>
+                        <button class="combine-btn" id="puzzle-back">
+                            <i>←</i> Назад
+                        </button>
+                    </div>
+                    <div class="puzzle-grid" id="puzzle-grid">
+                        <!-- Игровое поле пазла -->
+                    </div>
                 </div>
             </div>
 
@@ -673,6 +936,17 @@
                     </div>
                     <div id="promo-message"></div>
                 </div>
+
+                <div class="subscribe-section">
+                    <div class="section-title">
+                        <i>📢</i> Подписка на канал
+                    </div>
+                    <p>Подпишитесь на канал <strong>Greatbrawl2imba</strong> и получите 1000 монет!</p>
+                    <button class="subscribe-btn" id="subscribe-btn">
+                        <i>✓</i> Проверить подписку
+                    </button>
+                    <div id="subscribe-message"></div>
+                </div>
             </div>
         </div>
 
@@ -685,6 +959,10 @@
             <div class="nav-tab" data-tab="inventory-tab">
                 <i>🎒</i>
                 <span>Инвентарь</span>
+            </div>
+            <div class="nav-tab" data-tab="minigames-tab">
+                <i>🎮</i>
+                <span>Игры</span>
             </div>
             <div class="nav-tab" data-tab="profile-tab">
                 <i>👤</i>
@@ -735,7 +1013,9 @@
                 openedDrops: 0,
                 soldItems: 0,
                 inventory: [],
-                rarestItem: null
+                rarestItem: null,
+                isSubscribed: false,
+                playedGames: { '2048': 0, 'puzzle': 0 }
             };
 
             // Обновление интерфейса пользователя
@@ -780,12 +1060,13 @@
                 { id: 25, name: "Глобус", emoji: "🌎", rarity: "legendary", color: "blue", price: 650 }
             ];
 
+            // Увеличиваем шансы на легендарные и мифические предметы
             const drops = {
-                common: { price: 100, chances: { common: 70, rare: 25, epic: 5, legendary: 0, mythical: 0 } },
-                rare: { price: 250, chances: { common: 50, rare: 35, epic: 10, legendary: 5, mythical: 0 } },
-                epic: { price: 500, chances: { common: 30, rare: 40, epic: 20, legendary: 8, mythical: 2 } },
-                legendary: { price: 1000, chances: { common: 10, rare: 30, epic: 35, legendary: 20, mythical: 5 } },
-                mythical: { price: 2000, chances: { common: 0, rare: 20, epic: 40, legendary: 30, mythical: 10 } }
+                common: { price: 100, chances: { common: 60, rare: 30, epic: 8, legendary: 2, mythical: 0 } },
+                rare: { price: 250, chances: { common: 40, rare: 35, epic: 15, legendary: 7, mythical: 3 } },
+                epic: { price: 500, chances: { common: 20, rare: 35, epic: 25, legendary: 15, mythical: 5 } },
+                legendary: { price: 1000, chances: { common: 5, rare: 20, epic: 30, legendary: 30, mythical: 15 } },
+                mythical: { price: 2000, chances: { common: 0, rare: 10, epic: 25, legendary: 35, mythical: 30 } }
             };
 
             let currentDropType = "common";
@@ -852,6 +1133,12 @@
                     if (this.dataset.tab === 'inventory-tab') {
                         resetSelection();
                     }
+                    
+                    // Скрываем игры при переходе на другую вкладку
+                    if (this.dataset.tab !== 'minigames-tab') {
+                        document.getElementById('game-2048').style.display = 'none';
+                        document.getElementById('game-puzzle').style.display = 'none';
+                    }
                 });
             });
 
@@ -872,6 +1159,30 @@
                     // Запускаем анимацию рулетки
                     startRoulette(dropType);
                 });
+            });
+
+            // Покупка монет за звезды
+            document.getElementById('buy-stars-btn').addEventListener('click', function() {
+                // В реальном приложении здесь будет вызов Telegram API для оплаты
+                // Эмулируем покупку
+                if (window.Telegram && window.Telegram.WebApp) {
+                    // В реальном приложении:
+                    // Telegram.WebApp.openInvoice(url, callback);
+                    
+                    // Эмуляция успешной оплаты
+                    setTimeout(() => {
+                        userData.coins += 1000000;
+                        updateUserInterface();
+                        saveUserData();
+                        alert('✅ Успешно! Вы получили 1,000,000 монет!');
+                    }, 1000);
+                } else {
+                    // Для тестирования вне Telegram
+                    userData.coins += 1000000;
+                    updateUserInterface();
+                    saveUserData();
+                    alert('✅ Успешно! Вы получили 1,000,000 монет!');
+                }
             });
 
             // Функция запуска рулетки
@@ -1041,6 +1352,29 @@
                 document.getElementById('promo-code').value = '';
             });
 
+            // Проверка подписки на канал
+            document.getElementById('subscribe-btn').addEventListener('click', function() {
+                const subscribeMessage = document.getElementById('subscribe-message');
+                
+                // В реальном приложении здесь будет проверка через Bot API
+                // Эмулируем успешную проверку
+                if (!userData.isSubscribed) {
+                    userData.coins += 1000;
+                    userData.isSubscribed = true;
+                    subscribeMessage.textContent = '✅ Подписка подтверждена! +1000 монет';
+                    subscribeMessage.style.color = 'var(--success)';
+                    
+                    // Обновляем интерфейс
+                    updateUserInterface();
+                    
+                    // Сохраняем данные
+                    saveUserData();
+                } else {
+                    subscribeMessage.textContent = 'Вы уже получали награду за подписку';
+                    subscribeMessage.style.color = 'var(--text-secondary)';
+                }
+            });
+
             // Функция обновления инвентаря
             function updateInventory() {
                 const inventoryGrid = document.getElementById('inventory-grid');
@@ -1067,20 +1401,54 @@
                             <div class="item-name">${item.name}</div>
                             <div class="item-rarity ${item.rarity}">${getRarityName(item.rarity)}</div>
                         </div>
+                        <button class="sell-btn" data-index="${index}">$</button>
                     `;
                     
-                    itemElement.addEventListener('click', () => {
-                        if (selectedItems.includes(index)) {
-                            // Убираем из выбранных
-                            selectedItems = selectedItems.filter(i => i !== index);
-                            itemElement.classList.remove('selected');
-                        } else {
-                            // Добавляем в выбранные
-                            selectedItems.push(index);
-                            itemElement.classList.add('selected');
+                    itemElement.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('sell-btn')) {
+                            if (selectedItems.includes(index)) {
+                                // Убираем из выбранных
+                                selectedItems = selectedItems.filter(i => i !== index);
+                                itemElement.classList.remove('selected');
+                            } else {
+                                // Добавляем в выбранные
+                                selectedItems.push(index);
+                                itemElement.classList.add('selected');
+                            }
+                            
+                            updateCombineButton();
+                        }
+                    });
+                    
+                    // Обработка кнопки продажи
+                    const sellBtn = itemElement.querySelector('.sell-btn');
+                    sellBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const itemIndex = parseInt(sellBtn.dataset.index);
+                        const itemToSell = userData.inventory[itemIndex];
+                        
+                        userData.coins += itemToSell.price;
+                        userData.soldItems++;
+                        
+                        // Удаляем предмет из инвентаря
+                        userData.inventory.splice(itemIndex, 1);
+                        
+                        // Если это была самая редкая вещь, находим новую
+                        if (userData.rarestItem && userData.rarestItem.id === itemToSell.id) {
+                            userData.rarestItem = userData.inventory.reduce((rarest, item) => {
+                                if (!rarest || getRarityValue(item.rarity) > getRarityValue(rarest.rarity)) {
+                                    return item;
+                                }
+                                return rarest;
+                            }, null);
                         }
                         
-                        updateCombineButton();
+                        // Обновляем интерфейс
+                        updateUserInterface();
+                        updateInventory();
+                        
+                        // Сохраняем данные
+                        saveUserData();
                     });
                     
                     inventoryGrid.appendChild(itemElement);
@@ -1159,6 +1527,237 @@
                 saveUserData();
             });
 
+            // Мини-игры
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const gameType = this.dataset.game;
+                    
+                    // Скрываем все игры
+                    document.querySelectorAll('.minigame-item').forEach(item => {
+                        item.style.display = 'none';
+                    });
+                    
+                    // Показываем выбранную игру
+                    if (gameType === '2048') {
+                        document.getElementById('game-2048').style.display = 'block';
+                        init2048Game();
+                    } else if (gameType === 'puzzle') {
+                        document.getElementById('game-puzzle').style.display = 'block';
+                        initPuzzleGame();
+                    }
+                });
+            });
+
+            // Кнопки назад в играх
+            document.getElementById('2048-back').addEventListener('click', function() {
+                document.getElementById('game-2048').style.display = 'none';
+                document.querySelectorAll('.minigame-item').forEach(item => {
+                    item.style.display = 'block';
+                });
+            });
+
+            document.getElementById('puzzle-back').addEventListener('click', function() {
+                document.getElementById('game-puzzle').style.display = 'none';
+                document.querySelectorAll('.minigame-item').forEach(item => {
+                    item.style.display = 'block';
+                });
+            });
+
+            // Игра 2048
+            function init2048Game() {
+                const grid = document.getElementById('2048-grid');
+                const scoreElement = document.getElementById('2048-score');
+                let score = 0;
+                let gridState = Array(16).fill(0);
+                
+                // Очищаем сетку
+                grid.innerHTML = '';
+                
+                // Создаем ячейки
+                for (let i = 0; i < 16; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'game-2048-cell';
+                    cell.id = `cell-${i}`;
+                    grid.appendChild(cell);
+                }
+                
+                // Добавляем начальные плитки
+                addRandomTile();
+                addRandomTile();
+                updateGrid();
+                
+                // Управление
+                document.getElementById('2048-up').addEventListener('click', () => move('up'));
+                document.getElementById('2048-down').addEventListener('click', () => move('down'));
+                document.getElementById('2048-left').addEventListener('click', () => move('left'));
+                document.getElementById('2048-right').addEventListener('click', () => move('right'));
+                
+                function addRandomTile() {
+                    const emptyCells = gridState.reduce((acc, val, idx) => {
+                        if (val === 0) acc.push(idx);
+                        return acc;
+                    }, []);
+                    
+                    if (emptyCells.length > 0) {
+                        const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                        gridState[randomIndex] = Math.random() < 0.9 ? 2 : 4;
+                    }
+                }
+                
+                function updateGrid() {
+                    for (let i = 0; i < 16; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.textContent = gridState[i] > 0 ? gridState[i] : '';
+                        cell.style.backgroundColor = get2048Color(gridState[i]);
+                    }
+                    scoreElement.textContent = score;
+                }
+                
+                function get2048Color(value) {
+                    const colors = {
+                        0: '#3d3d3d',
+                        2: '#776e65',
+                        4: '#ede0c8',
+                        8: '#f2b179',
+                        16: '#f59563',
+                        32: '#f67c5f',
+                        64: '#f65e3b',
+                        128: '#edcf72',
+                        256: '#edcc61',
+                        512: '#edc850',
+                        1024: '#edc53f',
+                        2048: '#edc22e'
+                    };
+                    return colors[value] || '#3d3d3d';
+                }
+                
+                function move(direction) {
+                    // Упрощенная логика движения для демонстрации
+                    let moved = false;
+                    
+                    // Просто добавляем новую плитку для демонстрации
+                    addRandomTile();
+                    score += 10;
+                    updateGrid();
+                    
+                    // Проверяем окончание игры (упрощенно)
+                    if (gridState.filter(cell => cell === 0).length === 0) {
+                        // Начисляем награду
+                        const reward = Math.min(500, score);
+                        userData.coins += reward;
+                        updateUserInterface();
+                        saveUserData();
+                        alert(`Игра окончена! Вы заработали ${reward} монет.`);
+                        document.getElementById('game-2048').style.display = 'none';
+                        document.querySelectorAll('.minigame-item').forEach(item => {
+                            item.style.display = 'block';
+                        });
+                    }
+                }
+            }
+            
+            // Игра Пазл
+            function initPuzzleGame() {
+                const grid = document.getElementById('puzzle-grid');
+                const movesElement = document.getElementById('puzzle-moves');
+                let moves = 0;
+                let puzzleState = [1, 2, 3, 4, 5, 6, 7, 8, 0]; // 0 - пустая клетка
+                
+                // Очищаем сетку
+                grid.innerHTML = '';
+                
+                // Перемешиваем пазл
+                shufflePuzzle();
+                
+                // Создаем ячейки
+                for (let i = 0; i < 9; i++) {
+                    const piece = document.createElement('div');
+                    piece.className = puzzleState[i] === 0 ? 'puzzle-piece empty' : 'puzzle-piece';
+                    piece.textContent = puzzleState[i] === 0 ? '' : puzzleState[i];
+                    piece.dataset.index = i;
+                    piece.addEventListener('click', handlePuzzleClick);
+                    grid.appendChild(piece);
+                }
+                
+                movesElement.textContent = moves;
+                
+                function shufflePuzzle() {
+                    // Упрощенная перемешка для демонстрации
+                    for (let i = 0; i < 100; i++) {
+                        const emptyIndex = puzzleState.indexOf(0);
+                        const possibleMoves = [];
+                        
+                        if (emptyIndex % 3 !== 0) possibleMoves.push(emptyIndex - 1); // left
+                        if (emptyIndex % 3 !== 2) possibleMoves.push(emptyIndex + 1); // right
+                        if (emptyIndex >= 3) possibleMoves.push(emptyIndex - 3); // up
+                        if (emptyIndex < 6) possibleMoves.push(emptyIndex + 3); // down
+                        
+                        const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                        
+                        // Меняем местами
+                        puzzleState[emptyIndex] = puzzleState[randomMove];
+                        puzzleState[randomMove] = 0;
+                    }
+                }
+                
+                function handlePuzzleClick(e) {
+                    const clickedIndex = parseInt(e.target.dataset.index);
+                    const emptyIndex = puzzleState.indexOf(0);
+                    
+                    // Проверяем, можно ли移動
+                    if (isAdjacent(clickedIndex, emptyIndex)) {
+                        // Меняем местами
+                        puzzleState[emptyIndex] = puzzleState[clickedIndex];
+                        puzzleState[clickedIndex] = 0;
+                        
+                        moves++;
+                        movesElement.textContent = moves;
+                        
+                        // Обновляем отображение
+                        updatePuzzleView();
+                        
+                        // Проверяем решение
+                        if (isPuzzleSolved()) {
+                            // Начисляем награду
+                            const reward = Math.max(100, 300 - moves * 10);
+                            userData.coins += reward;
+                            updateUserInterface();
+                            saveUserData();
+                            alert(`Пазл решен! Вы заработали ${reward} монет.`);
+                            document.getElementById('game-puzzle').style.display = 'none';
+                            document.querySelectorAll('.minigame-item').forEach(item => {
+                                item.style.display = 'block';
+                            });
+                        }
+                    }
+                }
+                
+                function isAdjacent(a, b) {
+                    return (
+                        (a === b - 1 && a % 3 !== 2) || // right
+                        (a === b + 1 && a % 3 !== 0) || // left
+                        a === b - 3 || // down
+                        a === b + 3    // up
+                    );
+                }
+                
+                function updatePuzzleView() {
+                    const pieces = grid.querySelectorAll('.puzzle-piece');
+                    pieces.forEach((piece, index) => {
+                        const value = puzzleState[index];
+                        piece.textContent = value === 0 ? '' : value;
+                        piece.className = value === 0 ? 'puzzle-piece empty' : 'puzzle-piece';
+                    });
+                }
+                
+                function isPuzzleSolved() {
+                    for (let i = 0; i < 8; i++) {
+                        if (puzzleState[i] !== i + 1) return false;
+                    }
+                    return puzzleState[8] === 0;
+                }
+            }
+
             // Функция сохранения данных пользователя
             function saveUserData() {
                 localStorage.setItem('bahraz_userData', JSON.stringify(userData));
@@ -1179,4 +1778,4 @@
         });
     </script>
 </body>
-  </html>
+                                                                                      </html>
