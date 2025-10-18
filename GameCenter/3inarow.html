@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3 в ряд</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --bg-primary: #121213;
+            --bg-secondary: #1a1a1b;
+            --bg-tertiary: #2d2d2e;
+            --accent-primary: #6aaa64;
+            --accent-secondary: #b59f3b;
+            --accent-coin: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-primary: #3a3a3c;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.25);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            background: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-primary);
+            flex-shrink: 0;
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow);
+        }
+
+        .back-button {
+            color: inherit;
+            font-size: 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .back-button:active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .coin-display {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-tertiary);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+        }
+
+        .coin-icon {
+            color: var(--accent-coin);
+            font-size: 16px;
+        }
+
+        /* Game Info */
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .moves-left {
+            color: #ff6b6b;
+        }
+
+        .score-value {
+            color: var(--accent-primary);
+        }
+
+        /* Game Board */
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+            gap: 20px;
+        }
+
+        .game-board {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            aspect-ratio: 1;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 4px;
+            background: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+        }
+
+        .cell {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell:active {
+            transform: scale(0.95);
+        }
+
+        .cell.selected {
+            box-shadow: 0 0 0 3px var(--accent-primary);
+            z-index: 2;
+        }
+
+        .cell.valid-move {
+            box-shadow: 0 0 0 2px var(--accent-secondary);
+        }
+
+        .gem {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+            box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .gem-1 { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        .gem-2 { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .gem-3 { background: linear-gradient(135deg, #ffe66d, #f9c74f); }
+        .gem-4 { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .gem-5 { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .gem-6 { background: linear-gradient(135deg, #1abc9c, #16a085); }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .control-btn {
+            flex: 1;
+            max-width: 150px;
+            padding: 14px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(135deg, var(--accent-primary), #5a9c55);
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            padding: 20px;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+            border: 1px solid var(--border-primary);
+            text-align: center;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--accent-primary);
+        }
+
+        .modal-message {
+            font-size: 18px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: var(--radius-md);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #5a9c55);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Animations */
+        @keyframes fall {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes match {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes coinBounce {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .gem.falling {
+            animation: fall 0.3s ease-out;
+        }
+
+        .gem.matched {
+            animation: match 0.4s ease-out;
+        }
+
+        .coin-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            color: var(--accent-coin);
+            z-index: 1000;
+            animation: coinBounce 1s ease-out;
+            pointer-events: none;
+        }
+
+        /* Responsive */
+        @media (max-height: 700px) {
+            .game-board {
+                max-width: 350px;
+            }
+            
+            .game-container {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .game-info {
+                padding: 10px 20px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .game-board {
+                max-width: 100%;
+                gap: 3px;
+                padding: 6px;
+            }
+            
+            .gem {
+                font-size: 12px;
+            }
+            
+            header {
+                padding: 0 16px;
+                height: 56px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .control-btn {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <a href="https://BaHRGames.github.io/GameCenter.html" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1>3 В РЯД</h1>
+            <div class="header-buttons">
+                <div class="coin-display">
+                    <i class="fas fa-coins coin-icon"></i>
+                    <span id="coin-count">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Game Info -->
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">ХОДЫ</div>
+                <div class="info-value moves-left" id="moves-left">25</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">СЧЁТ</div>
+                <div class="info-value score-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">ЦЕЛЬ</div>
+                <div class="info-value" id="target-score">1000</div>
+            </div>
+        </div>
+
+        <!-- Game Board -->
+        <div class="game-container">
+            <div class="game-board" id="game-board">
+                <!-- Game board will be generated by JavaScript -->
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" id="hint-btn">
+                    <i class="fas fa-lightbulb"></i>
+                    Подсказка
+                </button>
+                <button class="control-btn primary" id="restart-btn">
+                    <i class="fas fa-redo"></i>
+                    Заново
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div class="modal" id="game-over-modal">
+            <div class="modal-content">
+                <h2 class="modal-title" id="game-over-title">ИГРА ОКОНЧЕНА</h2>
+                <p class="modal-message" id="game-over-message"></p>
+                
+                <div class="modal-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="final-score">0</div>
+                        <div class="stat-label">ФИНАЛЬНЫЙ СЧЁТ</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="coins-earned">0</div>
+                        <div class="stat-label">МОНЕТЫ</div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer" style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn btn-secondary" onclick="location.reload()">
+                        <i class="fas fa-home"></i>
+                        В меню
+                    </button>
+                    <button class="btn btn-primary" id="play-again-btn">
+                        <i class="fas fa-redo"></i>
+                        Играть снова
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div class="modal" id="help-modal">
+            <div class="modal-content">
+                <h2 class="modal-title">ПРАВИЛА ИГРЫ</h2>
+                
+                <div style="text-align: left; margin-bottom: 25px;">
+                    <p style="margin-bottom: 15px; font-size: 16px; line-height: 1.5;">
+                        <strong>Цель игры:</strong> Наберите 1000 очков за ограниченное количество ходов.
+                    </p>
+                    
+                    <p style="margin-bottom: 15px; font-size: 16px; line-height: 1.5;">
+                        <strong>Как играть:</strong>
+                    </p>
+                    <ul style="margin-left: 20px; margin-bottom: 15px;">
+                        <li>Нажимайте на фишку, чтобы выбрать её</li>
+                        <li>Нажимайте на соседнюю фишку, чтобы поменять их местами</li>
+                        <li>Собирайте линии из 3+ одинаковых фишек</li>
+                        <li>Фишки исчезают, а новые появляются сверху</li>
+                    </ul>
+                    
+                    <p style="margin-bottom: 15px; font-size: 16px; line-height: 1.5;">
+                        <strong>Награды:</strong>
+                    </p>
+                    <ul style="margin-left: 20px;">
+                        <li>3 в ряд: 10 очков + 1 монета</li>
+                        <li>4 в ряд: 25 очков + 2 монеты</li>
+                        <li>5+ в ряд: 50 очков + 3 монеты</li>
+                        <li>Комбо: дополнительные монеты</li>
+                    </ul>
+                </div>
+                
+                <button class="btn btn-primary" data-modal="help-modal">
+                    Начать играть!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Элементы DOM
+            const gameBoard = document.getElementById('game-board');
+            const movesLeftElement = document.getElementById('moves-left');
+            const scoreElement = document.getElementById('score');
+            const targetScoreElement = document.getElementById('target-score');
+            const coinCountElement = document.getElementById('coin-count');
+            const gameOverModal = document.getElementById('game-over-modal');
+            const gameOverTitle = document.getElementById('game-over-title');
+            const gameOverMessage = document.getElementById('game-over-message');
+            const finalScoreElement = document.getElementById('final-score');
+            const coinsEarnedElement = document.getElementById('coins-earned');
+            const playAgainBtn = document.getElementById('play-again-btn');
+            const hintBtn = document.getElementById('hint-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const helpModal = document.getElementById('help-modal');
+
+            // Константы игры
+            const BOARD_SIZE = 8;
+            const GEM_TYPES = 6;
+            const INITIAL_MOVES = 25;
+            const TARGET_SCORE = 1000;
+
+            // Переменные игры
+            let board = [];
+            let selectedCell = null;
+            let movesLeft = INITIAL_MOVES;
+            let score = 0;
+            let coins = 0;
+            let isSwapping = false;
+            let isProcessing = false;
+
+            // Загрузка монет
+            function loadCoins() {
+                const savedCoins = localStorage.getItem('match3Coins');
+                coins = savedCoins ? parseInt(savedCoins) : 0;
+                coinCountElement.textContent = coins;
+            }
+
+            // Сохранение монет
+            function saveCoins() {
+                localStorage.setItem('match3Coins', coins.toString());
+            }
+
+            // Добавление монет
+            function addCoins(amount) {
+                coins += amount;
+                coinCountElement.textContent = coins;
+                saveCoins();
+                
+                // Показываем анимацию монеты
+                const coinAnimation = document.createElement('div');
+                coinAnimation.className = 'coin-animation';
+                coinAnimation.innerHTML = '<i class="fas fa-coins"></i>';
+                document.body.appendChild(coinAnimation);
+                
+                setTimeout(() => {
+                    document.body.removeChild(coinAnimation);
+                }, 1000);
+            }
+
+            // Инициализация игры
+            function initGame() {
+                board = [];
+                selectedCell = null;
+                movesLeft = INITIAL_MOVES;
+                score = 0;
+                
+                updateUI();
+                createBoard();
+                fillBoard();
+                
+                // Показываем правила при первом запуске
+                if (!localStorage.getItem('match3Played')) {
+                    setTimeout(() => helpModal.classList.add('active'), 500);
+                    localStorage.setItem('match3Played', 'true');
+                }
+            }
+
+            // Создание игрового поля
+            function createBoard() {
+                gameBoard.innerHTML = '';
+                gameBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 1fr)`;
+                gameBoard.style.gridTemplateRows = `repeat(${BOARD_SIZE}, 1fr)`;
+                
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    board[row] = [];
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        cell.addEventListener('click', () => handleCellClick(row, col));
+                        
+                        gameBoard.appendChild(cell);
+                        board[row][col] = { gem: null, element: cell };
+                    }
+                }
+            }
+
+            // Заполнение поля фишками
+            function fillBoard() {
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        if (!board[row][col].gem) {
+                            createGem(row, col);
+                        }
+                    }
+                }
+            }
+
+            // Создание фишки
+            function createGem(row, col, isFalling = false) {
+                const gemType = Math.floor(Math.random() * GEM_TYPES) + 1;
+                const cell = board[row][col].element;
+                
+                const gem = document.createElement('div');
+                gem.className = `gem gem-${gemType} ${isFalling ? 'falling' : ''}`;
+                gem.textContent = '●';
+                
+                if (board[row][col].gem) {
+                    cell.removeChild(board[row][col].gem);
+                }
+                
+                cell.appendChild(gem);
+                board[row][col].gem = gem;
+                board[row][col].gemType = gemType;
+            }
+
+            // Обработка клика по ячейке
+            function handleCellClick(row, col) {
+                if (isProcessing) return;
+                
+                const cell = board[row][col];
+                
+                if (!selectedCell) {
+                    // Выбор первой фишки
+                    selectedCell = { row, col };
+                    cell.element.classList.add('selected');
+                    highlightValidMoves(row, col);
+                } else {
+                    // Попытка обмена
+                    const isAdjacent = 
+                        (Math.abs(selectedCell.row - row) === 1 && selectedCell.col === col) ||
+                        (Math.abs(selectedCell.col - col) === 1 && selectedCell.row === row);
+                    
+                    if (isAdjacent) {
+                        swapGems(selectedCell.row, selectedCell.col, row, col);
+                    }
+                    
+                    // Сброс выбора
+                    clearSelection();
+                }
+            }
+
+            // Подсветка возможных ходов
+            function highlightValidMoves(row, col) {
+                const directions = [
+                    { row: -1, col: 0 }, // вверх
+                    { row: 1, col: 0 },  // вниз
+                    { row: 0, col: -1 }, // влево
+                    { row: 0, col: 1 }   // вправо
+                ];
+                
+                directions.forEach(dir => {
+                    const newRow = row + dir.row;
+                    const newCol = col + dir.col;
+                    
+                    if (newRow >= 0 && newRow < BOARD_SIZE && newCol >= 0 && newCol < BOARD_SIZE) {
+                        board[newRow][newCol].element.classList.add('valid-move');
+                    }
+                });
+            }
+
+            // Очистка выделения
+            function clearSelection() {
+                if (selectedCell) {
+                    board[selectedCell.row][selectedCell.col].element.classList.remove('selected');
+                    selectedCell = null;
+                }
+                
+                // Убираем подсветку возможных ходов
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        board[row][col].element.classList.remove('valid-move');
+                    }
+                }
+            }
+
+            // Обмен фишками
+            function swapGems(row1, col1, row2, col2) {
+                isProcessing = true;
+                isSwapping = true;
+                
+                // Визуальный обмен
+                const gem1 = board[row1][col1].gem;
+                const gem2 = board[row2][col2].gem;
+                
+                board[row1][col1].element.removeChild(gem1);
+                board[row2][col2].element.removeChild(gem2);
+                
+                board[row1][col1].element.appendChild(gem2);
+                board[row2][col2].element.appendChild(gem1);
+                
+                // Обновление данных в массиве
+                const tempGem = board[row1][col1].gem;
+                const tempType = board[row1][col1].gemType;
+                
+                board[row1][col1].gem = board[row2][col2].gem;
+                board[row1][col1].gemType = board[row2][col2].gemType;
+                
+                board[row2][col2].gem = tempGem;
+                board[row2][col2].gemType = tempType;
+                
+                // Проверка совпадений после обмена
+                setTimeout(() => {
+                    const matches = findMatches();
+                    
+                    if (matches.length > 0) {
+                        processMatches(matches);
+                        movesLeft--;
+                        updateUI();
+                        
+                        if (movesLeft <= 0) {
+                            checkGameOver();
+                        }
+                    } else {
+                        // Отмена обмена, если нет совпадений
+                        swapGems(row1, col1, row2, col2);
+                    }
+                    
+                    isSwapping = false;
+                }, 300);
+            }
+
+            // Поиск совпадений
+            function findMatches() {
+                const matches = [];
+                
+                // Проверка горизонтальных совпадений
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE - 2; col++) {
+                        const gemType = board[row][col].gemType;
+                        if (gemType && 
+                            gemType === board[row][col + 1].gemType && 
+                            gemType === board[row][col + 2].gemType) {
+                            
+                            let matchLength = 3;
+                            while (col + matchLength < BOARD_SIZE && 
+                                   board[row][col + matchLength].gemType === gemType) {
+                                matchLength++;
+                            }
+                            
+                            matches.push({
+                                row: row,
+                                startCol: col,
+                                endCol: col + matchLength - 1,
+                                direction: 'horizontal',
+                                gemType: gemType
+                            });
+                            
+                            col += matchLength - 1;
+                        }
+                    }
+                }
+                
+                // Проверка вертикальных совпадений
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    for (let row = 0; row < BOARD_SIZE - 2; row++) {
+                        const gemType = board[row][col].gemType;
+                        if (gemType && 
+                            gemType === board[row + 1][col].gemType && 
+                            gemType === board[row + 2][col].gemType) {
+                            
+                            let matchLength = 3;
+                            while (row + matchLength < BOARD_SIZE && 
+                                   board[row + matchLength][col].gemType === gemType) {
+                                matchLength++;
+                            }
+                            
+                            matches.push({
+                                col: col,
+                                startRow: row,
+                                endRow: row + matchLength - 1,
+                                direction: 'vertical',
+                                gemType: gemType
+                            });
+                            
+                            row += matchLength - 1;
+                        }
+                    }
+                }
+                
+                return matches;
+            }
+
+            // Обработка совпадений
+            function processMatches(matches) {
+                let totalScore = 0;
+                let totalCoins = 0;
+                const cellsToRemove = [];
+                
+                matches.forEach(match => {
+                    let matchLength;
+                    
+                    if (match.direction === 'horizontal') {
+                        matchLength = match.endCol - match.startCol + 1;
+                        for (let col = match.startCol; col <= match.endCol; col++) {
+                            cellsToRemove.push({ row: match.row, col: col });
+                        }
+                    } else {
+                        matchLength = match.endRow - match.startRow + 1;
+                        for (let row = match.startRow; row <= match.endRow; row++) {
+                            cellsToRemove.push({ row: row, col: match.col });
+                        }
+                    }
+                    
+                    // Начисление очков и монет в зависимости от длины совпадения
+                    let matchScore = 0;
+                    let matchCoins = 0;
+                    
+                    if (matchLength === 3) {
+                        matchScore = 10;
+                        matchCoins = 1;
+                    } else if (matchLength === 4) {
+                        matchScore = 25;
+                        matchCoins = 2;
+                    } else {
+                        matchScore = 50;
+                        matchCoins = 3;
+                    }
+                    
+                    totalScore += matchScore;
+                    totalCoins += matchCoins;
+                    
+                    // Анимация совпадения
+                    cellsToRemove.forEach(cell => {
+                        if (board[cell.row][cell.col].gem) {
+                            board[cell.row][cell.col].gem.classList.add('matched');
+                        }
+                    });
+                });
+                
+                // Удаление совпавших фишек
+                setTimeout(() => {
+                    cellsToRemove.forEach(cell => {
+                        if (board[cell.row][cell.col].gem) {
+                            board[cell.row][cell.col].element.removeChild(board[cell.row][cell.col].gem);
+                            board[cell.row][cell.col].gem = null;
+                            board[cell.row][cell.col].gemType = null;
+                        }
+                    });
+                    
+                    // Обновление счёта
+                    score += totalScore;
+                    if (totalCoins > 0) {
+                        addCoins(totalCoins);
+                    }
+                    updateUI();
+                    
+                    // Падение фишек и заполнение пустот
+                    dropGems();
+                    
+                }, 400);
+            }
+
+            // Падение фишек
+            function dropGems() {
+                let gemsDropped = false;
+                
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+                        if (!board[row][col].gem) {
+                            // Ищем фишку выше для падения
+                            for (let aboveRow = row - 1; aboveRow >= 0; aboveRow--) {
+                                if (board[aboveRow][col].gem) {
+                                    // Перемещаем фишку вниз
+                                    const gem = board[aboveRow][col].gem;
+                                    board[aboveRow][col].element.removeChild(gem);
+                                    board[row][col].element.appendChild(gem);
+                                    
+                                    board[row][col].gem = gem;
+                                    board[row][col].gemType = board[aboveRow][col].gemType;
+                                    
+                                    board[aboveRow][col].gem = null;
+                                    board[aboveRow][col].gemType = null;
+                                    
+                                    gemsDropped = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Создаем новые фишки сверху
+                    let emptyCells = 0;
+                    for (let row = 0; row < BOARD_SIZE; row++) {
+                        if (!board[row][col].gem) {
+                            emptyCells++;
+                        }
+                    }
+                    
+                    for (let i = 0; i < emptyCells; i++) {
+                        createGem(i, col, true);
+                    }
+                }
+                
+                // Проверяем новые совпадения после падения
+                if (gemsDropped) {
+                    setTimeout(() => {
+                        const newMatches = findMatches();
+                        if (newMatches.length > 0) {
+                            // Бонус за комбо
+                            addCoins(1);
+                            processMatches(newMatches);
+                        } else {
+                            isProcessing = false;
+                        }
+                    }, 500);
+                } else {
+                    isProcessing = false;
+                }
+            }
+
+            // Проверка окончания игры
+            function checkGameOver() {
+                if (movesLeft <= 0) {
+                    setTimeout(() => {
+                        const coinsEarned = Math.floor(score / 100); // 1 монета за каждые 100 очков
+                        if (coinsEarned > 0) {
+                            addCoins(coinsEarned);
+                        }
+                        
+                        gameOverTitle.textContent = score >= TARGET_SCORE ? 'ПОБЕДА!' : 'ИГРА ОКОНЧЕНА';
+                        gameOverMessage.textContent = score >= TARGET_SCORE 
+                            ? `Вы достигли цели и набрали ${score} очков!` 
+                            : `Вы набрали ${score} очков. Попробуйте снова!`;
+                        
+                        finalScoreElement.textContent = score;
+                        coinsEarnedElement.textContent = coinsEarned;
+                        
+                        gameOverModal.classList.add('active');
+                    }, 1000);
+                }
+            }
+
+            // Обновление интерфейса
+            function updateUI() {
+                movesLeftElement.textContent = movesLeft;
+                scoreElement.textContent = score;
+                targetScoreElement.textContent = TARGET_SCORE;
+            }
+
+            // Подсказка
+            function showHint() {
+                if (isProcessing || movesLeft <= 0) return;
+                
+                // Находим возможный ход
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const directions = [
+                            { row: 0, col: 1 }, { row: 1, col: 0 }
+                        ];
+                        
+                        for (const dir of directions) {
+                            const newRow = row + dir.row;
+                            const newCol = col + dir.col;
+                            
+                            if (newRow < BOARD_SIZE && newCol < BOARD_SIZE) {
+                                // Временно меняем фишки
+                                const tempType = board[row][col].gemType;
+                                board[row][col].gemType = board[newRow][newCol].gemType;
+                                board[newRow][newCol].gemType = tempType;
+                                
+                                // Проверяем совпадения
+                                const matches = findMatches();
+                                
+                                // Возвращаем обратно
+                                board[newRow][newCol].gemType = board[row][col].gemType;
+                                board[row][col].gemType = tempType;
+                                
+                                if (matches.length > 0) {
+                                    // Подсвечиваем возможный ход
+                                    board[row][col].element.classList.add('selected');
+                                    board[newRow][newCol].element.classList.add('valid-move');
+                                    
+                                    setTimeout(() => {
+                                        board[row][col].element.classList.remove('selected');
+                                        board[newRow][newCol].element.classList.remove('valid-move');
+                                    }, 2000);
+                                    
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Обработчики событий
+            playAgainBtn.addEventListener('click', () => {
+                gameOverModal.classList.remove('active');
+                initGame();
+            });
+
+            hintBtn.addEventListener('click', showHint);
+
+            restartBtn.addEventListener('click', () => {
+                if (confirm('Начать новую игру?')) {
+                    initGame();
+                }
+            });
+
+            // Закрытие модальных окон
+            document.querySelectorAll('[data-modal]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modalId = e.currentTarget.getAttribute('data-modal');
+                    document.getElementById(modalId).classList.remove('active');
+                });
+            });
+
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+
+            // Инициализация игры
+            loadCoins();
+            initGame();
+        });
+    </script>
+</body>
+</html>
