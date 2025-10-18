@@ -21,20 +21,14 @@
             --bg-primary: #121213;
             --bg-secondary: #1a1a1b;
             --bg-tertiary: #2d2d2e;
-            --bg-light: #ffffff;
-            --bg-light-secondary: #f6f7f8;
-            --bg-light-tertiary: #e5e7eb;
             --accent-primary: #6aaa64;
             --accent-secondary: #b59f3b;
             --accent-error: #d32f2f;
+            --accent-coin: #ffd700;
             --text-primary: #ffffff;
             --text-secondary: #a0a0a0;
-            --text-light: #121213;
-            --text-light-secondary: #565758;
             --tile-default: #3a3a3c;
-            --tile-default-light: #d3d6da;
             --border-primary: #3a3a3c;
-            --border-light: #d3d6da;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.25);
             --radius-sm: 4px;
@@ -51,12 +45,6 @@
             overflow: hidden;
             position: fixed;
             width: 100%;
-            transition: var(--transition);
-        }
-
-        body.light-theme {
-            background-color: var(--bg-light);
-            color: var(--text-light);
         }
 
         .app-container {
@@ -70,10 +58,6 @@
             overflow: hidden;
         }
 
-        .light-theme .app-container {
-            background: var(--bg-light);
-        }
-
         /* Header */
         header {
             display: flex;
@@ -85,11 +69,6 @@
             flex-shrink: 0;
             background: var(--bg-secondary);
             box-shadow: var(--shadow);
-        }
-
-        .light-theme header {
-            border-bottom: 1px solid var(--border-light);
-            background: var(--bg-light);
         }
 
         .back-button {
@@ -109,10 +88,6 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
 
-        .light-theme .back-button:active {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
         h1 {
             font-size: 34px;
             font-weight: 800;
@@ -126,6 +101,7 @@
         .header-buttons {
             display: flex;
             gap: 12px;
+            align-items: center;
         }
 
         .header-btn {
@@ -144,12 +120,24 @@
             box-shadow: var(--shadow);
         }
 
-        .light-theme .header-btn {
-            background: var(--bg-light-tertiary);
-        }
-
         .header-btn:active {
             transform: scale(0.95);
+        }
+
+        .coin-display {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-tertiary);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+        }
+
+        .coin-icon {
+            color: var(--accent-coin);
+            font-size: 16px;
         }
 
         /* Game Container */
@@ -167,8 +155,8 @@
             grid-template-rows: repeat(6, 1fr);
             gap: 8px;
             width: 100%;
-            height: calc((100vw - 80px) * 1.2);
-            max-height: 420px;
+            height: calc((100vh - 220px) * 0.7);
+            max-height: 380px;
             margin: 0 auto;
             flex-shrink: 0;
         }
@@ -195,21 +183,10 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .light-theme .tile {
-            border-color: var(--tile-default-light);
-            color: var(--text-light);
-            background: var(--bg-light);
-        }
-
         .tile.filled {
             border-color: #565758;
             animation: pop 0.15s ease;
             background: var(--bg-tertiary);
-        }
-
-        .light-theme .tile.filled {
-            border-color: #878a8c;
-            background: var(--bg-light-secondary);
         }
 
         @keyframes pop {
@@ -236,11 +213,6 @@
             color: white;
         }
 
-        .light-theme .tile.absent {
-            background-color: var(--text-light-secondary);
-            border-color: var(--text-light-secondary);
-        }
-
         .tile.flip {
             animation: flip 0.6s ease;
         }
@@ -264,6 +236,7 @@
             flex-direction: column;
             gap: 8px;
             flex-shrink: 0;
+            margin-top: auto;
         }
 
         .keyboard-row {
@@ -291,11 +264,6 @@
             box-shadow: var(--shadow);
         }
 
-        .light-theme .key {
-            background: var(--bg-light-tertiary);
-            color: var(--text-light);
-        }
-
         .key:active {
             transform: scale(0.95);
             filter: brightness(0.9);
@@ -321,8 +289,73 @@
             color: white;
         }
 
-        .light-theme .key.absent {
-            background-color: var(--text-light-secondary);
+        /* Victory Screen */
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .victory-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .victory-content {
+            background: var(--bg-secondary);
+            padding: 40px 30px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 400px;
+            width: 100%;
+            border: 2px solid var(--accent-primary);
+            transform: scale(0.8);
+            transition: transform 0.5s;
+        }
+
+        .victory-screen.active .victory-content {
+            transform: scale(1);
+        }
+
+        .victory-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--accent-primary);
+        }
+
+        .victory-message {
+            font-size: 18px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .victory-coins {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .victory-coins i {
+            color: var(--accent-coin);
+            font-size: 24px;
         }
 
         /* Modals */
@@ -341,10 +374,6 @@
             pointer-events: none;
             transition: opacity 0.3s;
             padding: 20px;
-        }
-
-        .light-theme .modal {
-            background-color: rgba(255, 255, 255, 0.95);
         }
 
         .modal.active {
@@ -366,11 +395,6 @@
             border: 1px solid var(--border-primary);
         }
 
-        .light-theme .modal-content {
-            background-color: var(--bg-light);
-            border-color: var(--border-light);
-        }
-
         .modal.active .modal-content {
             transform: translateY(0);
         }
@@ -382,10 +406,6 @@
             margin-bottom: 20px;
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-primary);
-        }
-
-        .light-theme .modal-header {
-            border-bottom: 1px solid var(--border-light);
         }
 
         .modal-title {
@@ -406,10 +426,6 @@
             justify-content: center;
             border-radius: 50%;
             transition: var(--transition);
-        }
-
-        .light-theme .close-modal {
-            background: var(--bg-light-tertiary);
         }
 
         .close-modal:active {
@@ -451,11 +467,6 @@
             color: var(--text-primary);
         }
 
-        .light-theme .btn-secondary {
-            background: var(--bg-light-tertiary);
-            color: var(--text-light);
-        }
-
         /* Instructions */
         .instruction-item {
             margin-bottom: 24px;
@@ -465,10 +476,6 @@
             font-size: 18px;
             margin-bottom: 12px;
             font-weight: 600;
-            color: var(--accent-primary);
-        }
-
-        .light-theme .instruction-title {
             color: var(--accent-primary);
         }
 
@@ -492,11 +499,6 @@
             background: var(--bg-secondary);
         }
 
-        .light-theme .example-tile {
-            border-color: var(--border-light);
-            background: var(--bg-light);
-        }
-
         .example-tile.correct {
             background-color: var(--accent-primary);
             border-color: var(--accent-primary);
@@ -515,9 +517,20 @@
             color: white;
         }
 
-        .light-theme .example-tile.absent {
-            background-color: var(--text-light-secondary);
-            border-color: var(--text-light-secondary);
+        .coins-info {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-top: 20px;
+            border-left: 4px solid var(--accent-coin);
+        }
+
+        .coins-info h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: var(--accent-coin);
         }
 
         /* Custom Word */
@@ -543,12 +556,6 @@
             transition: var(--transition);
         }
 
-        .light-theme .input-field {
-            background: var(--bg-light);
-            border-color: var(--border-light);
-            color: var(--text-light);
-        }
-
         .input-field:focus {
             outline: none;
             border-color: var(--accent-primary);
@@ -568,11 +575,6 @@
             position: relative;
             cursor: pointer;
             transition: var(--transition);
-        }
-
-        .light-theme .share-code {
-            background: var(--bg-light-secondary);
-            border-color: var(--border-light);
         }
 
         .share-code:active {
@@ -596,75 +598,6 @@
 
         .share-code.copied .copy-hint {
             opacity: 1;
-        }
-
-        /* Theme Toggle */
-        .theme-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-primary);
-            margin-bottom: 20px;
-        }
-
-        .light-theme .theme-toggle {
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .toggle-label {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 52px;
-            height: 28px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg-tertiary);
-            transition: .4s;
-            border-radius: 34px;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .light-theme .slider {
-            background: var(--bg-light-tertiary);
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
-            background: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        input:checked + .slider {
-            background: linear-gradient(135deg, var(--accent-primary), #5a9c55);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
         }
 
         /* Toast */
@@ -691,6 +624,10 @@
             opacity: 1;
         }
 
+        .toast.success {
+            background: var(--accent-primary);
+        }
+
         /* Stats */
         .stats-grid {
             display: grid;
@@ -707,10 +644,6 @@
             box-shadow: var(--shadow);
         }
 
-        .light-theme .stat-item {
-            background: var(--bg-light-secondary);
-        }
-
         .stat-value {
             font-size: 24px;
             font-weight: 700;
@@ -723,14 +656,29 @@
             font-weight: 600;
         }
 
-        .light-theme .stat-label {
-            color: var(--text-light-secondary);
+        /* Coin Animation */
+        @keyframes coinBounce {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .coin-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            color: var(--accent-coin);
+            z-index: 1000;
+            animation: coinBounce 1s ease-out;
+            pointer-events: none;
         }
 
         /* Responsive adjustments */
         @media (max-height: 700px) {
             .game-board {
-                height: calc((100vw - 80px) * 1);
+                height: calc((100vh - 200px) * 0.65);
                 max-height: 320px;
             }
             
@@ -775,6 +723,11 @@
                 padding: 0 16px;
                 height: 56px;
             }
+            
+            .coin-display {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -787,6 +740,10 @@
             </a>
             <h1>WORDLE</h1>
             <div class="header-buttons">
+                <div class="coin-display">
+                    <i class="fas fa-coins coin-icon"></i>
+                    <span id="coin-count">0</span>
+                </div>
                 <button class="header-btn" id="help-btn" title="Помощь">
                     <i class="fas fa-question-circle"></i>
                 </button>
@@ -847,6 +804,19 @@
             </div>
         </div>
 
+        <!-- Victory Screen -->
+        <div class="victory-screen" id="victory-screen">
+            <div class="victory-content">
+                <h2 class="victory-title">ПОБЕДА!</h2>
+                <p class="victory-message">Вы правильно угадали слово!</p>
+                <div class="victory-coins" id="victory-coins">
+                    <i class="fas fa-coins"></i>
+                    <span>+<span id="coins-earned">0</span> монет</span>
+                </div>
+                <button class="btn btn-primary" id="continue-btn">Продолжить</button>
+            </div>
+        </div>
+
         <!-- Toast Message -->
         <div class="toast" id="toast"></div>
 
@@ -895,6 +865,20 @@
                         </div>
                         <p>Буквы <strong>А</strong> нет в загаданном слове.</p>
                     </div>
+
+                    <div class="coins-info">
+                        <h4><i class="fas fa-coins"></i> Система монет</h4>
+                        <p>За каждое правильно угаданное слово вы получаете монеты:</p>
+                        <ul style="margin-left: 20px; margin-top: 8px;">
+                            <li>1 попытка: 6 монет</li>
+                            <li>2 попытки: 5 монет</li>
+                            <li>3 попытки: 4 монет</li>
+                            <li>4 попытки: 3 монеты</li>
+                            <li>5 попыток: 2 монеты</li>
+                            <li>6 попыток: 1 монета</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-style: italic;">Монеты не начисляются за слова друзей</p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" data-modal="help-modal">Понятно</button>
@@ -912,14 +896,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="theme-toggle">
-                        <span class="toggle-label">Тёмная тема</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="theme-toggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    
                     <div class="input-group">
                         <label class="input-label" for="custom-word-code">Код слова для игры с друзьями</label>
                         <input type="text" id="custom-word-code" class="input-field" placeholder="Введите код">
@@ -976,27 +952,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Game Over Modal -->
-        <div class="modal" id="game-over-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title" id="game-over-title">Результат</h2>
-                    <button class="close-modal" data-modal="game-over-modal">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p id="game-over-message"></p>
-                    <div class="share-code" id="result-share-code">
-                        <div class="copy-hint">Скопировано!</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" id="new-game-btn">Новая игра</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -1027,11 +982,9 @@
             // Элементы DOM
             const board = document.getElementById('board');
             const toast = document.getElementById('toast');
-            const gameOverModal = document.getElementById('game-over-modal');
-            const gameOverTitle = document.getElementById('game-over-title');
-            const gameOverMessage = document.getElementById('game-over-message');
-            const resultShareCode = document.getElementById('result-share-code');
-            const newGameBtn = document.getElementById('new-game-btn');
+            const victoryScreen = document.getElementById('victory-screen');
+            const victoryCoins = document.getElementById('coins-earned');
+            const continueBtn = document.getElementById('continue-btn');
             const helpBtn = document.getElementById('help-btn');
             const settingsBtn = document.getElementById('settings-btn');
             const statsBtn = document.getElementById('stats-btn');
@@ -1043,8 +996,8 @@
             const customWordInput = document.getElementById('custom-word-input');
             const shareCodeElement = document.getElementById('share-code');
             const customWordCodeInput = document.getElementById('custom-word-code');
-            const themeToggle = document.getElementById('theme-toggle');
             const resetStatsBtn = document.getElementById('reset-stats');
+            const coinCountElement = document.getElementById('coin-count');
 
             // Игровые переменные
             let currentRow = 0;
@@ -1053,7 +1006,7 @@
             let targetWord = '';
             let isCustomWord = false;
 
-            // Статистика
+            // Статистика и монеты
             let stats = {
                 gamesPlayed: 0,
                 gamesWon: 0,
@@ -1061,36 +1014,52 @@
                 maxStreak: 0
             };
 
-            // Улучшенный шифр для кодирования слов
+            let coins = 0;
+
+            // Простая кодировка слов (шифр Цезаря)
             function encodeWord(word) {
-                // Используем base64 кодирование для более надежного шифрования
-                const base64 = btoa(unescape(encodeURIComponent(word)));
-                // Добавляем простую проверку для предотвращения ошибок
-                return base64.replace(/=/g, '').substring(0, 8);
+                let encoded = '';
+                for (let i = 0; i < word.length; i++) {
+                    const charCode = word.charCodeAt(i);
+                    encoded += String.fromCharCode(charCode + 5);
+                }
+                return btoa(encoded).replace(/=/g, '');
             }
 
             function decodeWord(encoded) {
                 try {
-                    // Декодирование из base64
-                    const padded = encoded + '='.repeat((4 - encoded.length % 4) % 4);
-                    return decodeURIComponent(escape(atob(padded)));
+                    const decoded = atob(encoded);
+                    let original = '';
+                    for (let i = 0; i < decoded.length; i++) {
+                        const charCode = decoded.charCodeAt(i);
+                        original += String.fromCharCode(charCode - 5);
+                    }
+                    return original;
                 } catch (e) {
                     return null;
                 }
             }
 
-            // Загрузка статистики
+            // Загрузка статистики и монет
             function loadStats() {
                 const savedStats = localStorage.getItem('wordleStats');
                 if (savedStats) {
                     stats = JSON.parse(savedStats);
                 }
+                
+                const savedCoins = localStorage.getItem('wordleCoins');
+                if (savedCoins) {
+                    coins = parseInt(savedCoins);
+                }
+                
                 updateStatsDisplay();
+                updateCoinDisplay();
             }
 
-            // Сохранение статистики
+            // Сохранение статистики и монет
             function saveStats() {
                 localStorage.setItem('wordleStats', JSON.stringify(stats));
+                localStorage.setItem('wordleCoins', coins.toString());
             }
 
             // Обновление отображения статистики
@@ -1103,14 +1072,37 @@
                 document.getElementById('max-streak').textContent = stats.maxStreak;
             }
 
+            // Обновление отображения монет
+            function updateCoinDisplay() {
+                coinCountElement.textContent = coins;
+            }
+
+            // Добавление монет
+            function addCoins(amount) {
+                coins += amount;
+                updateCoinDisplay();
+                saveStats();
+            }
+
             // Показать тост-сообщение
-            function showToast(message) {
+            function showToast(message, isSuccess = false) {
                 toast.textContent = message;
-                toast.classList.add('show');
+                toast.className = 'toast' + (isSuccess ? ' success show' : ' show');
                 
                 setTimeout(() => {
-                    toast.classList.remove('show');
+                    toast.className = 'toast';
                 }, 3000);
+            }
+
+            // Показать экран победы
+            function showVictory(coinsEarned) {
+                victoryCoins.textContent = coinsEarned;
+                victoryScreen.classList.add('active');
+            }
+
+            // Скрыть экран победы
+            function hideVictory() {
+                victoryScreen.classList.remove('active');
             }
 
             // Показать модальное окно
@@ -1126,7 +1118,7 @@
             // Копирование текста в буфер обмена
             function copyToClipboard(text) {
                 navigator.clipboard.writeText(text).then(() => {
-                    showToast('Скопировано в буфер обмена!');
+                    showToast('Скопировано в буфер обмена!', true);
                 }).catch(() => {
                     // Fallback для старых браузеров
                     const textArea = document.createElement('textarea');
@@ -1135,7 +1127,7 @@
                     textArea.select();
                     document.execCommand('copy');
                     document.body.removeChild(textArea);
-                    showToast('Скопировано в буфер обмена!');
+                    showToast('Скопировано в буфер обмена!', true);
                 });
             }
 
@@ -1157,7 +1149,7 @@
                 currentRow = 0;
                 currentTile = 0;
                 gameOver = false;
-                hideModal('game-over-modal');
+                hideVictory();
 
                 // Создаем игровое поле
                 for (let i = 0; i < 6; i++) {
@@ -1205,7 +1197,7 @@
                 }
             }
 
-            // Проверка слова (исправленная логика для повторяющихся букв)
+            // Проверка слова
             function checkWord() {
                 if (currentTile !== 5) return;
                 
@@ -1224,7 +1216,7 @@
                 for (let i = 0; i < 5; i++) {
                     if (guessLetters[i] === targetLetters[i]) {
                         result[i] = 'correct';
-                        targetLetters[i] = null; // Помечаем как использованную
+                        targetLetters[i] = null;
                     }
                 }
                 
@@ -1235,7 +1227,7 @@
                     const index = targetLetters.indexOf(guessLetters[i]);
                     if (index !== -1) {
                         result[i] = 'present';
-                        targetLetters[index] = null; // Помечаем как использованную
+                        targetLetters[index] = null;
                     }
                 }
                 
@@ -1266,14 +1258,19 @@
                         if (stats.currentStreak > stats.maxStreak) {
                             stats.maxStreak = stats.currentStreak;
                         }
+                        
+                        // Начисляем монеты только за обычные слова (не пользовательские)
+                        let coinsEarned = 0;
+                        if (!isCustomWord) {
+                            coinsEarned = 7 - (currentRow + 1); // 1-6 монет в зависимости от попыток
+                            addCoins(coinsEarned);
+                        }
+                        
                         saveStats();
                         updateStatsDisplay();
                         
-                        gameOverTitle.textContent = 'Поздравляем! 🎉';
-                        gameOverMessage.textContent = `Вы угадали слово "${targetWord}" за ${currentRow + 1} попыток!`;
-                        resultShareCode.textContent = `Код для друзей: ${encodeWord(targetWord)}`;
-                        resultShareCode.style.display = 'block';
-                        showModal('game-over-modal');
+                        // Показываем экран победы
+                        showVictory(coinsEarned);
                         gameOver = true;
                     }, 1800);
                 } else if (currentRow === 5) {
@@ -1284,10 +1281,6 @@
                         saveStats();
                         updateStatsDisplay();
                         
-                        gameOverTitle.textContent = 'Игра окончена';
-                        gameOverMessage.textContent = `Загаданное слово: ${targetWord}`;
-                        resultShareCode.style.display = 'none';
-                        showModal('game-over-modal');
                         gameOver = true;
                     }, 1800);
                 } else {
@@ -1364,7 +1357,7 @@
                     const word = decodeWord(code);
                     if (word && word.length === 5) {
                         initGame(word);
-                        showToast('Пользовательское слово применено!');
+                        showToast('Пользовательское слово применено!', true);
                         hideModal('settings-modal');
                     } else {
                         showToast('Неверный код слова!');
@@ -1378,7 +1371,7 @@
                     const code = encodeWord(word);
                     shareCodeElement.textContent = `Код для друзей: ${code}`;
                     shareCodeElement.style.display = 'block';
-                    showToast('Код создан! Нажмите на него, чтобы скопировать');
+                    showToast('Код создан! Нажмите на него, чтобы скопировать', true);
                 } else {
                     showToast('Введите слово из 5 букв!');
                 }
@@ -1396,32 +1389,10 @@
                 }
             });
 
-            resultShareCode.addEventListener('click', () => {
-                if (resultShareCode.textContent) {
-                    const code = resultShareCode.textContent.replace('Код для друзей: ', '');
-                    copyToClipboard(code);
-                    resultShareCode.classList.add('copied');
-                    setTimeout(() => {
-                        resultShareCode.classList.remove('copied');
-                    }, 2000);
-                }
-            });
-
-            // Кнопка новой игры
-            newGameBtn.addEventListener('click', () => {
+            // Кнопка продолжения после победы
+            continueBtn.addEventListener('click', () => {
+                hideVictory();
                 initGame();
-                hideModal('game-over-modal');
-            });
-
-            // Переключение темы
-            themeToggle.addEventListener('change', () => {
-                if (themeToggle.checked) {
-                    document.body.classList.remove('light-theme');
-                    localStorage.setItem('wordle-theme', 'dark');
-                } else {
-                    document.body.classList.add('light-theme');
-                    localStorage.setItem('wordle-theme', 'light');
-                }
             });
 
             // Кнопка сброса статистики
@@ -1436,16 +1407,9 @@
                     saveStats();
                     updateStatsDisplay();
                     hideModal('stats-modal');
-                    showToast('Статистика сброшена!');
+                    showToast('Статистика сброшена!', true);
                 }
             });
-
-            // Загрузка темы из localStorage
-            const savedTheme = localStorage.getItem('wordle-theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                themeToggle.checked = false;
-            }
 
             // Запуск игры при загрузке
             loadStats();
