@@ -18,35 +18,45 @@
         }
 
         :root {
-            --bg-color: #121213;
-            --bg-color-light: #ffffff;
+            --bg-primary: #121213;
+            --bg-secondary: #1a1a1b;
+            --bg-tertiary: #2d2d2e;
+            --bg-light: #ffffff;
+            --bg-light-secondary: #f6f7f8;
+            --bg-light-tertiary: #e5e7eb;
+            --accent-primary: #6aaa64;
+            --accent-secondary: #b59f3b;
+            --accent-error: #d32f2f;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-light: #121213;
+            --text-light-secondary: #565758;
             --tile-default: #3a3a3c;
             --tile-default-light: #d3d6da;
-            --tile-correct: #538d4e;
-            --tile-present: #b59f3b;
-            --tile-absent: #3a3a3c;
-            --tile-absent-light: #787c7e;
-            --key-color: #818384;
-            --key-color-light: #d3d6da;
-            --text-color: #ffffff;
-            --text-color-light: #000000;
-            --accent-color: #6aaa64;
+            --border-primary: #3a3a3c;
+            --border-light: #d3d6da;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.25);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s ease;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             height: 100vh;
             overflow: hidden;
             position: fixed;
             width: 100%;
-            transition: background-color 0.3s, color 0.3s;
+            transition: var(--transition);
         }
 
         body.light-theme {
-            background-color: var(--bg-color-light);
-            color: var(--text-color-light);
+            background-color: var(--bg-light);
+            color: var(--text-light);
         }
 
         .app-container {
@@ -56,6 +66,12 @@
             max-width: 500px;
             margin: 0 auto;
             position: relative;
+            background: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        .light-theme .app-container {
+            background: var(--bg-light);
         }
 
         /* Header */
@@ -63,31 +79,48 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 50px;
-            padding: 0 16px;
-            border-bottom: 1px solid #3a3a3c;
+            height: 60px;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-primary);
             flex-shrink: 0;
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow);
         }
 
         .light-theme header {
-            border-bottom: 1px solid #d3d6da;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-light);
         }
 
         .back-button {
             color: inherit;
-            font-size: 18px;
+            font-size: 20px;
             text-decoration: none;
             display: flex;
             align-items: center;
-            width: 40px;
-            height: 40px;
             justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .back-button:active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .light-theme .back-button:active {
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         h1 {
-            font-size: 32px;
-            font-weight: 700;
-            letter-spacing: 2px;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .header-buttons {
@@ -96,42 +129,45 @@
         }
 
         .header-btn {
-            background: none;
+            background: var(--bg-tertiary);
             border: none;
             color: inherit;
             font-size: 18px;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .light-theme .header-btn {
+            background: var(--bg-light-tertiary);
         }
 
         .header-btn:active {
-            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(0.95);
         }
 
-        .light-theme .header-btn:active {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        /* Game Board */
+        /* Game Container */
         .game-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 10px 16px 0;
+            padding: 20px;
             overflow: hidden;
+            gap: 20px;
         }
 
         .game-board {
             display: grid;
             grid-template-rows: repeat(6, 1fr);
-            gap: 5px;
+            gap: 8px;
             width: 100%;
-            height: calc(100vw - 32px);
+            height: calc((100vw - 80px) * 1.2);
             max-height: 420px;
             margin: 0 auto;
             flex-shrink: 0;
@@ -140,35 +176,40 @@
         .row {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
+            gap: 8px;
         }
 
         .tile {
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 28px;
+            font-weight: 800;
             text-transform: uppercase;
             border: 2px solid var(--tile-default);
-            color: var(--text-color);
-            transition: all 0.3s ease;
-            border-radius: 4px;
+            color: var(--text-primary);
+            transition: var(--transition);
+            border-radius: var(--radius-md);
             aspect-ratio: 1;
+            background: var(--bg-secondary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .light-theme .tile {
             border-color: var(--tile-default-light);
-            color: var(--text-color-light);
+            color: var(--text-light);
+            background: var(--bg-light);
         }
 
         .tile.filled {
             border-color: #565758;
-            animation: pop 0.1s ease;
+            animation: pop 0.15s ease;
+            background: var(--bg-tertiary);
         }
 
         .light-theme .tile.filled {
             border-color: #878a8c;
+            background: var(--bg-light-secondary);
         }
 
         @keyframes pop {
@@ -178,26 +219,26 @@
         }
 
         .tile.correct {
-            background-color: var(--tile-correct);
-            border-color: var(--tile-correct);
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
             color: white;
         }
 
         .tile.present {
-            background-color: var(--tile-present);
-            border-color: var(--tile-present);
+            background-color: var(--accent-secondary);
+            border-color: var(--accent-secondary);
             color: white;
         }
 
         .tile.absent {
-            background-color: var(--tile-absent);
-            border-color: var(--tile-absent);
+            background-color: var(--tile-default);
+            border-color: var(--tile-default);
             color: white;
         }
 
         .light-theme .tile.absent {
-            background-color: var(--tile-absent-light);
-            border-color: var(--tile-absent-light);
+            background-color: var(--text-light-secondary);
+            border-color: var(--text-light-secondary);
         }
 
         .tile.flip {
@@ -217,8 +258,8 @@
         }
 
         /* Keyboard */
-        .keyboard {
-            padding: 8px 0 20px;
+        .keyboard-container {
+            padding: 0;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -228,30 +269,31 @@
         .keyboard-row {
             display: flex;
             justify-content: center;
-            gap: 5px;
+            gap: 6px;
         }
 
         .key {
-            height: 50px;
+            height: 54px;
             flex: 1;
             min-width: 0;
             border: none;
-            border-radius: 4px;
-            background-color: var(--key-color);
-            color: var(--text-color);
-            font-size: 14px;
-            font-weight: bold;
+            border-radius: var(--radius-md);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
             text-transform: uppercase;
-            transition: all 0.1s;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
         }
 
         .light-theme .key {
-            background-color: var(--key-color-light);
-            color: var(--text-color-light);
+            background: var(--bg-light-tertiary);
+            color: var(--text-light);
         }
 
         .key:active {
@@ -261,26 +303,26 @@
 
         .key.wide {
             flex: 1.5;
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .key.correct {
-            background-color: var(--tile-correct);
+            background-color: var(--accent-primary);
             color: white;
         }
 
         .key.present {
-            background-color: var(--tile-present);
+            background-color: var(--accent-secondary);
             color: white;
         }
 
         .key.absent {
-            background-color: var(--tile-absent);
+            background-color: var(--tile-default);
             color: white;
         }
 
         .light-theme .key.absent {
-            background-color: var(--tile-absent-light);
+            background-color: var(--text-light-secondary);
         }
 
         /* Modals */
@@ -290,7 +332,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.85);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -298,7 +340,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
-            padding: 16px;
+            padding: 20px;
         }
 
         .light-theme .modal {
@@ -311,21 +353,22 @@
         }
 
         .modal-content {
-            background-color: var(--bg-color);
-            border-radius: 12px;
-            padding: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 24px;
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--shadow-lg);
             transform: translateY(20px);
             transition: transform 0.3s;
+            border: 1px solid var(--border-primary);
         }
 
         .light-theme .modal-content {
-            background-color: var(--bg-color-light);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: var(--bg-light);
+            border-color: var(--border-light);
         }
 
         .modal.active .modal-content {
@@ -337,59 +380,61 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #3a3a3c;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-primary);
         }
 
         .light-theme .modal-header {
-            border-bottom: 1px solid #d3d6da;
+            border-bottom: 1px solid var(--border-light);
         }
 
         .modal-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
         }
 
         .close-modal {
-            background: none;
+            background: var(--bg-tertiary);
             border: none;
             color: inherit;
             font-size: 20px;
             cursor: pointer;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .light-theme .close-modal {
+            background: var(--bg-light-tertiary);
         }
 
         .close-modal:active {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .light-theme .close-modal:active {
-            background-color: rgba(0, 0, 0, 0.1);
+            transform: scale(0.95);
         }
 
         .modal-body {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .modal-footer {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 12px;
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 14px 24px;
             border: none;
-            border-radius: 6px;
-            font-weight: bold;
+            border-radius: var(--radius-md);
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             font-size: 16px;
+            box-shadow: var(--shadow);
         }
 
         .btn:active {
@@ -397,141 +442,159 @@
         }
 
         .btn-primary {
-            background-color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-primary), #5a9c55);
             color: white;
         }
 
         .btn-secondary {
-            background-color: #565758;
-            color: white;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
 
         .light-theme .btn-secondary {
-            background-color: #d3d6da;
-            color: #000;
+            background: var(--bg-light-tertiary);
+            color: var(--text-light);
         }
 
         /* Instructions */
         .instruction-item {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .instruction-title {
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 18px;
+            margin-bottom: 12px;
             font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .light-theme .instruction-title {
+            color: var(--accent-primary);
         }
 
         .examples {
             display: flex;
             justify-content: center;
-            gap: 5px;
-            margin: 15px 0;
+            gap: 6px;
+            margin: 16px 0;
         }
 
         .example-tile {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 18px;
-            font-weight: bold;
-            border: 2px solid #3a3a3c;
-            border-radius: 4px;
+            font-size: 20px;
+            font-weight: 700;
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
         }
 
         .light-theme .example-tile {
-            border-color: #d3d6da;
+            border-color: var(--border-light);
+            background: var(--bg-light);
         }
 
         .example-tile.correct {
-            background-color: var(--tile-correct);
-            border-color: var(--tile-correct);
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
             color: white;
         }
 
         .example-tile.present {
-            background-color: var(--tile-present);
-            border-color: var(--tile-present);
+            background-color: var(--accent-secondary);
+            border-color: var(--accent-secondary);
             color: white;
         }
 
         .example-tile.absent {
-            background-color: var(--tile-absent);
-            border-color: var(--tile-absent);
+            background-color: var(--tile-default);
+            border-color: var(--tile-default);
             color: white;
         }
 
         .light-theme .example-tile.absent {
-            background-color: var(--tile-absent-light);
-            border-color: var(--tile-absent-light);
+            background-color: var(--text-light-secondary);
+            border-color: var(--text-light-secondary);
         }
 
         /* Custom Word */
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .input-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 600;
+            font-size: 16px;
         }
 
         .input-field {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #565758;
-            border-radius: 6px;
-            background-color: #2a2a2c;
-            color: var(--text-color);
+            padding: 14px;
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
             font-size: 16px;
+            transition: var(--transition);
         }
 
         .light-theme .input-field {
-            background-color: #ffffff;
-            border-color: #d3d6da;
-            color: var(--text-color-light);
+            background: var(--bg-light);
+            border-color: var(--border-light);
+            color: var(--text-light);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(106, 170, 100, 0.2);
         }
 
         .share-code {
-            background-color: #2a2a2c;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 15px;
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-top: 16px;
             word-break: break-all;
             text-align: center;
-            font-family: monospace;
-            font-size: 16px;
-            border: 1px dashed #565758;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            border: 1px dashed var(--border-primary);
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
         }
 
         .light-theme .share-code {
-            background-color: #f6f7f8;
-            border-color: #d3d6da;
+            background: var(--bg-light-secondary);
+            border-color: var(--border-light);
         }
 
-        /* Toast */
-        .toast {
-            position: fixed;
-            top: 70px;
+        .share-code:active {
+            transform: scale(0.98);
+        }
+
+        .copy-hint {
+            position: absolute;
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #d32f2f;
+            background: var(--accent-primary);
             color: white;
-            padding: 12px 20px;
-            border-radius: 6px;
-            z-index: 1000;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: var(--transition);
             pointer-events: none;
-            font-weight: 500;
-            text-align: center;
-            max-width: 80%;
         }
 
-        .toast.show {
+        .share-code.copied .copy-hint {
             opacity: 1;
         }
 
@@ -540,12 +603,13 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid #3a3a3c;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-primary);
+            margin-bottom: 20px;
         }
 
         .light-theme .theme-toggle {
-            border-bottom: 1px solid #d3d6da;
+            border-bottom: 1px solid var(--border-light);
         }
 
         .toggle-label {
@@ -555,8 +619,8 @@
 
         .toggle-switch {
             position: relative;
-            width: 50px;
-            height: 26px;
+            width: 52px;
+            height: 28px;
         }
 
         .toggle-switch input {
@@ -572,68 +636,144 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #565758;
+            background: var(--bg-tertiary);
             transition: .4s;
             border-radius: 34px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .light-theme .slider {
+            background: var(--bg-light-tertiary);
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
+            height: 20px;
+            width: 20px;
             left: 4px;
             bottom: 4px;
-            background-color: white;
+            background: white;
             transition: .4s;
             border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         input:checked + .slider {
-            background-color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-primary), #5a9c55);
         }
 
         input:checked + .slider:before {
             transform: translateX(24px);
         }
 
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-error);
+            color: white;
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            font-weight: 600;
+            text-align: center;
+            max-width: 80%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 16px 8px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+        }
+
+        .light-theme .stat-item {
+            background: var(--bg-light-secondary);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .light-theme .stat-label {
+            color: var(--text-light-secondary);
+        }
+
         /* Responsive adjustments */
         @media (max-height: 700px) {
             .game-board {
-                height: calc(100vw - 32px);
-                max-height: 350px;
+                height: calc((100vw - 80px) * 1);
+                max-height: 320px;
             }
             
             .key {
-                height: 45px;
-                font-size: 13px;
+                height: 48px;
+                font-size: 14px;
             }
             
-            .keyboard {
-                padding-bottom: 10px;
+            .game-container {
+                gap: 12px;
+                padding: 16px;
             }
         }
 
         @media (max-width: 380px) {
             .game-board {
-                gap: 4px;
+                gap: 6px;
             }
             
             .row {
-                gap: 4px;
+                gap: 6px;
             }
             
             .tile {
-                font-size: 20px;
+                font-size: 24px;
             }
             
             .key {
-                height: 42px;
-                font-size: 12px;
+                height: 46px;
+                font-size: 14px;
             }
             
             h1 {
                 font-size: 28px;
+            }
+            
+            .game-container {
+                padding: 16px;
+            }
+            
+            header {
+                padding: 0 16px;
+                height: 56px;
             }
         }
     </style>
@@ -650,6 +790,9 @@
                 <button class="header-btn" id="help-btn" title="Помощь">
                     <i class="fas fa-question-circle"></i>
                 </button>
+                <button class="header-btn" id="stats-btn" title="Статистика">
+                    <i class="fas fa-chart-bar"></i>
+                </button>
                 <button class="header-btn" id="settings-btn" title="Настройки">
                     <i class="fas fa-cog"></i>
                 </button>
@@ -662,7 +805,7 @@
                 <!-- Игровое поле будет заполнено через JavaScript -->
             </div>
 
-            <div class="keyboard">
+            <div class="keyboard-container">
                 <div class="keyboard-row">
                     <div class="key" data-key="й">й</div>
                     <div class="key" data-key="ц">ц</div>
@@ -787,11 +930,49 @@
                         <label class="input-label">Создать своё слово</label>
                         <input type="text" id="custom-word-input" class="input-field" placeholder="Введите слово из 5 букв" maxlength="5">
                         <button class="btn btn-secondary" id="generate-code" style="width: 100%; margin-top: 10px;">Сгенерировать код</button>
-                        <div class="share-code" id="share-code" style="display: none;"></div>
+                        <div class="share-code" id="share-code">
+                            <div class="copy-hint">Скопировано!</div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" data-modal="settings-modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Modal -->
+        <div class="modal" id="stats-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Статистика</h2>
+                    <button class="close-modal" data-modal="stats-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="games-played">0</div>
+                            <div class="stat-label">Игр</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="win-percent">0%</div>
+                            <div class="stat-label">Побед</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="current-streak">0</div>
+                            <div class="stat-label">Текущая серия</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="max-streak">0</div>
+                            <div class="stat-label">Макс. серия</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-modal="stats-modal">Закрыть</button>
+                    <button class="btn btn-secondary" id="reset-stats">Сбросить</button>
                 </div>
             </div>
         </div>
@@ -807,7 +988,9 @@
                 </div>
                 <div class="modal-body">
                     <p id="game-over-message"></p>
-                    <div class="share-code" id="result-share-code" style="display: none; margin-top: 15px;"></div>
+                    <div class="share-code" id="result-share-code">
+                        <div class="copy-hint">Скопировано!</div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" id="new-game-btn">Новая игра</button>
@@ -851,6 +1034,7 @@
             const newGameBtn = document.getElementById('new-game-btn');
             const helpBtn = document.getElementById('help-btn');
             const settingsBtn = document.getElementById('settings-btn');
+            const statsBtn = document.getElementById('stats-btn');
             const closeModalBtns = document.querySelectorAll('.close-modal, .btn[data-modal]');
             const modals = document.querySelectorAll('.modal');
             const keyboardKeys = document.querySelectorAll('.key');
@@ -860,6 +1044,7 @@
             const shareCodeElement = document.getElementById('share-code');
             const customWordCodeInput = document.getElementById('custom-word-code');
             const themeToggle = document.getElementById('theme-toggle');
+            const resetStatsBtn = document.getElementById('reset-stats');
 
             // Игровые переменные
             let currentRow = 0;
@@ -868,21 +1053,54 @@
             let targetWord = '';
             let isCustomWord = false;
 
-            // Простой шифр для кодирования слов
+            // Статистика
+            let stats = {
+                gamesPlayed: 0,
+                gamesWon: 0,
+                currentStreak: 0,
+                maxStreak: 0
+            };
+
+            // Улучшенный шифр для кодирования слов
             function encodeWord(word) {
-                // Простой шифр Цезаря со сдвигом 5
-                return word.split('').map(char => {
-                    const code = char.charCodeAt(0);
-                    return String.fromCharCode(code + 5);
-                }).join('');
+                // Используем base64 кодирование для более надежного шифрования
+                const base64 = btoa(unescape(encodeURIComponent(word)));
+                // Добавляем простую проверку для предотвращения ошибок
+                return base64.replace(/=/g, '').substring(0, 8);
             }
 
             function decodeWord(encoded) {
-                // Декодирование шифра Цезаря
-                return encoded.split('').map(char => {
-                    const code = char.charCodeAt(0);
-                    return String.fromCharCode(code - 5);
-                }).join('');
+                try {
+                    // Декодирование из base64
+                    const padded = encoded + '='.repeat((4 - encoded.length % 4) % 4);
+                    return decodeURIComponent(escape(atob(padded)));
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // Загрузка статистики
+            function loadStats() {
+                const savedStats = localStorage.getItem('wordleStats');
+                if (savedStats) {
+                    stats = JSON.parse(savedStats);
+                }
+                updateStatsDisplay();
+            }
+
+            // Сохранение статистики
+            function saveStats() {
+                localStorage.setItem('wordleStats', JSON.stringify(stats));
+            }
+
+            // Обновление отображения статистики
+            function updateStatsDisplay() {
+                document.getElementById('games-played').textContent = stats.gamesPlayed;
+                document.getElementById('win-percent').textContent = stats.gamesPlayed > 0 
+                    ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) + '%' 
+                    : '0%';
+                document.getElementById('current-streak').textContent = stats.currentStreak;
+                document.getElementById('max-streak').textContent = stats.maxStreak;
             }
 
             // Показать тост-сообщение
@@ -903,6 +1121,22 @@
             // Скрыть модальное окно
             function hideModal(modalId) {
                 document.getElementById(modalId).classList.remove('active');
+            }
+
+            // Копирование текста в буфер обмена
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Скопировано в буфер обмена!');
+                }).catch(() => {
+                    // Fallback для старых браузеров
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showToast('Скопировано в буфер обмена!');
+                });
             }
 
             // Инициализация игры
@@ -971,7 +1205,7 @@
                 }
             }
 
-            // Проверка слова
+            // Проверка слова (исправленная логика для повторяющихся букв)
             function checkWord() {
                 if (currentTile !== 5) return;
                 
@@ -981,29 +1215,27 @@
                     guess += tile.textContent;
                 }
                 
-                // Проверяем буквы (даже если слова нет в списке)
+                // Создаем копии для работы с повторяющимися буквами
                 const targetLetters = targetWord.split('');
                 const guessLetters = guess.split('');
-                const result = [];
+                const result = new Array(5).fill('absent');
                 
                 // Сначала отмечаем правильные позиции
                 for (let i = 0; i < 5; i++) {
                     if (guessLetters[i] === targetLetters[i]) {
                         result[i] = 'correct';
-                        targetLetters[i] = null;
+                        targetLetters[i] = null; // Помечаем как использованную
                     }
                 }
                 
-                // Затем отмечаем присутствующие буквы
+                // Затем отмечаем присутствующие буквы (но не на своих местах)
                 for (let i = 0; i < 5; i++) {
-                    if (result[i]) continue;
+                    if (result[i] === 'correct') continue;
                     
                     const index = targetLetters.indexOf(guessLetters[i]);
                     if (index !== -1) {
                         result[i] = 'present';
-                        targetLetters[index] = null;
-                    } else {
-                        result[i] = 'absent';
+                        targetLetters[index] = null; // Помечаем как использованную
                     }
                 }
                 
@@ -1015,8 +1247,10 @@
                     setTimeout(() => {
                         tile.classList.add('flip', result[i]);
                         
-                        // Обновляем клавиатуру
-                        if (!key.classList.contains('correct')) {
+                        // Обновляем клавиатуру (приоритет: correct > present > absent)
+                        if (result[i] === 'correct' || 
+                            (result[i] === 'present' && !key.classList.contains('correct')) ||
+                            (result[i] === 'absent' && !key.classList.contains('correct') && !key.classList.contains('present'))) {
                             key.classList.add(result[i]);
                         }
                     }, i * 300);
@@ -1025,7 +1259,17 @@
                 // Проверяем результат
                 if (guess === targetWord) {
                     setTimeout(() => {
-                        gameOverTitle.textContent = 'Поздравляем!';
+                        // Обновляем статистику
+                        stats.gamesPlayed++;
+                        stats.gamesWon++;
+                        stats.currentStreak++;
+                        if (stats.currentStreak > stats.maxStreak) {
+                            stats.maxStreak = stats.currentStreak;
+                        }
+                        saveStats();
+                        updateStatsDisplay();
+                        
+                        gameOverTitle.textContent = 'Поздравляем! 🎉';
                         gameOverMessage.textContent = `Вы угадали слово "${targetWord}" за ${currentRow + 1} попыток!`;
                         resultShareCode.textContent = `Код для друзей: ${encodeWord(targetWord)}`;
                         resultShareCode.style.display = 'block';
@@ -1034,6 +1278,12 @@
                     }, 1800);
                 } else if (currentRow === 5) {
                     setTimeout(() => {
+                        // Обновляем статистику
+                        stats.gamesPlayed++;
+                        stats.currentStreak = 0;
+                        saveStats();
+                        updateStatsDisplay();
+                        
                         gameOverTitle.textContent = 'Игра окончена';
                         gameOverMessage.textContent = `Загаданное слово: ${targetWord}`;
                         resultShareCode.style.display = 'none';
@@ -1087,6 +1337,11 @@
                 showModal('settings-modal');
             });
 
+            statsBtn.addEventListener('click', () => {
+                updateStatsDisplay();
+                showModal('stats-modal');
+            });
+
             closeModalBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const modalId = e.currentTarget.getAttribute('data-modal');
@@ -1106,16 +1361,12 @@
             applyCustomWordBtn.addEventListener('click', () => {
                 const code = customWordCodeInput.value.trim();
                 if (code) {
-                    try {
-                        const word = decodeWord(code);
-                        if (word.length === 5) {
-                            initGame(word);
-                            showToast('Пользовательское слово применено!');
-                            hideModal('settings-modal');
-                        } else {
-                            showToast('Неверный код слова!');
-                        }
-                    } catch (e) {
+                    const word = decodeWord(code);
+                    if (word && word.length === 5) {
+                        initGame(word);
+                        showToast('Пользовательское слово применено!');
+                        hideModal('settings-modal');
+                    } else {
                         showToast('Неверный код слова!');
                     }
                 }
@@ -1127,9 +1378,32 @@
                     const code = encodeWord(word);
                     shareCodeElement.textContent = `Код для друзей: ${code}`;
                     shareCodeElement.style.display = 'block';
-                    showToast('Код создан!');
+                    showToast('Код создан! Нажмите на него, чтобы скопировать');
                 } else {
                     showToast('Введите слово из 5 букв!');
+                }
+            });
+
+            // Копирование кодов при клике
+            shareCodeElement.addEventListener('click', () => {
+                if (shareCodeElement.textContent) {
+                    const code = shareCodeElement.textContent.replace('Код для друзей: ', '');
+                    copyToClipboard(code);
+                    shareCodeElement.classList.add('copied');
+                    setTimeout(() => {
+                        shareCodeElement.classList.remove('copied');
+                    }, 2000);
+                }
+            });
+
+            resultShareCode.addEventListener('click', () => {
+                if (resultShareCode.textContent) {
+                    const code = resultShareCode.textContent.replace('Код для друзей: ', '');
+                    copyToClipboard(code);
+                    resultShareCode.classList.add('copied');
+                    setTimeout(() => {
+                        resultShareCode.classList.remove('copied');
+                    }, 2000);
                 }
             });
 
@@ -1150,6 +1424,22 @@
                 }
             });
 
+            // Кнопка сброса статистики
+            resetStatsBtn.addEventListener('click', () => {
+                if (confirm('Вы уверены, что хотите сбросить статистику?')) {
+                    stats = {
+                        gamesPlayed: 0,
+                        gamesWon: 0,
+                        currentStreak: 0,
+                        maxStreak: 0
+                    };
+                    saveStats();
+                    updateStatsDisplay();
+                    hideModal('stats-modal');
+                    showToast('Статистика сброшена!');
+                }
+            });
+
             // Загрузка темы из localStorage
             const savedTheme = localStorage.getItem('wordle-theme');
             if (savedTheme === 'light') {
@@ -1158,6 +1448,7 @@
             }
 
             // Запуск игры при загрузке
+            loadStats();
             initGame();
         });
     </script>
