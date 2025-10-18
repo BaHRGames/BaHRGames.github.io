@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wordle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --bg-color: #121213;
+            --bg-color-light: #ffffff;
+            --tile-default: #3a3a3c;
+            --tile-default-light: #d3d6da;
+            --tile-correct: #538d4e;
+            --tile-present: #b59f3b;
+            --tile-absent: #3a3a3c;
+            --tile-absent-light: #787c7e;
+            --key-color: #818384;
+            --key-color-light: #d3d6da;
+            --text-color: #ffffff;
+            --text-color-light: #000000;
+            --accent-color: #6aaa64;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.light-theme {
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+        }
+
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+            padding: 0 16px;
+            border-bottom: 1px solid #3a3a3c;
+            flex-shrink: 0;
+        }
+
+        .light-theme header {
+            border-bottom: 1px solid #d3d6da;
+        }
+
+        .back-button {
+            color: inherit;
+            font-size: 18px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 18px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .header-btn:active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .light-theme .header-btn:active {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Game Board */
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px 16px 0;
+            overflow: hidden;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-rows: repeat(6, 1fr);
+            gap: 5px;
+            width: 100%;
+            height: calc(100vw - 32px);
+            max-height: 420px;
+            margin: 0 auto;
+            flex-shrink: 0;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+        }
+
+        .tile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 2px solid var(--tile-default);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            aspect-ratio: 1;
+        }
+
+        .light-theme .tile {
+            border-color: var(--tile-default-light);
+            color: var(--text-color-light);
+        }
+
+        .tile.filled {
+            border-color: #565758;
+            animation: pop 0.1s ease;
+        }
+
+        .light-theme .tile.filled {
+            border-color: #878a8c;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .tile.correct {
+            background-color: var(--tile-correct);
+            border-color: var(--tile-correct);
+            color: white;
+        }
+
+        .tile.present {
+            background-color: var(--tile-present);
+            border-color: var(--tile-present);
+            color: white;
+        }
+
+        .tile.absent {
+            background-color: var(--tile-absent);
+            border-color: var(--tile-absent);
+            color: white;
+        }
+
+        .light-theme .tile.absent {
+            background-color: var(--tile-absent-light);
+            border-color: var(--tile-absent-light);
+        }
+
+        .tile.flip {
+            animation: flip 0.6s ease;
+        }
+
+        @keyframes flip {
+            0% {
+                transform: rotateX(0);
+            }
+            50% {
+                transform: rotateX(90deg);
+            }
+            100% {
+                transform: rotateX(0);
+            }
+        }
+
+        /* Keyboard */
+        .keyboard {
+            padding: 8px 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .key {
+            height: 50px;
+            flex: 1;
+            min-width: 0;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--key-color);
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-transform: uppercase;
+            transition: all 0.1s;
+        }
+
+        .light-theme .key {
+            background-color: var(--key-color-light);
+            color: var(--text-color-light);
+        }
+
+        .key:active {
+            transform: scale(0.95);
+            filter: brightness(0.9);
+        }
+
+        .key.wide {
+            flex: 1.5;
+            font-size: 12px;
+        }
+
+        .key.correct {
+            background-color: var(--tile-correct);
+            color: white;
+        }
+
+        .key.present {
+            background-color: var(--tile-present);
+            color: white;
+        }
+
+        .key.absent {
+            background-color: var(--tile-absent);
+            color: white;
+        }
+
+        .light-theme .key.absent {
+            background-color: var(--tile-absent-light);
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            padding: 16px;
+        }
+
+        .light-theme .modal {
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .light-theme .modal-content {
+            background-color: var(--bg-color-light);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #3a3a3c;
+        }
+
+        .light-theme .modal-header {
+            border-bottom: 1px solid #d3d6da;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 20px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-modal:active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .light-theme .close-modal:active {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #565758;
+            color: white;
+        }
+
+        .light-theme .btn-secondary {
+            background-color: #d3d6da;
+            color: #000;
+        }
+
+        /* Instructions */
+        .instruction-item {
+            margin-bottom: 20px;
+        }
+
+        .instruction-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .examples {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .example-tile {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #3a3a3c;
+            border-radius: 4px;
+        }
+
+        .light-theme .example-tile {
+            border-color: #d3d6da;
+        }
+
+        .example-tile.correct {
+            background-color: var(--tile-correct);
+            border-color: var(--tile-correct);
+            color: white;
+        }
+
+        .example-tile.present {
+            background-color: var(--tile-present);
+            border-color: var(--tile-present);
+            color: white;
+        }
+
+        .example-tile.absent {
+            background-color: var(--tile-absent);
+            border-color: var(--tile-absent);
+            color: white;
+        }
+
+        .light-theme .example-tile.absent {
+            background-color: var(--tile-absent-light);
+            border-color: var(--tile-absent-light);
+        }
+
+        /* Custom Word */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #565758;
+            border-radius: 6px;
+            background-color: #2a2a2c;
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .light-theme .input-field {
+            background-color: #ffffff;
+            border-color: #d3d6da;
+            color: var(--text-color-light);
+        }
+
+        .share-code {
+            background-color: #2a2a2c;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            word-break: break-all;
+            text-align: center;
+            font-family: monospace;
+            font-size: 16px;
+            border: 1px dashed #565758;
+        }
+
+        .light-theme .share-code {
+            background-color: #f6f7f8;
+            border-color: #d3d6da;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #d32f2f;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            font-weight: 500;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #3a3a3c;
+        }
+
+        .light-theme .theme-toggle {
+            border-bottom: 1px solid #d3d6da;
+        }
+
+        .toggle-label {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #565758;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-height: 700px) {
+            .game-board {
+                height: calc(100vw - 32px);
+                max-height: 350px;
+            }
+            
+            .key {
+                height: 45px;
+                font-size: 13px;
+            }
+            
+            .keyboard {
+                padding-bottom: 10px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .game-board {
+                gap: 4px;
+            }
+            
+            .row {
+                gap: 4px;
+            }
+            
+            .tile {
+                font-size: 20px;
+            }
+            
+            .key {
+                height: 42px;
+                font-size: 12px;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <a href="https://BaHRGames.github.io/GameCenter.html" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1>WORDLE</h1>
+            <div class="header-buttons">
+                <button class="header-btn" id="help-btn" title="Помощь">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                <button class="header-btn" id="settings-btn" title="Настройки">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Game Container -->
+        <div class="game-container">
+            <div class="game-board" id="board">
+                <!-- Игровое поле будет заполнено через JavaScript -->
+            </div>
+
+            <div class="keyboard">
+                <div class="keyboard-row">
+                    <div class="key" data-key="й">й</div>
+                    <div class="key" data-key="ц">ц</div>
+                    <div class="key" data-key="у">у</div>
+                    <div class="key" data-key="к">к</div>
+                    <div class="key" data-key="е">е</div>
+                    <div class="key" data-key="н">н</div>
+                    <div class="key" data-key="г">г</div>
+                    <div class="key" data-key="ш">ш</div>
+                    <div class="key" data-key="щ">щ</div>
+                    <div class="key" data-key="з">з</div>
+                </div>
+                <div class="keyboard-row">
+                    <div class="key" data-key="ф">ф</div>
+                    <div class="key" data-key="ы">ы</div>
+                    <div class="key" data-key="в">в</div>
+                    <div class="key" data-key="а">а</div>
+                    <div class="key" data-key="п">п</div>
+                    <div class="key" data-key="р">р</div>
+                    <div class="key" data-key="о">о</div>
+                    <div class="key" data-key="л">л</div>
+                    <div class="key" data-key="д">д</div>
+                    <div class="key" data-key="ж">ж</div>
+                </div>
+                <div class="keyboard-row">
+                    <div class="key wide" data-key="enter">Ввод</div>
+                    <div class="key" data-key="я">я</div>
+                    <div class="key" data-key="ч">ч</div>
+                    <div class="key" data-key="с">с</div>
+                    <div class="key" data-key="м">м</div>
+                    <div class="key" data-key="и">и</div>
+                    <div class="key" data-key="т">т</div>
+                    <div class="key" data-key="ь">ь</div>
+                    <div class="key" data-key="б">б</div>
+                    <div class="key wide" data-key="backspace">
+                        <i class="fas fa-backspace"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Message -->
+        <div class="toast" id="toast"></div>
+
+        <!-- Modals -->
+        <!-- Help Modal -->
+        <div class="modal" id="help-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Как играть</h2>
+                    <button class="close-modal" data-modal="help-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="instruction-item">
+                        <h3 class="instruction-title">Угадайте слово из 5 букв за 6 попыток</h3>
+                        <p>После каждой попытки цвет букв будет меняться, показывая, насколько вы близки к отгадке.</p>
+                    </div>
+                    
+                    <div class="instruction-item">
+                        <h3 class="instruction-title">Примеры</h3>
+                        <div class="examples">
+                            <div class="example-tile correct">С</div>
+                            <div class="example-tile">Л</div>
+                            <div class="example-tile">О</div>
+                            <div class="example-tile">В</div>
+                            <div class="example-tile">О</div>
+                        </div>
+                        <p>Буква <strong>С</strong> есть в слове и находится на правильном месте.</p>
+                        
+                        <div class="examples">
+                            <div class="example-tile">П</div>
+                            <div class="example-tile present">О</div>
+                            <div class="example-tile">Л</div>
+                            <div class="example-tile">Е</div>
+                            <div class="example-tile">Т</div>
+                        </div>
+                        <p>Буква <strong>О</strong> есть в слове, но находится в другом месте.</p>
+                        
+                        <div class="examples">
+                            <div class="example-tile">К</div>
+                            <div class="example-tile">О</div>
+                            <div class="example-tile">Ш</div>
+                            <div class="example-tile">К</div>
+                            <div class="example-tile absent">А</div>
+                        </div>
+                        <p>Буквы <strong>А</strong> нет в загаданном слове.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-modal="help-modal">Понятно</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settings-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Настройки</h2>
+                    <button class="close-modal" data-modal="settings-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="theme-toggle">
+                        <span class="toggle-label">Тёмная тема</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="theme-toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label" for="custom-word-code">Код слова для игры с друзьями</label>
+                        <input type="text" id="custom-word-code" class="input-field" placeholder="Введите код">
+                        <button class="btn btn-primary" id="apply-custom-word" style="width: 100%; margin-top: 10px;">Играть с этим словом</button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Создать своё слово</label>
+                        <input type="text" id="custom-word-input" class="input-field" placeholder="Введите слово из 5 букв" maxlength="5">
+                        <button class="btn btn-secondary" id="generate-code" style="width: 100%; margin-top: 10px;">Сгенерировать код</button>
+                        <div class="share-code" id="share-code" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-modal="settings-modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div class="modal" id="game-over-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="game-over-title">Результат</h2>
+                    <button class="close-modal" data-modal="game-over-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="game-over-message"></p>
+                    <div class="share-code" id="result-share-code" style="display: none; margin-top: 15px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="new-game-btn">Новая игра</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Список слов для игры
+            const wordList = [
+                'АБЗАЦ', 'АВТОР', 'АКЦИЯ', 'АЛМАЗ', 'АМПИР', 'АНГЕЛ', 'АНОНС', 'АРБУЗ', 'АРЕАЛ', 'АРМИЯ',
+                'БАГАЖ', 'БАЗАР', 'БАНАН', 'БАРИН', 'БАТОН', 'БЕГУН', 'БЕДРО', 'БЕЛОК', 'БЕРЕГ', 'БИЛЕТ',
+                'ВДОВА', 'ВЕДРО', 'ВЕНОК', 'ВЕРФЬ', 'ВЕСЛО', 'ВЕТЕР', 'ВЕЧЕР', 'ВЗНОС', 'ВИДЕО', 'ВИЛКА',
+                'ГАЗОН', 'ГАММА', 'ГАРАЖ', 'ГВОЗД', 'ГЕНИЙ', 'ГЛИНА', 'ГОЛОД', 'ГОРЛО', 'ГРАФА', 'ГРУША',
+                'ДЕКАН', 'ДЕСНА', 'ДЖИНС', 'ДИВАН', 'ДОЖДЬ', 'ДОЗОР', 'ДОМНА', 'ДОСКА', 'ДРАМА', 'ДРОФА',
+                'ЗАБОР', 'ЗАВОД', 'ЗАКАЗ', 'ЗАЛОГ', 'ЗАМОК', 'ЗАПАХ', 'ЗАРЯД', 'ЗАУМЬ', 'ЗВЕНО', 'ЗЕМЛЯ',
+                'ИГРОК', 'ИДЕАЛ', 'ИЗВОЗ', 'ИКОТА', 'ИМЕНИЕ', 'ИНДУС', 'ИРИСКА', 'ИСКРА', 'ИСПУГ', 'ИСТОК',
+                'КАЗАН', 'КАМИН', 'КАПЛЯ', 'КАРТА', 'КАТОК', 'КВАРЦ', 'КЕПКА', 'КИСТЬ', 'КЛЕРК', 'КНИГА',
+                'ЛАВКА', 'ЛАДОНЬ', 'ЛАМПА', 'ЛЕПЕТ', 'ЛИМОН', 'ЛИСИЦА', 'ЛОЖКА', 'ЛОПАТА', 'ЛУКОШКО', 'ЛЫЖНИК',
+                'МАГИЯ', 'МАЙКА', 'МАЛЫШ', 'МАРКА', 'МАСЛО', 'МЕДИК', 'МЕСТО', 'МИСКА', 'МОЛОТ', 'МУЗЫКА',
+                'ОАЗИС', 'ОБИДА', 'ОБРУЧ', 'ОВРАГ', 'ОГОНЬ', 'ОДЕЖДА', 'ОКЕАН', 'ОЛЕНЬ', 'ОПЕРА', 'ОСИНА',
+                'ПАДЕЖ', 'ПАЛЕЦ', 'ПАРКЕТ', 'ПАТРОН', 'ПЕВЕЦ', 'ПЕНАЛ', 'ПЕСНЯ', 'ПИЛОТ', 'ПЛАТО', 'ПОЭМА',
+                'РАДИО', 'РАЙОН', 'РАКЕТА', 'РАМКА', 'РЕДИС', 'РЕЗЕЦ', 'РЕЛЬС', 'РЮКЗАК', 'РЯДОМ', 'РЯСКА',
+                'САЛАТ', 'САПОГ', 'СВЕТО', 'СЕАНС', 'СИРОП', 'СКАЛА', 'СМОТР', 'СОСЕД', 'СПОРТ', 'СТАЯ',
+                'ТАБЛО', 'ТАКСИ', 'ТАНЕЦ', 'ТЕАТР', 'ТЕЗИС', 'ТЕПЛО', 'ТИРАЖ', 'ТКАЧЬ', 'ТОЧКА', 'ТРУБА',
+                'УКРОП', 'УЛИЦА', 'УСПЕХ', 'УТРО', 'УХОД', 'УЧЕНИК', 'УЩЕРБ', 'ФАКЕЛ', 'ФАРФОР', 'ФИНИК',
+                'ХАЛАТ', 'ХИМИЯ', 'ХЛЕБ', 'ХОББИ', 'ХОККЕЙ', 'ХРАМ', 'ЦАПЛЯ', 'ЦВЕТ', 'ЦИФРА', 'ЦУНАМИ',
+                'ЧАЙКА', 'ЧЕСТЬ', 'ЧИСЛО', 'ШАЙБА', 'ШКОЛА', 'ШТОРМ', 'ШУТКА', 'ЩЕНОК', 'ЩИТОК', 'ЭКРАН',
+                'ЮБИЛЕЙ', 'ЮНОША', 'ЯБЛОКО', 'ЯГОДА', 'ЯКОРЬ', 'ЯСЛИ', 'ЯЩИК'
+            ];
+
+            // Элементы DOM
+            const board = document.getElementById('board');
+            const toast = document.getElementById('toast');
+            const gameOverModal = document.getElementById('game-over-modal');
+            const gameOverTitle = document.getElementById('game-over-title');
+            const gameOverMessage = document.getElementById('game-over-message');
+            const resultShareCode = document.getElementById('result-share-code');
+            const newGameBtn = document.getElementById('new-game-btn');
+            const helpBtn = document.getElementById('help-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+            const closeModalBtns = document.querySelectorAll('.close-modal, .btn[data-modal]');
+            const modals = document.querySelectorAll('.modal');
+            const keyboardKeys = document.querySelectorAll('.key');
+            const applyCustomWordBtn = document.getElementById('apply-custom-word');
+            const generateCodeBtn = document.getElementById('generate-code');
+            const customWordInput = document.getElementById('custom-word-input');
+            const shareCodeElement = document.getElementById('share-code');
+            const customWordCodeInput = document.getElementById('custom-word-code');
+            const themeToggle = document.getElementById('theme-toggle');
+
+            // Игровые переменные
+            let currentRow = 0;
+            let currentTile = 0;
+            let gameOver = false;
+            let targetWord = '';
+            let isCustomWord = false;
+
+            // Простой шифр для кодирования слов
+            function encodeWord(word) {
+                // Простой шифр Цезаря со сдвигом 5
+                return word.split('').map(char => {
+                    const code = char.charCodeAt(0);
+                    return String.fromCharCode(code + 5);
+                }).join('');
+            }
+
+            function decodeWord(encoded) {
+                // Декодирование шифра Цезаря
+                return encoded.split('').map(char => {
+                    const code = char.charCodeAt(0);
+                    return String.fromCharCode(code - 5);
+                }).join('');
+            }
+
+            // Показать тост-сообщение
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Показать модальное окно
+            function showModal(modalId) {
+                document.getElementById(modalId).classList.add('active');
+            }
+
+            // Скрыть модальное окно
+            function hideModal(modalId) {
+                document.getElementById(modalId).classList.remove('active');
+            }
+
+            // Инициализация игры
+            function initGame(customWord = '') {
+                // Выбираем случайное слово или используем пользовательское
+                if (customWord && customWord.length === 5) {
+                    targetWord = customWord.toUpperCase();
+                    isCustomWord = true;
+                } else {
+                    targetWord = wordList[Math.floor(Math.random() * wordList.length)];
+                    isCustomWord = false;
+                }
+                
+                console.log('Загаданное слово:', targetWord);
+
+                // Очищаем игровое поле
+                board.innerHTML = '';
+                currentRow = 0;
+                currentTile = 0;
+                gameOver = false;
+                hideModal('game-over-modal');
+
+                // Создаем игровое поле
+                for (let i = 0; i < 6; i++) {
+                    const row = document.createElement('div');
+                    row.classList.add('row');
+                    
+                    for (let j = 0; j < 5; j++) {
+                        const tile = document.createElement('div');
+                        tile.classList.add('tile');
+                        tile.setAttribute('data-row', i);
+                        tile.setAttribute('data-col', j);
+                        row.appendChild(tile);
+                    }
+                    
+                    board.appendChild(row);
+                }
+
+                // Сбрасываем клавиатуру
+                keyboardKeys.forEach(key => {
+                    key.classList.remove('correct', 'present', 'absent');
+                });
+            }
+
+            // Обработка ввода буквы
+            function addLetter(letter) {
+                if (gameOver) return;
+                
+                if (currentTile < 5) {
+                    const tile = document.querySelector(`.tile[data-row="${currentRow}"][data-col="${currentTile}"]`);
+                    tile.textContent = letter;
+                    tile.classList.add('filled');
+                    currentTile++;
+                }
+            }
+
+            // Удаление буквы
+            function removeLetter() {
+                if (gameOver) return;
+                
+                if (currentTile > 0) {
+                    currentTile--;
+                    const tile = document.querySelector(`.tile[data-row="${currentRow}"][data-col="${currentTile}"]`);
+                    tile.textContent = '';
+                    tile.classList.remove('filled');
+                }
+            }
+
+            // Проверка слова
+            function checkWord() {
+                if (currentTile !== 5) return;
+                
+                let guess = '';
+                for (let i = 0; i < 5; i++) {
+                    const tile = document.querySelector(`.tile[data-row="${currentRow}"][data-col="${i}"]`);
+                    guess += tile.textContent;
+                }
+                
+                // Проверяем буквы (даже если слова нет в списке)
+                const targetLetters = targetWord.split('');
+                const guessLetters = guess.split('');
+                const result = [];
+                
+                // Сначала отмечаем правильные позиции
+                for (let i = 0; i < 5; i++) {
+                    if (guessLetters[i] === targetLetters[i]) {
+                        result[i] = 'correct';
+                        targetLetters[i] = null;
+                    }
+                }
+                
+                // Затем отмечаем присутствующие буквы
+                for (let i = 0; i < 5; i++) {
+                    if (result[i]) continue;
+                    
+                    const index = targetLetters.indexOf(guessLetters[i]);
+                    if (index !== -1) {
+                        result[i] = 'present';
+                        targetLetters[index] = null;
+                    } else {
+                        result[i] = 'absent';
+                    }
+                }
+                
+                // Анимируем проверку и обновляем клавиатуру
+                for (let i = 0; i < 5; i++) {
+                    const tile = document.querySelector(`.tile[data-row="${currentRow}"][data-col="${i}"]`);
+                    const key = document.querySelector(`.key[data-key="${guessLetters[i].toLowerCase()}"]`);
+                    
+                    setTimeout(() => {
+                        tile.classList.add('flip', result[i]);
+                        
+                        // Обновляем клавиатуру
+                        if (!key.classList.contains('correct')) {
+                            key.classList.add(result[i]);
+                        }
+                    }, i * 300);
+                }
+                
+                // Проверяем результат
+                if (guess === targetWord) {
+                    setTimeout(() => {
+                        gameOverTitle.textContent = 'Поздравляем!';
+                        gameOverMessage.textContent = `Вы угадали слово "${targetWord}" за ${currentRow + 1} попыток!`;
+                        resultShareCode.textContent = `Код для друзей: ${encodeWord(targetWord)}`;
+                        resultShareCode.style.display = 'block';
+                        showModal('game-over-modal');
+                        gameOver = true;
+                    }, 1800);
+                } else if (currentRow === 5) {
+                    setTimeout(() => {
+                        gameOverTitle.textContent = 'Игра окончена';
+                        gameOverMessage.textContent = `Загаданное слово: ${targetWord}`;
+                        resultShareCode.style.display = 'none';
+                        showModal('game-over-modal');
+                        gameOver = true;
+                    }, 1800);
+                } else {
+                    currentRow++;
+                    currentTile = 0;
+                }
+            }
+
+            // Обработчики событий для клавиатуры
+            document.addEventListener('keydown', (e) => {
+                if (gameOver) return;
+                
+                const key = e.key.toLowerCase();
+                
+                if (/[а-яё]/.test(key) && key.length === 1) {
+                    addLetter(key.toUpperCase());
+                } else if (key === 'backspace') {
+                    removeLetter();
+                } else if (key === 'enter') {
+                    checkWord();
+                }
+            });
+
+            // Обработчики для экранной клавиатуры
+            keyboardKeys.forEach(key => {
+                key.addEventListener('click', () => {
+                    if (gameOver) return;
+                    
+                    const keyValue = key.getAttribute('data-key');
+                    
+                    if (keyValue === 'enter') {
+                        checkWord();
+                    } else if (keyValue === 'backspace') {
+                        removeLetter();
+                    } else {
+                        addLetter(keyValue.toUpperCase());
+                    }
+                });
+            });
+
+            // Обработчики для модальных окон
+            helpBtn.addEventListener('click', () => {
+                showModal('help-modal');
+            });
+
+            settingsBtn.addEventListener('click', () => {
+                showModal('settings-modal');
+            });
+
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modalId = e.currentTarget.getAttribute('data-modal');
+                    hideModal(modalId);
+                });
+            });
+
+            modals.forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        hideModal(modal.id);
+                    }
+                });
+            });
+
+            // Обработчики для пользовательских слов
+            applyCustomWordBtn.addEventListener('click', () => {
+                const code = customWordCodeInput.value.trim();
+                if (code) {
+                    try {
+                        const word = decodeWord(code);
+                        if (word.length === 5) {
+                            initGame(word);
+                            showToast('Пользовательское слово применено!');
+                            hideModal('settings-modal');
+                        } else {
+                            showToast('Неверный код слова!');
+                        }
+                    } catch (e) {
+                        showToast('Неверный код слова!');
+                    }
+                }
+            });
+
+            generateCodeBtn.addEventListener('click', () => {
+                const word = customWordInput.value.trim().toUpperCase();
+                if (word.length === 5) {
+                    const code = encodeWord(word);
+                    shareCodeElement.textContent = `Код для друзей: ${code}`;
+                    shareCodeElement.style.display = 'block';
+                    showToast('Код создан!');
+                } else {
+                    showToast('Введите слово из 5 букв!');
+                }
+            });
+
+            // Кнопка новой игры
+            newGameBtn.addEventListener('click', () => {
+                initGame();
+                hideModal('game-over-modal');
+            });
+
+            // Переключение темы
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    document.body.classList.remove('light-theme');
+                    localStorage.setItem('wordle-theme', 'dark');
+                } else {
+                    document.body.classList.add('light-theme');
+                    localStorage.setItem('wordle-theme', 'light');
+                }
+            });
+
+            // Загрузка темы из localStorage
+            const savedTheme = localStorage.getItem('wordle-theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                themeToggle.checked = false;
+            }
+
+            // Запуск игры при загрузке
+            initGame();
+        });
+    </script>
+</body>
+</html>
