@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Котян Куня</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --accent: #ffcc00;
+    --muted: rgba(255,255,255,0.08);
+    --glass: rgba(255,255,255,0.04);
+  }
+  html,body{height:100%;margin:0;font-family:Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:
+    radial-gradient(circle at 10% 10%, rgba(255,200,0,0.03), transparent 8%),
+    linear-gradient(180deg,var(--bg), #061024 70%);
+    color:#e6eef8;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+  /* layout */
+  .wrap{max-width:1200px;margin:36px auto;padding:24px;position:relative;display:grid;grid-template-columns: 300px 1fr;gap:24px;}
+  .header{
+    grid-column:1/3;
+    display:flex;align-items:center;gap:16px;padding:18px;border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow: 0 6px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    position:relative;overflow:hidden;
+  }
+  .logo{
+    width:96px;height:96px;border-radius:14px;flex:0 0 96px;background:linear-gradient(135deg,#ffd166,#ff7b7b);
+    display:grid;place-items:center;font-weight:800;color:#08203a;font-size:20px;
+    transform:rotate(-8deg);box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  }
+  .title{
+    font-size:32px;font-weight:800;letter-spacing:0.5px;
+  }
+  .subtitle{color:rgba(230,238,248,0.65);margin-top:6px;font-size:13px;}
+  /* sidebar */
+  .sidebar{padding:18px;border-radius:14px;background:var(--card);box-shadow:0 8px 24px rgba(2,6,23,0.5);height:fit-content;position:relative;overflow:hidden;}
+  .infobox img{width:100%;border-radius:8px;margin-bottom:10px;transform:rotate(-6deg);display:block;}
+  .infobox p{background:var(--glass);padding:8px;border-radius:8px;font-size:13px;color:rgba(230,238,248,0.85);}
+  .toc{margin-top:14px;background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent);padding:12px;border-radius:10px;}
+  .toc h4{margin:0 0 8px 0;font-size:13px;}
+  .toc ul{list-style:none;padding:0;margin:0;display:grid;gap:6px;}
+  .toc li{padding:8px;border-radius:8px;background:var(--muted);font-size:13px;}
+  /* content */
+  .content{padding:20px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative;overflow:visible;}
+  .lead{font-size:18px;margin-top:0;line-height:1.4;color:#f6f9ff;}
+  .section{margin-top:20px;padding:14px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:10px;}
+  .section h2{margin:0 0 8px 0;font-size:20px;}
+  .gallery{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+  .gallery img{width:150px;height:100px;object-fit:cover;border-radius:8px;box-shadow:0 8px 20px rgba(2,6,23,0.6);transform-origin:center;}
+  .weird{position:absolute;right:-60px;top:20px;opacity:0.12;transform:rotate(-18deg);width:320px;}
+  /* absurd placements */
+  .floaters img{position:absolute;opacity:0.9;border-radius:8px;box-shadow:0 12px 36px rgba(2,6,23,0.7);}
+  .floaters .f1{left:20px;top:-40px;transform:rotate(-25deg);width:140px;}
+  .floaters .f2{left:220px;top:30px;transform:rotate(12deg);width:220px;}
+  .floaters .f3{right:40px;bottom:-60px;transform:rotate(32deg);width:260px;}
+  /* table */
+  table{width:100%;border-collapse:collapse;margin-top:12px;background:transparent;}
+  th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.04);text-align:left;font-size:14px;}
+  th{background:rgba(255,255,255,0.02);font-weight:700;}
+  /* footer */
+  .footer{grid-column:1/3;margin-top:18px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(0,0,0,0.12), rgba(255,255,255,0.01));text-align:center;color:rgba(230,238,248,0.55);}
+  /* responsiveness */
+  @media(max-width:900px){
+    .wrap{grid-template-columns:1fr; padding:12px;}
+    .header{flex-direction:row;gap:12px;}
+    .weird{display:none;}
+  }
+</style>
+</head>
+<body>
+  <main class="wrap" aria-label="Котян Вики">
+    <header class="header">
+      <div class="logo" aria-hidden="true">Котян</div>
+      <div>
+        <div class="title">Котян Куня Кротян Косян</div>
+        <div class="subtitle">Котян Куня Кротян Косян — Котян Куня Кротян Косян</div>
+      </div>
+      <!-- decorative awkward images in header -->
+      <img class="weird" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+    </header>
+
+    <aside class="sidebar" aria-label="Котян боковая панель">
+      <div class="infobox">
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="Котян" style="transform:rotate(6deg)" />
+        <p>Котян Куня Кротян Косян Котян Куня Кротян Косян Котян.</p>
+      </div>
+
+      <div class="toc" aria-label="Котян содержание">
+        <h4>Котян Куня</h4>
+        <ul>
+          <li>Котян Куня Кротян</li>
+          <li>Косян Котян Куня</li>
+          <li>Кротян Косян Котян</li>
+          <li>Куня Кротян Косян</li>
+        </ul>
+      </div>
+
+      <!-- extra, unnecessary photos -->
+      <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="width:70px;height:70px;border-radius:6px;transform:rotate(-12deg)" />
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="width:70px;height:70px;border-radius:6px;transform:rotate(18deg)" />
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="width:70px;height:70px;border-radius:6px;transform:rotate(3deg)" />
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="width:70px;height:70px;border-radius:6px;transform:rotate(-33deg)" />
+      </div>
+    </aside>
+
+    <article class="content" aria-label="Котян статья">
+      <p class="lead">Котян Куня Кротян Косян Котян Куня Кротян Косян Котян Куня.</p>
+
+      <section class="section">
+        <h2>Котян Куня Кротян</h2>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="flex:1">
+            <p>Котян Куня Кротян Косян Котян Куня Кротян Косян. Котян Куня Кротян Косян Котян Куня.</p>
+
+            <div class="gallery" aria-hidden="true">
+              <!-- many repeated images -->
+              <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="Котян" style="transform:rotate(-5deg)" />
+              <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="Котян" style="transform:rotate(12deg)" />
+              <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="Котян" style="transform:rotate(-18deg)" />
+              <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="Котян" style="transform:rotate(7deg)" />
+              <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="Котян" style="transform:rotate(-30deg)" />
+              <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="Котян" style="transform:rotate(25deg)" />
+            </div>
+          </div>
+
+          <!-- awkward image inserted in the middle of text column -->
+          <div style="flex:0 0 220px;">
+            <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="Котян" style="width:220px;height:160px;object-fit:cover;border-radius:10px;transform:rotate(-14deg)" />
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Косян Котян</h2>
+
+        <p>
+          Котян Куня Кротян Косян Котян Куня. Котян Куня Кротян Косян Котян Куня Кротян Косян Котян.
+        </p>
+
+        <table aria-label="Котян таблица">
+          <thead>
+            <tr><th>Котян</th><th>Куня</th><th>Кротян</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Косян</td><td>Котян</td><td>Куня</td></tr>
+            <tr><td>Кротян</td><td>Косян</td><td>Котян</td></tr>
+            <tr><td>Куня</td><td>Кротян</td><td>Косян</td></tr>
+          </tbody>
+        </table>
+
+        <div class="gallery" style="margin-top:10px;">
+          <!-- more images placed where they're not needed -->
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="transform:rotate(3deg);width:220px;height:140px" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="transform:rotate(-24deg);width:120px;height:80px" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="transform:rotate(18deg);width:120px;height:80px" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="transform:rotate(42deg);width:120px;height:80px" />
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Кротян Косян</h2>
+        <p>Котян Куня Кротян Косян — Котян Куня Кротян Косян. Котян Куня Кротян Косян.</p>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;">
+          <!-- a dense grid of images (oooочень много) -->
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+          <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+        </div>
+      </section>
+
+      <!-- deliberately absurd insertion between sections -->
+      <div style="margin-top:18px;padding:14px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));">
+        <strong>Котян Куня Кротян Косян</strong>
+        <p>Котян Куня Кротян Косян Котян Куня Кротян Косян.</p>
+        <img src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" style="width:100%;height:160px;object-fit:cover;border-radius:8px;transform:rotate(-9deg)" />
+      </div>
+
+      <!-- floating, unnecessary images overlapping content -->
+      <div class="floaters" aria-hidden="true">
+        <img class="f1" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+        <img class="f2" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+        <img class="f3" src="https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg" alt="" />
+      </div>
+
+    </article>
+
+    <footer class="footer">
+      Котян Куня Кротян Косян — Котян Куня Кротян Косян.
+    </footer>
+  </main>
+
+  <!-- script: replace every printable word with one of the four chosen words (random) to enforce "все слова" rule -->
+  <script>
+    (function(){
+      const words = ["Котян","Куня","Кротян","Косян"];
+      // Walk text nodes and replace words
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+      const textNodes = [];
+      let node;
+      while(node = walker.nextNode()){
+        // skip nodes that are inside script/style or have only whitespace
+        const parentTag = node.parentElement && node.parentElement.tagName;
+        if(!node.nodeValue.trim()) continue;
+        if(parentTag === 'SCRIPT' || parentTag === 'STYLE' || parentTag === 'NOSCRIPT') continue;
+        textNodes.push(node);
+      }
+      function rand(){ return words[Math.floor(Math.random()*words.length)]; }
+
+      for(const tn of textNodes){
+        // split into words by whitespace and punctuation, preserve spacing
+        const parts = tn.nodeValue.split(/(\s+|[,\.\—\-\–\—\;\:\!\?\(\)«»"“”]+)/g);
+        for(let i=0;i<parts.length;i++){
+          if(parts[i] && !parts[i].match(/^\s+$/) && !parts[i].match(/^[,\.\—\-\–\—\;\:\!\?\(\)«»"“”]+$/)){
+            parts[i] = rand();
+          }
+        }
+        tn.nodeValue = parts.join('');
+      }
+
+      // Ensure attributes like alt/title are also "replaced" where visible
+      const elements = document.querySelectorAll('*');
+      for(const el of elements){
+        ['alt','title','placeholder','aria-label'].forEach(attr=>{
+          if(el.hasAttribute && el.hasAttribute(attr)){
+            el.setAttribute(attr, words[Math.floor(Math.random()*words.length)]);
+          }
+        });
+      }
+
+      // sprinkle a lot more images dynamically to be "ооооочень много"
+      const extraTarget = document.querySelector('.content');
+      for(let i=0;i<12;i++){
+        const img = document.createElement('img');
+        img.src = "https://raw.githubusercontent.com/BaHRGames/BaHRGames.github.io/refs/heads/main/InShot_20251020_213217817.jpg";
+        img.alt = words[Math.floor(Math.random()*words.length)];
+        img.style.width = `${80 + Math.floor(Math.random()*240)}px`;
+        img.style.height = `${60 + Math.floor(Math.random()*180)}px`;
+        img.style.objectFit = "cover";
+        img.style.borderRadius = "8px";
+        img.style.display = "inline-block";
+        img.style.margin = `${-10 + Math.floor(Math.random()*30)}px`;
+        img.style.transform = `rotate(${(-40 + Math.floor(Math.random()*80))}deg)`;
+        img.style.boxShadow = "0 8px 28px rgba(0,0,0,0.6)";
+        // insert at random positions
+        const children = extraTarget.children;
+        const index = Math.floor(Math.random()*children.length);
+        extraTarget.insertBefore(img, children[index] || null);
+      }
+
+      // tiny animation to make images twitch slightly (absurd effect)
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes twitch { 0%{transform:translateY(0)}50%{transform:translateY(-6px) rotate(0deg)}100%{transform:translateY(0)} }
+        .content img { animation: twitch 6s ease-in-out infinite; transform-origin:center; }
+      `;
+      document.head.appendChild(style);
+
+    })();
+  </script>
+</body>
+</html>
