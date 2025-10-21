@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karaganda - Бесконечное поле творчества</title>
+    <title>Karaganda</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #000;
-            color: white;
+            color: #fff;
             overflow: hidden;
-            touch-action: none;
             height: 100vh;
             width: 100vw;
+            position: fixed;
         }
 
         #app {
@@ -28,20 +29,83 @@
             position: relative;
         }
 
-        #canvas {
+        #canvas-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000;
+            overflow: hidden;
             cursor: grab;
-            transform: translate(0px, 0px);
-            transition: transform 0.1s ease;
         }
 
-        #canvas:active {
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5000px;
+            height: 5000px;
+            background: #000;
+            transform-origin: 0 0;
+            will-change: transform;
+        }
+
+        #canvas.dragging {
             cursor: grabbing;
+        }
+
+        #dot-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .element {
+            position: absolute;
+            user-select: none;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .element.selected {
+            box-shadow: 0 0 0 2px #3eabf7;
+        }
+
+        .text-element {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 15px;
+            line-height: 1.4;
+            max-width: 280px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .image-element {
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .image-element img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .shape-element {
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         #toolbar {
@@ -49,126 +113,35 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(30, 30, 30, 0.95);
-            padding: 15px;
+            background: rgba(22, 22, 22, 0.95);
+            padding: 12px 16px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top: 1px solid #333;
-            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
             z-index: 1000;
         }
 
         .tool-btn {
-            background: #444;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
             color: white;
-            padding: 12px 16px;
-            border-radius: 20px;
+            padding: 12px;
+            border-radius: 16px;
             cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
+            font-size: 24px;
+            width: 50px;
+            height: 50px;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            transition: all 0.2s ease;
         }
 
-        .tool-btn:hover {
-            background: #555;
-            transform: translateY(-2px);
-        }
-
-        .tool-btn.active {
-            background: #007bff;
-        }
-
-        .tool-icon {
-            font-size: 20px;
-        }
-
-        .tool-text {
-            font-size: 12px;
-        }
-
-        .element {
-            position: absolute;
-            cursor: move;
-            user-select: none;
-            min-width: 100px;
-            min-height: 40px;
-            z-index: 10;
-        }
-
-        .text-element {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            padding: 8px 12px;
-            color: white;
-            font-size: 14px;
-            resize: both;
-            overflow: auto;
-            max-width: 300px;
-            max-height: 200px;
-        }
-
-        .image-element {
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .image-element img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            pointer-events: none;
-        }
-
-        .shape-element {
-            border: 2px solid rgba(255, 255, 255, 0.6);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .element-menu {
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 8px;
-            padding: 5px;
-            display: flex;
-            gap: 5px;
-            backdrop-filter: blur(10px);
-            border: 1px solid #444;
-            z-index: 100;
-        }
-
-        .menu-btn {
-            background: #444;
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .menu-btn:hover {
-            background: #555;
-        }
-
-        .dot {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            pointer-events: none;
+        .tool-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.95);
         }
 
         #loading {
@@ -179,124 +152,431 @@
             height: 100%;
             background: #000;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            flex-direction: column;
             gap: 20px;
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            border-top-color: #3eabf7;
+            animation: spin 1s ease-in-out infinite;
         }
 
         .loading-text {
             color: white;
             font-size: 16px;
+            font-weight: 500;
         }
 
-        .notification {
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(30, 30, 30, 0.9);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            z-index: 2000;
-            backdrop-filter: blur(10px);
-            border: 1px solid #444;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .notification.show {
-            opacity: 1;
-        }
-
-        .color-picker {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
             display: flex;
-            gap: 5px;
-            margin-top: 5px;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #1e1e1e;
+            border-radius: 20px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3eabf7;
+        }
+
+        .color-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .color-option {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             cursor: pointer;
             border: 2px solid transparent;
+            transition: all 0.2s ease;
         }
 
         .color-option.selected {
             border-color: white;
+            transform: scale(1.1);
+        }
+
+        .shape-options {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .shape-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .shape-option.selected {
+            border-color: #3eabf7;
+            background: rgba(62, 171, 247, 0.1);
+        }
+
+        .shape-preview {
+            width: 40px;
+            height: 40px;
+            background: currentColor;
+            border-radius: 8px;
+        }
+
+        .shape-circle {
+            border-radius: 50%;
+        }
+
+        .shape-triangle {
+            background: none;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 35px solid currentColor;
+        }
+
+        .btn {
+            background: #3eabf7;
+            border: none;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .btn:active {
+            background: #2a96e0;
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 8px;
+        }
+
+        .btn-secondary:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .element-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .info-value {
+            color: white;
+        }
+
+        .zoom-controls {
+            position: fixed;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .zoom-btn {
+            background: rgba(22, 22, 22, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+            transition: all 0.2s ease;
+        }
+
+        .zoom-btn:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(22, 22, 22, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            z-index: 2000;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="loading">
-            <div class="spinner"></div>
+            <div class="loader"></div>
             <div class="loading-text">Загрузка поля творчества...</div>
         </div>
-        <div id="canvas"></div>
-        <div id="toolbar">
-            <button class="tool-btn" data-type="text">
-                <span class="tool-icon">📝</span>
-                <span class="tool-text">Текст</span>
-            </button>
-            <button class="tool-btn" data-type="image">
-                <span class="tool-icon">🖼️</span>
-                <span class="tool-text">Картинка</span>
-            </button>
-            <button class="tool-btn" data-type="shape">
-                <span class="tool-icon">🔷</span>
-                <span class="tool-text">Фигура</span>
-            </button>
-            <button class="tool-btn" id="saveBtn">
-                <span class="tool-icon">💾</span>
-                <span class="tool-text">Сохранить</span>
-            </button>
+
+        <div id="canvas-container">
+            <div id="canvas">
+                <div id="dot-pattern"></div>
+            </div>
         </div>
-        <div class="notification" id="notification">Изменения сохранены!</div>
+
+        <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomIn">+</button>
+            <button class="zoom-btn" id="zoomOut">-</button>
+            <button class="zoom-btn" id="resetZoom">↺</button>
+        </div>
+
+        <div id="toolbar">
+            <button class="tool-btn" data-type="text" title="Текст">T</button>
+            <button class="tool-btn" data-type="image" title="Картинка">🖼️</button>
+            <button class="tool-btn" data-type="shape" title="Фигура">⬢</button>
+            <button class="tool-btn" id="saveBtn" title="Сохранить">💾</button>
+        </div>
+
+        <div class="modal" id="textModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Текст</div>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Текст</label>
+                    <textarea class="form-input" id="textInput" rows="3" placeholder="Введите текст..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Цвет текста</label>
+                    <div class="color-options">
+                        <div class="color-option selected" style="background: #ffffff;" data-color="#ffffff"></div>
+                        <div class="color-option" style="background: #ff6b6b;" data-color="#ff6b6b"></div>
+                        <div class="color-option" style="background: #4ecdc4;" data-color="#4ecdc4"></div>
+                        <div class="color-option" style="background: #45b7d1;" data-color="#45b7d1"></div>
+                        <div class="color-option" style="background: #96ceb4;" data-color="#96ceb4"></div>
+                        <div class="color-option" style="background: #feca57;" data-color="#feca57"></div>
+                    </div>
+                </div>
+                <button class="btn" id="saveText">Сохранить</button>
+            </div>
+        </div>
+
+        <div class="modal" id="shapeModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Фигура</div>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Тип фигуры</label>
+                    <div class="shape-options">
+                        <div class="shape-option selected" data-shape="rectangle">
+                            <div class="shape-preview"></div>
+                        </div>
+                        <div class="shape-option" data-shape="circle">
+                            <div class="shape-preview shape-circle"></div>
+                        </div>
+                        <div class="shape-option" data-shape="triangle">
+                            <div class="shape-preview shape-triangle"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Цвет фигуры</label>
+                    <div class="color-options">
+                        <div class="color-option selected" style="background: #ff6b6b;" data-color="#ff6b6b"></div>
+                        <div class="color-option" style="background: #4ecdc4;" data-color="#4ecdc4"></div>
+                        <div class="color-option" style="background: #45b7d1;" data-color="#45b7d1"></div>
+                        <div class="color-option" style="background: #96ceb4;" data-color="#96ceb4"></div>
+                        <div class="color-option" style="background: #feca57;" data-color="#feca57"></div>
+                        <div class="color-option" style="background: #ff9ff3;" data-color="#ff9ff3"></div>
+                    </div>
+                </div>
+                <button class="btn" id="saveShape">Сохранить</button>
+            </div>
+        </div>
+
+        <div class="modal" id="elementModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Элемент</div>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="element-info">
+                    <div class="info-row">
+                        <span class="info-label">Тип:</span>
+                        <span class="info-value" id="elementType">Текст</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Создатель:</span>
+                        <span class="info-value" id="elementCreator">Вы</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Создан:</span>
+                        <span class="info-value" id="elementCreated">только что</span>
+                    </div>
+                </div>
+                <button class="btn" id="editElement">Редактировать</button>
+                <button class="btn btn-secondary" id="reportElement">Пожаловаться</button>
+                <button class="btn btn-secondary" id="deleteElement">Удалить</button>
+            </div>
+        </div>
+
+        <div class="notification" id="notification">Изменения сохранены</div>
     </div>
 
     <script>
         class KaragandaApp {
             constructor() {
                 this.canvas = document.getElementById('canvas');
+                this.canvasContainer = document.getElementById('canvas-container');
                 this.toolbar = document.getElementById('toolbar');
                 this.loading = document.getElementById('loading');
                 this.notification = document.getElementById('notification');
+                
                 this.elements = new Map();
                 this.selectedElement = null;
-                this.isDragging = false;
-                this.dragStart = { x: 0, y: 0 };
-                this.canvasOffset = { x: 0, y: 0 };
-                this.currentDragOffset = { x: 0, y: 0 };
                 
-                // Firebase URL - замените на свой, если нужно
+                // Настройки камеры
+                this.camera = {
+                    x: 0,
+                    y: 0,
+                    scale: 1
+                };
+                
+                // Состояние перетаскивания
+                this.isDragging = false;
+                this.lastTouchDistance = null;
+                
+                // Firebase
                 this.firebaseUrl = 'https://karaganda-bc2a2-default-rtdb.firebaseio.com/karaganda';
+                this.saveTimeout = null;
                 
                 this.init();
             }
 
-            async init() {
+            init() {
                 this.initTelegram();
-                this.createStarfield();
                 this.setupEventListeners();
-                await this.loadData();
+                this.loadData();
                 this.hideLoading();
             }
 
@@ -309,33 +589,25 @@
                 }
             }
 
-            createStarfield() {
-                const starsCount = 200;
-                for (let i = 0; i < starsCount; i++) {
-                    const star = document.createElement('div');
-                    star.className = 'dot';
-                    star.style.left = Math.random() * 100 + 'vw';
-                    star.style.top = Math.random() * 100 + 'vh';
-                    star.style.opacity = Math.random() * 0.5 + 0.1;
-                    this.canvas.appendChild(star);
-                }
-            }
-
             setupEventListeners() {
-                // Перемещение канваса
-                this.canvas.addEventListener('mousedown', this.handleCanvasDragStart.bind(this));
-                this.canvas.addEventListener('touchstart', this.handleCanvasDragStart.bind(this));
+                // Перемещение камеры
+                this.canvasContainer.addEventListener('mousedown', this.startDrag.bind(this));
+                this.canvasContainer.addEventListener('touchstart', this.startDrag.bind(this));
                 
-                document.addEventListener('mousemove', this.handleCanvasDrag.bind(this));
-                document.addEventListener('touchmove', this.handleCanvasDrag.bind(this));
+                document.addEventListener('mousemove', this.drag.bind(this));
+                document.addEventListener('touchmove', this.drag.bind(this));
                 
-                document.addEventListener('mouseup', this.handleCanvasDragEnd.bind(this));
-                document.addEventListener('touchend', this.handleCanvasDragEnd.bind(this));
-
+                document.addEventListener('mouseup', this.endDrag.bind(this));
+                document.addEventListener('touchend', this.endDrag.bind(this));
+                
+                // Масштабирование
+                this.canvasContainer.addEventListener('wheel', this.handleWheel.bind(this));
+                this.canvasContainer.addEventListener('touchmove', this.handlePinch.bind(this));
+                
                 // Кнопки инструментов
                 this.toolbar.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('tool-btn') || e.target.closest('.tool-btn')) {
-                        const btn = e.target.classList.contains('tool-btn') ? e.target : e.target.closest('.tool-btn');
+                    const btn = e.target.closest('.tool-btn');
+                    if (btn) {
                         const type = btn.dataset.type;
                         if (type) {
                             this.createNewElement(type);
@@ -344,33 +616,31 @@
                         }
                     }
                 });
-
-                // Открытие контекстного меню при долгом нажатии
-                this.canvas.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    const element = e.target.closest('.element');
-                    if (element) {
-                        this.showElementMenu(element, element.id);
-                    }
-                });
+                
+                // Зум
+                document.getElementById('zoomIn').addEventListener('click', () => this.zoom(1.2));
+                document.getElementById('zoomOut').addEventListener('click', () => this.zoom(0.8));
+                document.getElementById('resetZoom').addEventListener('click', () => this.resetZoom());
+                
+                // Модальные окна
+                this.setupModalEvents();
             }
 
-            handleCanvasDragStart(e) {
-                if (e.target === this.canvas || e.target.classList.contains('dot')) {
-                    this.isDragging = true;
-                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                    
-                    if (clientX === undefined || clientY === undefined) return;
-                    
-                    this.dragStart.x = clientX - this.canvasOffset.x;
-                    this.dragStart.y = clientY - this.canvasOffset.y;
-                    
-                    this.canvas.style.cursor = 'grabbing';
-                }
+            startDrag(e) {
+                if (e.target.closest('.element')) return;
+                
+                this.isDragging = true;
+                this.dragStart = {
+                    x: e.clientX || e.touches[0].clientX,
+                    y: e.clientY || e.touches[0].clientY,
+                    cameraX: this.camera.x,
+                    cameraY: this.camera.y
+                };
+                
+                this.canvasContainer.style.cursor = 'grabbing';
             }
 
-            handleCanvasDrag(e) {
+            drag(e) {
                 if (!this.isDragging) return;
                 
                 e.preventDefault();
@@ -378,88 +648,326 @@
                 const clientX = e.clientX || (e.touches && e.touches[0].clientX);
                 const clientY = e.clientY || (e.touches && e.touches[0].clientY);
                 
-                if (clientX === undefined || clientY === undefined) return;
+                if (!clientX || !clientY) return;
                 
-                this.canvasOffset.x = clientX - this.dragStart.x;
-                this.canvasOffset.y = clientY - this.dragStart.y;
+                const deltaX = clientX - this.dragStart.x;
+                const deltaY = clientY - this.dragStart.y;
                 
-                this.updateCanvasPosition();
+                this.camera.x = this.dragStart.cameraX + deltaX / this.camera.scale;
+                this.camera.y = this.dragStart.cameraY + deltaY / this.camera.scale;
+                
+                this.updateCamera();
             }
 
-            handleCanvasDragEnd() {
+            endDrag() {
                 this.isDragging = false;
-                this.canvas.style.cursor = 'grab';
-                this.saveData();
+                this.canvasContainer.style.cursor = 'grab';
+                this.scheduleSave();
             }
 
-            updateCanvasPosition() {
-                this.canvas.style.transform = `translate(${this.canvasOffset.x}px, ${this.canvasOffset.y}px)`;
+            handleWheel(e) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                this.zoom(delta, e.clientX, e.clientY);
             }
 
-            async createNewElement(type) {
-                const elementId = 'element_' + Date.now();
-                const element = document.createElement('div');
-                element.className = `element ${type}-element`;
-                element.id = elementId;
-                
-                const centerX = window.innerWidth / 2 - this.canvasOffset.x;
-                const centerY = window.innerHeight / 2 - this.canvasOffset.y;
-                
-                element.style.left = centerX + 'px';
-                element.style.top = centerY + 'px';
+            handlePinch(e) {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    
+                    const distance = Math.hypot(
+                        touch1.clientX - touch2.clientX,
+                        touch1.clientY - touch2.clientY
+                    );
+                    
+                    if (this.lastTouchDistance) {
+                        const delta = distance / this.lastTouchDistance;
+                        this.zoom(delta, (touch1.clientX + touch2.clientX) / 2, (touch1.clientY + touch2.clientY) / 2);
+                    }
+                    
+                    this.lastTouchDistance = distance;
+                }
+            }
 
+            zoom(factor, centerX, centerY) {
+                const newScale = Math.max(0.1, Math.min(5, this.camera.scale * factor));
+                
+                if (centerX && centerY) {
+                    const worldX = (centerX / this.camera.scale) - this.camera.x;
+                    const worldY = (centerY / this.camera.scale) - this.camera.y;
+                    
+                    this.camera.x = (centerX / newScale) - worldX;
+                    this.camera.y = (centerY / newScale) - worldY;
+                }
+                
+                this.camera.scale = newScale;
+                this.updateCamera();
+                this.scheduleSave();
+            }
+
+            resetZoom() {
+                this.camera = { x: 0, y: 0, scale: 1 };
+                this.updateCamera();
+                this.scheduleSave();
+            }
+
+            updateCamera() {
+                this.canvas.style.transform = `
+                    translate(${this.camera.x}px, ${this.camera.y}px)
+                    scale(${this.camera.scale})
+                `;
+            }
+
+            createNewElement(type) {
+                const centerX = (window.innerWidth / 2 - this.camera.x * this.camera.scale) / this.camera.scale;
+                const centerY = (window.innerHeight / 2 - this.camera.y * this.camera.scale) / this.camera.scale;
+                
                 switch (type) {
                     case 'text':
-                        element.contentEditable = true;
-                        element.textContent = 'Нажмите для редактирования';
-                        element.style.width = '200px';
-                        element.style.minHeight = '40px';
+                        this.showTextModal(centerX, centerY);
                         break;
-                        
                     case 'image':
-                        this.uploadImage(element);
+                        this.uploadImage(centerX, centerY);
                         break;
-                        
                     case 'shape':
-                        element.style.width = '150px';
-                        element.style.height = '150px';
-                        element.style.backgroundColor = this.getRandomColor();
+                        this.showShapeModal(centerX, centerY);
                         break;
                 }
+            }
 
-                this.setupElementInteractions(element, elementId, type);
-                this.canvas.appendChild(element);
+            showTextModal(x, y) {
+                this.pendingElement = { type: 'text', x, y };
+                document.getElementById('textInput').value = 'Новый текст';
+                this.showModal('textModal');
+            }
+
+            showShapeModal(x, y) {
+                this.pendingElement = { type: 'shape', x, y };
+                this.showModal('shapeModal');
+            }
+
+            createTextElement(data) {
+                const element = document.createElement('div');
+                element.className = 'element text-element';
+                element.style.left = data.x + 'px';
+                element.style.top = data.y + 'px';
+                element.style.color = data.color || '#ffffff';
+                element.textContent = data.text || 'Новый текст';
                 
+                this.setupElementInteractions(element, data);
+                this.canvas.appendChild(element);
+                return element;
+            }
+
+            createShapeElement(data) {
+                const element = document.createElement('div');
+                element.className = 'element shape-element';
+                element.style.left = data.x + 'px';
+                element.style.top = data.y + 'px';
+                element.style.backgroundColor = data.color || '#ff6b6b';
+                element.style.width = '120px';
+                element.style.height = '120px';
+                
+                if (data.shape === 'circle') {
+                    element.style.borderRadius = '50%';
+                } else if (data.shape === 'triangle') {
+                    element.style.backgroundColor = 'transparent';
+                    element.style.width = '0';
+                    element.style.height = '0';
+                    element.style.borderLeft = '60px solid transparent';
+                    element.style.borderRight = '60px solid transparent';
+                    element.style.borderBottom = `104px solid ${data.color}`;
+                }
+                
+                this.setupElementInteractions(element, data);
+                this.canvas.appendChild(element);
+                return element;
+            }
+
+            setupElementInteractions(element, data) {
+                const elementId = 'element_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                element.id = elementId;
+                
+                // Долгое нажатие для открытия меню
+                let pressTimer;
+                
+                const startPress = (e) => {
+                    e.stopPropagation();
+                    pressTimer = setTimeout(() => {
+                        this.showElementModal(elementId, data);
+                    }, 500);
+                };
+                
+                const endPress = () => {
+                    clearTimeout(pressTimer);
+                };
+                
+                element.addEventListener('mousedown', startPress);
+                element.addEventListener('touchstart', startPress);
+                element.addEventListener('mouseup', endPress);
+                element.addEventListener('touchend', endPress);
+                element.addEventListener('mouseleave', endPress);
+                
+                // Сохраняем элемент
                 const elementData = {
                     id: elementId,
-                    type: type,
-                    x: centerX,
-                    y: centerY,
-                    content: type === 'shape' ? element.style.backgroundColor : '',
-                    width: element.style.width || 'auto',
-                    height: element.style.height || 'auto'
+                    type: data.type,
+                    x: data.x,
+                    y: data.y,
+                    ...data
                 };
                 
                 this.elements.set(elementId, elementData);
-                await this.saveData();
-                
-                // Показать меню для нового элемента
-                setTimeout(() => {
-                    this.showElementMenu(element, elementId);
-                }, 100);
             }
 
-            uploadImage(element) {
+            showElementModal(elementId, data) {
+                this.selectedElement = elementId;
+                
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.classList.add('selected');
+                }
+                
+                document.getElementById('elementType').textContent = 
+                    data.type === 'text' ? 'Текст' : 
+                    data.type === 'image' ? 'Картинка' : 'Фигура';
+                
+                this.showModal('elementModal');
+            }
+
+            setupModalEvents() {
+                // Закрытие модальных окон
+                document.querySelectorAll('.close-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.hideAllModals();
+                    });
+                });
+                
+                // Клик вне модального окна
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            this.hideAllModals();
+                        }
+                    });
+                });
+                
+                // Сохранение текста
+                document.getElementById('saveText').addEventListener('click', () => {
+                    const text = document.getElementById('textInput').value.trim();
+                    const color = document.querySelector('#textModal .color-option.selected').dataset.color;
+                    
+                    if (text) {
+                        this.createTextElement({
+                            ...this.pendingElement,
+                            text,
+                            color
+                        });
+                        
+                        this.scheduleSave();
+                        this.hideAllModals();
+                        this.showNotification('Текст добавлен');
+                    }
+                });
+                
+                // Сохранение фигуры
+                document.getElementById('saveShape').addEventListener('click', () => {
+                    const shape = document.querySelector('#shapeModal .shape-option.selected').dataset.shape;
+                    const color = document.querySelector('#shapeModal .color-option.selected').dataset.color;
+                    
+                    this.createShapeElement({
+                        ...this.pendingElement,
+                        shape,
+                        color
+                    });
+                    
+                    this.scheduleSave();
+                    this.hideAllModals();
+                    this.showNotification('Фигура добавлена');
+                });
+                
+                // Управление элементами
+                document.getElementById('editElement').addEventListener('click', () => {
+                    const elementData = this.elements.get(this.selectedElement);
+                    if (elementData) {
+                        if (elementData.type === 'text') {
+                            this.pendingElement = { x: elementData.x, y: elementData.y };
+                            document.getElementById('textInput').value = elementData.text;
+                            this.showModal('textModal');
+                        } else if (elementData.type === 'shape') {
+                            this.pendingElement = { x: elementData.x, y: elementData.y };
+                            this.showModal('shapeModal');
+                        }
+                    }
+                });
+                
+                document.getElementById('deleteElement').addEventListener('click', () => {
+                    const element = document.getElementById(this.selectedElement);
+                    if (element) {
+                        element.remove();
+                        this.elements.delete(this.selectedElement);
+                        this.scheduleSave();
+                        this.showNotification('Элемент удален');
+                    }
+                    this.hideAllModals();
+                });
+                
+                document.getElementById('reportElement').addEventListener('click', () => {
+                    this.showNotification('Жалоба отправлена');
+                    this.hideAllModals();
+                });
+                
+                // Выбор цвета и формы
+                document.querySelectorAll('.color-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        option.parentElement.querySelectorAll('.color-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        option.classList.add('selected');
+                    });
+                });
+                
+                document.querySelectorAll('.shape-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        option.parentElement.querySelectorAll('.shape-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        option.classList.add('selected');
+                    });
+                });
+            }
+
+            showModal(modalId) {
+                this.hideAllModals();
+                document.getElementById(modalId).classList.add('active');
+            }
+
+            hideAllModals() {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                
+                if (this.selectedElement) {
+                    const element = document.getElementById(this.selectedElement);
+                    if (element) {
+                        element.classList.remove('selected');
+                    }
+                    this.selectedElement = null;
+                }
+            }
+
+            uploadImage(x, y) {
                 const fileInput = document.createElement('input');
                 fileInput.type = 'file';
                 fileInput.accept = 'image/*';
                 fileInput.style.display = 'none';
                 
-                fileInput.onchange = (e) => this.handleImageUpload(e, element);
+                fileInput.onchange = (e) => this.handleImageUpload(e, x, y);
                 document.body.appendChild(fileInput);
                 fileInput.click();
                 
-                // Удаляем input после использования
                 setTimeout(() => {
                     if (fileInput.parentNode) {
                         fileInput.parentNode.removeChild(fileInput);
@@ -467,224 +975,37 @@
                 }, 1000);
             }
 
-            async handleImageUpload(e, element) {
+            handleImageUpload(e, x, y) {
                 const file = e.target.files[0];
                 if (!file) return;
 
-                // В реальном приложении здесь будет загрузка на ImgBB
-                // Для демонстрации используем Data URL
                 const reader = new FileReader();
-                reader.onload = async (event) => {
+                reader.onload = (event) => {
                     const dataUrl = event.target.result;
+                    
+                    const element = document.createElement('div');
+                    element.className = 'element image-element';
+                    element.style.left = x + 'px';
+                    element.style.top = y + 'px';
+                    element.style.width = '200px';
+                    element.style.height = '150px';
                     
                     const img = document.createElement('img');
                     img.src = dataUrl;
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.objectFit = 'contain';
-                    
                     element.appendChild(img);
                     
-                    // Сохраняем data URL (в реальном приложении сохраняем публичную ссылку)
-                    const elementId = element.id;
-                    const elementData = this.elements.get(elementId);
-                    if (elementData) {
-                        elementData.content = dataUrl;
-                        elementData.width = '300px';
-                        elementData.height = '200px';
-                        element.style.width = '300px';
-                        element.style.height = '200px';
-                        await this.saveData();
-                    }
+                    this.setupElementInteractions(element, {
+                        type: 'image',
+                        x,
+                        y,
+                        content: dataUrl
+                    });
+                    
+                    this.canvas.appendChild(element);
+                    this.scheduleSave();
+                    this.showNotification('Изображение добавлено');
                 };
                 reader.readAsDataURL(file);
-            }
-
-            setupElementInteractions(element, elementId, type) {
-                let isDragging = false;
-                let dragOffset = { x: 0, y: 0 };
-
-                const startDrag = (e) => {
-                    e.stopPropagation();
-                    isDragging = true;
-                    
-                    const rect = element.getBoundingClientRect();
-                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                    
-                    if (clientX === undefined || clientY === undefined) return;
-                    
-                    dragOffset.x = clientX - rect.left;
-                    dragOffset.y = clientY - rect.top;
-                    
-                    this.showElementMenu(element, elementId);
-                };
-
-                const drag = (e) => {
-                    if (!isDragging) return;
-                    
-                    e.preventDefault();
-                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                    
-                    if (clientX === undefined || clientY === undefined) return;
-                    
-                    const x = clientX - dragOffset.x - this.canvasOffset.x;
-                    const y = clientY - dragOffset.y - this.canvasOffset.y;
-                    
-                    element.style.left = x + 'px';
-                    element.style.top = y + 'px';
-                };
-
-                const endDrag = async () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        
-                        const elementData = this.elements.get(elementId);
-                        if (elementData) {
-                            elementData.x = parseFloat(element.style.left);
-                            elementData.y = parseFloat(element.style.top);
-                            await this.saveData();
-                        }
-                    }
-                };
-
-                // События для мыши
-                element.addEventListener('mousedown', startDrag);
-                document.addEventListener('mousemove', drag);
-                document.addEventListener('mouseup', endDrag);
-
-                // События для тач-устройств
-                element.addEventListener('touchstart', startDrag);
-                document.addEventListener('touchmove', drag);
-                document.addEventListener('touchend', endDrag);
-
-                // Двойной клик для текстовых элементов
-                if (type === 'text') {
-                    element.addEventListener('dblclick', () => {
-                        element.contentEditable = true;
-                        element.focus();
-                    });
-
-                    element.addEventListener('blur', async () => {
-                        element.contentEditable = false;
-                        const elementData = this.elements.get(elementId);
-                        if (elementData) {
-                            elementData.content = element.textContent;
-                            await this.saveData();
-                        }
-                    });
-                }
-            }
-
-            showElementMenu(element, elementId) {
-                // Удаляем существующее меню
-                const existingMenu = element.querySelector('.element-menu');
-                if (existingMenu) {
-                    existingMenu.remove();
-                }
-
-                const menu = document.createElement('div');
-                menu.className = 'element-menu';
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'menu-btn';
-                deleteBtn.textContent = 'Удалить';
-                deleteBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    element.remove();
-                    this.elements.delete(elementId);
-                    await this.saveData();
-                };
-
-                menu.appendChild(deleteBtn);
-
-                if (element.classList.contains('shape-element')) {
-                    const colorBtn = document.createElement('button');
-                    colorBtn.className = 'menu-btn';
-                    colorBtn.textContent = 'Цвет';
-                    colorBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        this.showColorPicker(element, elementId);
-                    };
-                    menu.appendChild(colorBtn);
-                }
-                
-                if (element.classList.contains('text-element')) {
-                    const editBtn = document.createElement('button');
-                    editBtn.className = 'menu-btn';
-                    editBtn.textContent = 'Редакт.';
-                    editBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        element.contentEditable = true;
-                        element.focus();
-                        menu.remove();
-                    };
-                    menu.appendChild(editBtn);
-                }
-                
-                element.appendChild(menu);
-
-                // Автоматическое скрытие меню через 5 секунд
-                setTimeout(() => {
-                    if (menu.parentElement === element) {
-                        menu.remove();
-                    }
-                }, 5000);
-            }
-
-            showColorPicker(element, elementId) {
-                const existingPicker = element.querySelector('.color-picker');
-                if (existingPicker) {
-                    existingPicker.remove();
-                    return;
-                }
-
-                const colorPicker = document.createElement('div');
-                colorPicker.className = 'color-picker';
-                
-                const colors = [
-                    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
-                    '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
-                ];
-                
-                colors.forEach(color => {
-                    const colorOption = document.createElement('div');
-                    colorOption.className = 'color-option';
-                    colorOption.style.backgroundColor = color;
-                    
-                    if (element.style.backgroundColor === color) {
-                        colorOption.classList.add('selected');
-                    }
-                    
-                    colorOption.onclick = async (e) => {
-                        e.stopPropagation();
-                        element.style.backgroundColor = color;
-                        
-                        const elementData = this.elements.get(elementId);
-                        if (elementData) {
-                            elementData.content = color;
-                            await this.saveData();
-                        }
-                        
-                        colorPicker.remove();
-                    };
-                    
-                    colorPicker.appendChild(colorOption);
-                });
-                
-                const menu = element.querySelector('.element-menu');
-                if (menu) {
-                    menu.appendChild(colorPicker);
-                }
-            }
-
-            getRandomColor() {
-                const colors = [
-                    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
-                    '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
-                ];
-                return colors[Math.floor(Math.random() * colors.length)];
             }
 
             async loadData() {
@@ -692,100 +1013,66 @@
                     const response = await fetch(`${this.firebaseUrl}.json`);
                     const data = await response.json();
                     
-                    if (data && data.elements) {
-                        this.elements.clear();
-                        this.canvas.innerHTML = '';
-                        this.createStarfield();
+                    if (data) {
+                        if (data.camera) {
+                            this.camera = data.camera;
+                            this.updateCamera();
+                        }
                         
-                        Object.values(data.elements).forEach(elementData => {
-                            this.restoreElement(elementData);
-                        });
-                        
-                        if (data.canvasOffset) {
-                            this.canvasOffset = data.canvasOffset;
-                            this.updateCanvasPosition();
+                        if (data.elements) {
+                            Object.values(data.elements).forEach(elementData => {
+                                this.restoreElement(elementData);
+                            });
                         }
                     }
                 } catch (error) {
-                    console.error('Ошибка загрузки данных:', error);
-                    // Создаем демо-данные при ошибке загрузки
-                    this.createDemoData();
+                    console.error('Ошибка загрузки:', error);
                 }
             }
 
             restoreElement(elementData) {
-                const element = document.createElement('div');
-                element.className = `element ${elementData.type}-element`;
-                element.id = elementData.id;
-                element.style.left = elementData.x + 'px';
-                element.style.top = elementData.y + 'px';
+                let element;
                 
-                if (elementData.width && elementData.width !== 'auto') {
-                    element.style.width = elementData.width;
-                }
-                
-                if (elementData.height && elementData.height !== 'auto') {
-                    element.style.height = elementData.height;
-                }
-
                 switch (elementData.type) {
                     case 'text':
-                        element.contentEditable = false;
-                        element.textContent = elementData.content || 'Текст';
+                        element = this.createTextElement(elementData);
                         break;
-                        
-                    case 'image':
-                        if (elementData.content) {
-                            const img = document.createElement('img');
-                            img.src = elementData.content;
-                            img.style.width = '100%';
-                            img.style.height = '100%';
-                            img.style.objectFit = 'contain';
-                            element.appendChild(img);
-                        }
-                        break;
-                        
                     case 'shape':
-                        element.style.backgroundColor = elementData.content || this.getRandomColor();
+                        element = this.createShapeElement(elementData);
+                        break;
+                    case 'image':
+                        element = document.createElement('div');
+                        element.className = 'element image-element';
+                        element.style.left = elementData.x + 'px';
+                        element.style.top = elementData.y + 'px';
+                        element.style.width = '200px';
+                        element.style.height = '150px';
+                        
+                        const img = document.createElement('img');
+                        img.src = elementData.content;
+                        element.appendChild(img);
+                        
+                        this.setupElementInteractions(element, elementData);
+                        this.canvas.appendChild(element);
                         break;
                 }
-
-                this.setupElementInteractions(element, elementData.id, elementData.type);
-                this.canvas.appendChild(element);
-                this.elements.set(elementData.id, elementData);
             }
 
-            createDemoData() {
-                // Создаем несколько демо-элементов
-                const demoElements = [
-                    { type: 'text', x: 100, y: 100, content: 'Добро пожаловать в Karaganda!' },
-                    { type: 'text', x: 100, y: 150, content: 'Перетаскивайте поле для навигации' },
-                    { type: 'shape', x: 400, y: 200, content: '#ff6b6b' },
-                    { type: 'shape', x: 500, y: 300, content: '#4ecdc4' },
-                ];
+            scheduleSave() {
+                if (this.saveTimeout) {
+                    clearTimeout(this.saveTimeout);
+                }
                 
-                demoElements.forEach((demo, index) => {
-                    const elementId = 'demo_' + index;
-                    const elementData = {
-                        id: elementId,
-                        type: demo.type,
-                        x: demo.x,
-                        y: demo.y,
-                        content: demo.content,
-                        width: demo.type === 'shape' ? '150px' : 'auto',
-                        height: demo.type === 'shape' ? '150px' : 'auto'
-                    };
-                    
-                    this.restoreElement(elementData);
-                    this.elements.set(elementId, elementData);
-                });
+                this.saveTimeout = setTimeout(() => {
+                    this.saveData();
+                }, 2000); // Сохраняем через 2 секунды после последнего изменения
             }
 
             async saveData() {
                 try {
                     const data = {
+                        camera: this.camera,
                         elements: Object.fromEntries(this.elements),
-                        canvasOffset: this.canvasOffset,
                         lastUpdated: Date.now()
                     };
 
@@ -797,19 +1084,15 @@
                         body: JSON.stringify(data),
                     });
                     
-                    this.showNotification('Изменения сохранены!');
+                    this.showNotification('Сохранено');
                 } catch (error) {
-                    console.error('Ошибка сохранения данных:', error);
-                    this.showNotification('Ошибка сохранения', true);
+                    console.error('Ошибка сохранения:', error);
+                    this.showNotification('Ошибка сохранения');
                 }
             }
 
-            showNotification(message, isError = false) {
+            showNotification(message) {
                 this.notification.textContent = message;
-                this.notification.style.background = isError 
-                    ? 'rgba(220, 53, 69, 0.9)' 
-                    : 'rgba(30, 30, 30, 0.9)';
-                
                 this.notification.classList.add('show');
                 
                 setTimeout(() => {
@@ -818,7 +1101,9 @@
             }
 
             hideLoading() {
-                this.loading.style.display = 'none';
+                setTimeout(() => {
+                    this.loading.style.display = 'none';
+                }, 1000);
             }
         }
 
@@ -826,11 +1111,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             new KaragandaApp();
         });
-
-        // Обработка ошибок
-        window.addEventListener('error', (e) => {
-            console.error('Global error:', e.error);
-        });
     </script>
 </body>
-  </html>
+</html>
