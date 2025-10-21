@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karaganda - Бесконечное поле творчества</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+            touch-action: none;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #app {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            cursor: grab;
+            transform: translate(0px, 0px);
+            transition: transform 0.1s ease;
+        }
+
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        #toolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #333;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .tool-btn {
+            background: #444;
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tool-btn:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+
+        .tool-btn.active {
+            background: #007bff;
+        }
+
+        .tool-icon {
+            font-size: 20px;
+        }
+
+        .tool-text {
+            font-size: 12px;
+        }
+
+        .element {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            min-width: 100px;
+            min-height: 40px;
+            z-index: 10;
+        }
+
+        .text-element {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+            resize: both;
+            overflow: auto;
+            max-width: 300px;
+            max-height: 200px;
+        }
+
+        .image-element {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .image-element img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .shape-element {
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .element-menu {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 8px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            backdrop-filter: blur(10px);
+            border: 1px solid #444;
+            z-index: 100;
+        }
+
+        .menu-btn {
+            background: #444;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .menu-btn:hover {
+            background: #555;
+        }
+
+        .dot {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 16px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+            border: 1px solid #444;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .color-option {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-option.selected {
+            border-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">Загрузка поля творчества...</div>
+        </div>
+        <div id="canvas"></div>
+        <div id="toolbar">
+            <button class="tool-btn" data-type="text">
+                <span class="tool-icon">📝</span>
+                <span class="tool-text">Текст</span>
+            </button>
+            <button class="tool-btn" data-type="image">
+                <span class="tool-icon">🖼️</span>
+                <span class="tool-text">Картинка</span>
+            </button>
+            <button class="tool-btn" data-type="shape">
+                <span class="tool-icon">🔷</span>
+                <span class="tool-text">Фигура</span>
+            </button>
+            <button class="tool-btn" id="saveBtn">
+                <span class="tool-icon">💾</span>
+                <span class="tool-text">Сохранить</span>
+            </button>
+        </div>
+        <div class="notification" id="notification">Изменения сохранены!</div>
+    </div>
+
+    <script>
+        class KaragandaApp {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.toolbar = document.getElementById('toolbar');
+                this.loading = document.getElementById('loading');
+                this.notification = document.getElementById('notification');
+                this.elements = new Map();
+                this.selectedElement = null;
+                this.isDragging = false;
+                this.dragStart = { x: 0, y: 0 };
+                this.canvasOffset = { x: 0, y: 0 };
+                this.currentDragOffset = { x: 0, y: 0 };
+                
+                // Firebase URL - замените на свой, если нужно
+                this.firebaseUrl = 'https://karaganda-bc2a2-default-rtdb.firebaseio.com/karaganda';
+                
+                this.init();
+            }
+
+            async init() {
+                this.initTelegram();
+                this.createStarfield();
+                this.setupEventListeners();
+                await this.loadData();
+                this.hideLoading();
+            }
+
+            initTelegram() {
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.ready();
+                    Telegram.WebApp.expand();
+                    Telegram.WebApp.setHeaderColor('#000000');
+                    Telegram.WebApp.setBackgroundColor('#000000');
+                }
+            }
+
+            createStarfield() {
+                const starsCount = 200;
+                for (let i = 0; i < starsCount; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'dot';
+                    star.style.left = Math.random() * 100 + 'vw';
+                    star.style.top = Math.random() * 100 + 'vh';
+                    star.style.opacity = Math.random() * 0.5 + 0.1;
+                    this.canvas.appendChild(star);
+                }
+            }
+
+            setupEventListeners() {
+                // Перемещение канваса
+                this.canvas.addEventListener('mousedown', this.handleCanvasDragStart.bind(this));
+                this.canvas.addEventListener('touchstart', this.handleCanvasDragStart.bind(this));
+                
+                document.addEventListener('mousemove', this.handleCanvasDrag.bind(this));
+                document.addEventListener('touchmove', this.handleCanvasDrag.bind(this));
+                
+                document.addEventListener('mouseup', this.handleCanvasDragEnd.bind(this));
+                document.addEventListener('touchend', this.handleCanvasDragEnd.bind(this));
+
+                // Кнопки инструментов
+                this.toolbar.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('tool-btn') || e.target.closest('.tool-btn')) {
+                        const btn = e.target.classList.contains('tool-btn') ? e.target : e.target.closest('.tool-btn');
+                        const type = btn.dataset.type;
+                        if (type) {
+                            this.createNewElement(type);
+                        } else if (btn.id === 'saveBtn') {
+                            this.saveData();
+                        }
+                    }
+                });
+
+                // Открытие контекстного меню при долгом нажатии
+                this.canvas.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    const element = e.target.closest('.element');
+                    if (element) {
+                        this.showElementMenu(element, element.id);
+                    }
+                });
+            }
+
+            handleCanvasDragStart(e) {
+                if (e.target === this.canvas || e.target.classList.contains('dot')) {
+                    this.isDragging = true;
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    
+                    if (clientX === undefined || clientY === undefined) return;
+                    
+                    this.dragStart.x = clientX - this.canvasOffset.x;
+                    this.dragStart.y = clientY - this.canvasOffset.y;
+                    
+                    this.canvas.style.cursor = 'grabbing';
+                }
+            }
+
+            handleCanvasDrag(e) {
+                if (!this.isDragging) return;
+                
+                e.preventDefault();
+                
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                if (clientX === undefined || clientY === undefined) return;
+                
+                this.canvasOffset.x = clientX - this.dragStart.x;
+                this.canvasOffset.y = clientY - this.dragStart.y;
+                
+                this.updateCanvasPosition();
+            }
+
+            handleCanvasDragEnd() {
+                this.isDragging = false;
+                this.canvas.style.cursor = 'grab';
+                this.saveData();
+            }
+
+            updateCanvasPosition() {
+                this.canvas.style.transform = `translate(${this.canvasOffset.x}px, ${this.canvasOffset.y}px)`;
+            }
+
+            async createNewElement(type) {
+                const elementId = 'element_' + Date.now();
+                const element = document.createElement('div');
+                element.className = `element ${type}-element`;
+                element.id = elementId;
+                
+                const centerX = window.innerWidth / 2 - this.canvasOffset.x;
+                const centerY = window.innerHeight / 2 - this.canvasOffset.y;
+                
+                element.style.left = centerX + 'px';
+                element.style.top = centerY + 'px';
+
+                switch (type) {
+                    case 'text':
+                        element.contentEditable = true;
+                        element.textContent = 'Нажмите для редактирования';
+                        element.style.width = '200px';
+                        element.style.minHeight = '40px';
+                        break;
+                        
+                    case 'image':
+                        this.uploadImage(element);
+                        break;
+                        
+                    case 'shape':
+                        element.style.width = '150px';
+                        element.style.height = '150px';
+                        element.style.backgroundColor = this.getRandomColor();
+                        break;
+                }
+
+                this.setupElementInteractions(element, elementId, type);
+                this.canvas.appendChild(element);
+                
+                const elementData = {
+                    id: elementId,
+                    type: type,
+                    x: centerX,
+                    y: centerY,
+                    content: type === 'shape' ? element.style.backgroundColor : '',
+                    width: element.style.width || 'auto',
+                    height: element.style.height || 'auto'
+                };
+                
+                this.elements.set(elementId, elementData);
+                await this.saveData();
+                
+                // Показать меню для нового элемента
+                setTimeout(() => {
+                    this.showElementMenu(element, elementId);
+                }, 100);
+            }
+
+            uploadImage(element) {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.style.display = 'none';
+                
+                fileInput.onchange = (e) => this.handleImageUpload(e, element);
+                document.body.appendChild(fileInput);
+                fileInput.click();
+                
+                // Удаляем input после использования
+                setTimeout(() => {
+                    if (fileInput.parentNode) {
+                        fileInput.parentNode.removeChild(fileInput);
+                    }
+                }, 1000);
+            }
+
+            async handleImageUpload(e, element) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // В реальном приложении здесь будет загрузка на ImgBB
+                // Для демонстрации используем Data URL
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const dataUrl = event.target.result;
+                    
+                    const img = document.createElement('img');
+                    img.src = dataUrl;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'contain';
+                    
+                    element.appendChild(img);
+                    
+                    // Сохраняем data URL (в реальном приложении сохраняем публичную ссылку)
+                    const elementId = element.id;
+                    const elementData = this.elements.get(elementId);
+                    if (elementData) {
+                        elementData.content = dataUrl;
+                        elementData.width = '300px';
+                        elementData.height = '200px';
+                        element.style.width = '300px';
+                        element.style.height = '200px';
+                        await this.saveData();
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+
+            setupElementInteractions(element, elementId, type) {
+                let isDragging = false;
+                let dragOffset = { x: 0, y: 0 };
+
+                const startDrag = (e) => {
+                    e.stopPropagation();
+                    isDragging = true;
+                    
+                    const rect = element.getBoundingClientRect();
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    
+                    if (clientX === undefined || clientY === undefined) return;
+                    
+                    dragOffset.x = clientX - rect.left;
+                    dragOffset.y = clientY - rect.top;
+                    
+                    this.showElementMenu(element, elementId);
+                };
+
+                const drag = (e) => {
+                    if (!isDragging) return;
+                    
+                    e.preventDefault();
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    
+                    if (clientX === undefined || clientY === undefined) return;
+                    
+                    const x = clientX - dragOffset.x - this.canvasOffset.x;
+                    const y = clientY - dragOffset.y - this.canvasOffset.y;
+                    
+                    element.style.left = x + 'px';
+                    element.style.top = y + 'px';
+                };
+
+                const endDrag = async () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        
+                        const elementData = this.elements.get(elementId);
+                        if (elementData) {
+                            elementData.x = parseFloat(element.style.left);
+                            elementData.y = parseFloat(element.style.top);
+                            await this.saveData();
+                        }
+                    }
+                };
+
+                // События для мыши
+                element.addEventListener('mousedown', startDrag);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', endDrag);
+
+                // События для тач-устройств
+                element.addEventListener('touchstart', startDrag);
+                document.addEventListener('touchmove', drag);
+                document.addEventListener('touchend', endDrag);
+
+                // Двойной клик для текстовых элементов
+                if (type === 'text') {
+                    element.addEventListener('dblclick', () => {
+                        element.contentEditable = true;
+                        element.focus();
+                    });
+
+                    element.addEventListener('blur', async () => {
+                        element.contentEditable = false;
+                        const elementData = this.elements.get(elementId);
+                        if (elementData) {
+                            elementData.content = element.textContent;
+                            await this.saveData();
+                        }
+                    });
+                }
+            }
+
+            showElementMenu(element, elementId) {
+                // Удаляем существующее меню
+                const existingMenu = element.querySelector('.element-menu');
+                if (existingMenu) {
+                    existingMenu.remove();
+                }
+
+                const menu = document.createElement('div');
+                menu.className = 'element-menu';
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'menu-btn';
+                deleteBtn.textContent = 'Удалить';
+                deleteBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    element.remove();
+                    this.elements.delete(elementId);
+                    await this.saveData();
+                };
+
+                menu.appendChild(deleteBtn);
+
+                if (element.classList.contains('shape-element')) {
+                    const colorBtn = document.createElement('button');
+                    colorBtn.className = 'menu-btn';
+                    colorBtn.textContent = 'Цвет';
+                    colorBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.showColorPicker(element, elementId);
+                    };
+                    menu.appendChild(colorBtn);
+                }
+                
+                if (element.classList.contains('text-element')) {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'menu-btn';
+                    editBtn.textContent = 'Редакт.';
+                    editBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        element.contentEditable = true;
+                        element.focus();
+                        menu.remove();
+                    };
+                    menu.appendChild(editBtn);
+                }
+                
+                element.appendChild(menu);
+
+                // Автоматическое скрытие меню через 5 секунд
+                setTimeout(() => {
+                    if (menu.parentElement === element) {
+                        menu.remove();
+                    }
+                }, 5000);
+            }
+
+            showColorPicker(element, elementId) {
+                const existingPicker = element.querySelector('.color-picker');
+                if (existingPicker) {
+                    existingPicker.remove();
+                    return;
+                }
+
+                const colorPicker = document.createElement('div');
+                colorPicker.className = 'color-picker';
+                
+                const colors = [
+                    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
+                    '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
+                ];
+                
+                colors.forEach(color => {
+                    const colorOption = document.createElement('div');
+                    colorOption.className = 'color-option';
+                    colorOption.style.backgroundColor = color;
+                    
+                    if (element.style.backgroundColor === color) {
+                        colorOption.classList.add('selected');
+                    }
+                    
+                    colorOption.onclick = async (e) => {
+                        e.stopPropagation();
+                        element.style.backgroundColor = color;
+                        
+                        const elementData = this.elements.get(elementId);
+                        if (elementData) {
+                            elementData.content = color;
+                            await this.saveData();
+                        }
+                        
+                        colorPicker.remove();
+                    };
+                    
+                    colorPicker.appendChild(colorOption);
+                });
+                
+                const menu = element.querySelector('.element-menu');
+                if (menu) {
+                    menu.appendChild(colorPicker);
+                }
+            }
+
+            getRandomColor() {
+                const colors = [
+                    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
+                    '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            async loadData() {
+                try {
+                    const response = await fetch(`${this.firebaseUrl}.json`);
+                    const data = await response.json();
+                    
+                    if (data && data.elements) {
+                        this.elements.clear();
+                        this.canvas.innerHTML = '';
+                        this.createStarfield();
+                        
+                        Object.values(data.elements).forEach(elementData => {
+                            this.restoreElement(elementData);
+                        });
+                        
+                        if (data.canvasOffset) {
+                            this.canvasOffset = data.canvasOffset;
+                            this.updateCanvasPosition();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки данных:', error);
+                    // Создаем демо-данные при ошибке загрузки
+                    this.createDemoData();
+                }
+            }
+
+            restoreElement(elementData) {
+                const element = document.createElement('div');
+                element.className = `element ${elementData.type}-element`;
+                element.id = elementData.id;
+                element.style.left = elementData.x + 'px';
+                element.style.top = elementData.y + 'px';
+                
+                if (elementData.width && elementData.width !== 'auto') {
+                    element.style.width = elementData.width;
+                }
+                
+                if (elementData.height && elementData.height !== 'auto') {
+                    element.style.height = elementData.height;
+                }
+
+                switch (elementData.type) {
+                    case 'text':
+                        element.contentEditable = false;
+                        element.textContent = elementData.content || 'Текст';
+                        break;
+                        
+                    case 'image':
+                        if (elementData.content) {
+                            const img = document.createElement('img');
+                            img.src = elementData.content;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'contain';
+                            element.appendChild(img);
+                        }
+                        break;
+                        
+                    case 'shape':
+                        element.style.backgroundColor = elementData.content || this.getRandomColor();
+                        break;
+                }
+
+                this.setupElementInteractions(element, elementData.id, elementData.type);
+                this.canvas.appendChild(element);
+                this.elements.set(elementData.id, elementData);
+            }
+
+            createDemoData() {
+                // Создаем несколько демо-элементов
+                const demoElements = [
+                    { type: 'text', x: 100, y: 100, content: 'Добро пожаловать в Karaganda!' },
+                    { type: 'text', x: 100, y: 150, content: 'Перетаскивайте поле для навигации' },
+                    { type: 'shape', x: 400, y: 200, content: '#ff6b6b' },
+                    { type: 'shape', x: 500, y: 300, content: '#4ecdc4' },
+                ];
+                
+                demoElements.forEach((demo, index) => {
+                    const elementId = 'demo_' + index;
+                    const elementData = {
+                        id: elementId,
+                        type: demo.type,
+                        x: demo.x,
+                        y: demo.y,
+                        content: demo.content,
+                        width: demo.type === 'shape' ? '150px' : 'auto',
+                        height: demo.type === 'shape' ? '150px' : 'auto'
+                    };
+                    
+                    this.restoreElement(elementData);
+                    this.elements.set(elementId, elementData);
+                });
+            }
+
+            async saveData() {
+                try {
+                    const data = {
+                        elements: Object.fromEntries(this.elements),
+                        canvasOffset: this.canvasOffset,
+                        lastUpdated: Date.now()
+                    };
+
+                    await fetch(`${this.firebaseUrl}.json`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+                    
+                    this.showNotification('Изменения сохранены!');
+                } catch (error) {
+                    console.error('Ошибка сохранения данных:', error);
+                    this.showNotification('Ошибка сохранения', true);
+                }
+            }
+
+            showNotification(message, isError = false) {
+                this.notification.textContent = message;
+                this.notification.style.background = isError 
+                    ? 'rgba(220, 53, 69, 0.9)' 
+                    : 'rgba(30, 30, 30, 0.9)';
+                
+                this.notification.classList.add('show');
+                
+                setTimeout(() => {
+                    this.notification.classList.remove('show');
+                }, 3000);
+            }
+
+            hideLoading() {
+                this.loading.style.display = 'none';
+            }
+        }
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            new KaragandaApp();
+        });
+
+        // Обработка ошибок
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+        });
+    </script>
+</body>
+  </html>
