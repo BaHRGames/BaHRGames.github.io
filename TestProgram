@@ -1,0 +1,188 @@
+/* BahaApp: {"id": "space-defender", "name": "Космический защитник", "icon": "🚀", "category": "games"} */
+function() {
+    return `
+        <div style="height: 100%; display: flex; flex-direction: column; background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%); color: white; overflow: hidden;">
+            <div style="padding: 20px; text-align: center; background: rgba(0,0,0,0.3);">
+                <h2 style="margin: 0; font-size: 24px;">🚀 Космический защитник</h2>
+                <div style="display: flex; justify-content: center; gap: 30px; margin-top: 10px;">
+                    <div>Очки: <span id="score">0</span></div>
+                    <div>Жизни: <span id="lives">3</span></div>
+                    <div>Уровень: <span id="level">1</span></div>
+                </div>
+            </div>
+            
+            <div style="flex-grow: 1; position: relative; overflow: hidden;" id="game-area">
+                <div id="player" style="position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 40px; height: 40px; background: #4CAF50; border-radius: 50%;"></div>
+            </div>
+            
+            <div style="padding: 15px; text-align: center; background: rgba(0,0,0,0.5);">
+                <div style="margin-bottom: 10px;">
+                    <button class="toolbar-btn" onclick="startGame()" style="margin: 0 5px;">🎮 Начать игру</button>
+                    <button class="toolbar-btn" onclick="pauseGame()" style="margin: 0 5px;">⏸️ Пауза</button>
+                </div>
+                <div style="font-size: 12px; opacity: 0.7;">
+                    Управление: ← → для движения, Пробел для стрельбы
+                </div>
+            </div>
+        </div>
+        <script>
+            let gameInterval;
+            let playerX = 50;
+            let score = 0;
+            let lives = 3;
+            let level = 1;
+            let isGameRunning = false;
+            let bullets = [];
+            let enemies = [];
+            
+            function startGame() {
+                if (isGameRunning) return;
+                isGameRunning = true;
+                score = 0;
+                lives = 3;
+                level = 1;
+                bullets = [];
+                enemies = [];
+                
+                updateDisplay();
+                
+                gameInterval = setInterval(gameLoop, 50);
+                spawnEnemies();
+                
+                // Управление клавиатурой
+                document.addEventListener('keydown', handleKeyPress);
+            }
+            
+            function pauseGame() {
+                if (isGameRunning) {
+                    clearInterval(gameInterval);
+                    isGameRunning = false;
+                } else if (!isGameRunning && score === 0) {
+                    startGame();
+                }
+            }
+            
+            function gameLoop() {
+                moveBullets();
+                moveEnemies();
+                checkCollisions();
+                updateDisplay();
+            }
+            
+            function moveBullets() {
+                bullets = bullets.filter(bullet => {
+                    bullet.y -= 10;
+                    return bullet.y > 0;
+                });
+            }
+            
+            function moveEnemies() {
+                enemies = enemies.filter(enemy => {
+                    enemy.y += 3 + level;
+                    return enemy.y < 600;
+                });
+            }
+            
+            function checkCollisions() {
+                // Проверка столкновений пуль с врагами
+                bullets.forEach((bullet, bIndex) => {
+                    enemies.forEach((enemy, eIndex) => {
+                        const distance = Math.sqrt(Math.pow(bullet.x - enemy.x, 2) + Math.pow(bullet.y - enemy.y, 2));
+                        if (distance < 25) {
+                            bullets.splice(bIndex, 1);
+                            enemies.splice(eIndex, 1);
+                            score += 10;
+                            if (score % 100 === 0) level++;
+                        }
+                    });
+                });
+                
+                // Проверка столкновений игрока с врагами
+                enemies.forEach((enemy, index) => {
+                    const distance = Math.sqrt(Math.pow(playerX - enemy.x, 2) + Math.pow(300 - enemy.y, 2));
+                    if (distance < 35) {
+                        enemies.splice(index, 1);
+                        lives--;
+                        if (lives <= 0) {
+                            gameOver();
+                        }
+                    }
+                });
+            }
+            
+            function spawnEnemies() {
+                if (!isGameRunning) return;
+                
+                setInterval(() => {
+                    if (isGameRunning) {
+                        enemies.push({
+                            x: Math.random() * 350 + 25,
+                            y: -30,
+                            type: Math.random() > 0.8 ? 'boss' : 'normal'
+                        });
+                    }
+                }, 1000 - level * 50);
+            }
+            
+            function handleKeyPress(e) {
+                if (!isGameRunning) return;
+                
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        playerX = Math.max(20, playerX - 15);
+                        break;
+                    case 'ArrowRight':
+                        playerX = Math.min(380, playerX + 15);
+                        break;
+                    case ' ':
+                        shoot();
+                        break;
+                }
+                updateGameDisplay();
+            }
+            
+            function shoot() {
+                bullets.push({
+                    x: playerX,
+                    y: 300
+                });
+            }
+            
+            function updateDisplay() {
+                document.getElementById('score').textContent = score;
+                document.getElementById('lives').textContent = lives;
+                document.getElementById('level').textContent = level;
+                updateGameDisplay();
+            }
+            
+            function updateGameDisplay() {
+                const gameArea = document.getElementById('game-area');
+                gameArea.innerHTML = '<div id="player" style="position: absolute; bottom: 50px; left: ' + playerX + 'px; width: 40px; height: 40px; background: #4CAF50; border-radius: 50%;"></div>';
+                
+                // Отрисовка пуль
+                bullets.forEach(bullet => {
+                    const bulletEl = document.createElement('div');
+                    bulletEl.style.cssText = 'position: absolute; left: ' + (bullet.x - 2) + 'px; top: ' + bullet.y + 'px; width: 4px; height: 15px; background: #FFD700; border-radius: 2px;';
+                    gameArea.appendChild(bulletEl);
+                });
+                
+                // Отрисовка врагов
+                enemies.forEach(enemy => {
+                    const enemyEl = document.createElement('div');
+                    enemyEl.style.cssText = 'position: absolute; left: ' + (enemy.x - 15) + 'px; top: ' + enemy.y + 'px; width: 30px; height: 30px; background: ' + (enemy.type === 'boss' ? '#FF4444' : '#FF6B6B') + '; border-radius: 50%;';
+                    gameArea.appendChild(enemyEl);
+                });
+            }
+            
+            function gameOver() {
+                clearInterval(gameInterval);
+                isGameRunning = false;
+                alert('Игра окончена! Ваш счет: ' + score);
+                document.removeEventListener('keydown', handleKeyPress);
+            }
+            
+            // Инициализация игры
+            setTimeout(updateGameDisplay, 100);
+        </script>
+    `;
+}
