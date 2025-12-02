@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NFT Details | BAHASASA</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        :root {
+            --tg-theme-bg-color: #0f0f0f;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #aaaaaa;
+            --tg-theme-link-color: #8774e1;
+            --tg-theme-button-color: #8774e1;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #1a1a1a;
+            --primary: #8774e1;
+            --primary-hover: #6a55d4;
+            --success: #34c759;
+            --danger: #ff3b30;
+            --warning: #ff9500;
+            --border: #2c2c2c;
+        }
+
+        body {
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            padding: 16px;
+            padding-top: calc(16px + env(safe-area-inset-top));
+            background: var(--tg-theme-secondary-bg-color);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--tg-theme-text-color);
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        /* NFT Display */
+        .nft-display {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .nft-visual {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 24px;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nft-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .nft-id-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .nft-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .nft-price {
+            font-size: 20px;
+            color: var(--success);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .nft-type {
+            display: inline-block;
+            background: rgba(135, 116, 225, 0.2);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* NFT Info */
+        .nft-info {
+            padding: 0 24px 24px;
+        }
+
+        .info-section {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--tg-theme-hint-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            font-size: 14px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .info-item {
+            padding: 8px 0;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .description {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--tg-theme-text-color);
+        }
+
+        /* Owner Info */
+        .owner-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--tg-theme-bg-color);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .owner-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #ff6b9d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .owner-details {
+            flex: 1;
+        }
+
+        .owner-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .owner-id {
+            font-size: 11px;
+            color: var(--tg-theme-hint-color);
+            font-family: monospace;
+        }
+
+        /* History */
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--tg-theme-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .history-details {
+            flex: 1;
+        }
+
+        .history-action {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .history-meta {
+            font-size: 11px;
+            color: var(--tg-theme-hint-color);
+            margin-top: 2px;
+        }
+
+        .history-price {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        /* Actions */
+        .actions {
+            padding: 16px 24px 24px;
+            position: sticky;
+            bottom: 0;
+            background: var(--tg-theme-bg-color);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            border: 1px solid var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--tg-theme-hint-color);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--tg-theme-bg-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--tg-theme-text-color);
+            font-size: 16px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        /* Error */
+        .error {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--danger);
+        }
+
+        /* Copy Button */
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--tg-theme-hint-color);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .copy-btn:hover {
+            background: var(--border);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .status-for-sale {
+            background: rgba(52, 199, 89, 0.2);
+            color: var(--success);
+        }
+
+        .status-owned {
+            background: rgba(135, 116, 225, 0.2);
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 360px) {
+            .nft-visual {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                max-width: 768px;
+                margin: 0 auto;
+            }
+            
+            .nft-visual {
+                width: 240px;
+                height: 240px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <div class="header-title">NFT Details</div>
+    </div>
+
+    <!-- NFT Display -->
+    <div class="nft-display" id="nftDisplay">
+        <div class="loading">Загрузка NFT...</div>
+    </div>
+
+    <!-- NFT Info -->
+    <div class="nft-info">
+        <div class="info-section">
+            <div class="section-title">
+                <span>📋 Информация</span>
+            </div>
+            <div class="info-grid" id="nftInfoGrid">
+                <!-- Info will be loaded here -->
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="section-title">
+                <span>👤 Владелец</span>
+            </div>
+            <div id="ownerInfo">
+                <!-- Owner info will be loaded here -->
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="section-title">
+                <span>📝 Описание</span>
+            </div>
+            <div class="description" id="nftDescription">
+                <!-- Description will be loaded here -->
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="section-title">
+                <span>📜 История</span>
+            </div>
+            <div class="history-list" id="nftHistory">
+                <!-- History will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions" id="nftActions" style="display: none;">
+        <button class="btn btn-secondary" onclick="showTransferModal()">Перевести</button>
+        <button class="btn btn-primary" onclick="showSellModal()">Продать</button>
+    </div>
+
+    <!-- Sell Modal -->
+    <div class="modal" id="sellModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Продать NFT</div>
+                <button class="close-modal" onclick="hideModal('sellModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Цена продажи (BHS)</label>
+                    <input type="number" class="form-input" id="sellPrice" min="0.001" step="0.001" placeholder="Введите цену" required>
+                </div>
+                <button class="btn btn-primary" onclick="sellNFT()" style="width: 100%;">
+                    Выставить на продажу
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div class="modal" id="transferModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Перевести NFT</div>
+                <button class="close-modal" onclick="hideModal('transferModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Username получателя</label>
+                    <input type="text" class="form-input" id="recipientUsername" placeholder="@username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Комиссия: 1 BHS</label>
+                </div>
+                <button class="btn btn-primary" onclick="transferNFT()" style="width: 100%;">
+                    Подтвердить перевод
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Firebase
+        const firebaseConfig = {
+            databaseURL: "https://flum-2-default-rtdb.firebaseio.com/"
+        };
+        
+        let app;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+        } catch (e) {
+            app = firebase.app();
+        }
+        
+        const database = firebase.database();
+        
+        // Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
+        // Получение параметров URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const nftId = urlParams.get('id');
+        
+        let currentUser = null;
+        let currentNFT = null;
+
+        // Инициализация приложения
+        function initApp() {
+            // Инициализируем Telegram WebApp
+            tg.expand();
+            tg.enableClosingConfirmation();
+            
+            // Получаем данные пользователя из Telegram
+            const user = tg.initDataUnsafe?.user;
+            
+            if (user) {
+                currentUser = {
+                    id: user.id,
+                    username: user.username || `User${user.id}`,
+                    firstName: user.first_name,
+                    lastName: user.last_name
+                };
+            } else {
+                // Для тестирования вне Telegram
+                currentUser = {
+                    id: 123456789,
+                    username: 'test_user'
+                };
+            }
+            
+            if (nftId) {
+                loadNFTDetails();
+            } else {
+                showError('NFT не найден');
+            }
+        }
+
+        // Загрузка деталей NFT
+        function loadNFTDetails() {
+            const nftRef = database.ref(`nfts/${nftId}`);
+            
+            nftRef.on('value', (snapshot) => {
+                const nft = snapshot.val();
+                
+                if (!nft) {
+                    showError('NFT не найден');
+                    return;
+                }
+                
+                currentNFT = nft;
+                displayNFT(nft);
+                updateActions(nft);
+            });
+        }
+
+        // Отображение NFT
+        function displayNFT(nft) {
+            const nftDisplay = document.getElementById('nftDisplay');
+            const colors = generateColorsFromId(nftId);
+            const gradient = `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`;
+            
+            // Определяем иконку по типу
+            let icon = '💎';
+            switch(nft.type) {
+                case 'art': icon = '🎨'; break;
+                case 'music': icon = '🎵'; break;
+                case 'game': icon = '🎮'; break;
+                case 'collectible': icon = '🏆'; break;
+                case 'special': icon = '✨'; break;
+            }
+            
+            nftDisplay.innerHTML = `
+                <div class="nft-visual" style="background: ${gradient}">
+                    <div class="nft-image" style="display: flex; align-items: center; justify-content: center; font-size: 64px; color: white;">
+                        ${icon}
+                    </div>
+                    <div class="nft-id-badge">#${nftId.substring(0, 8)}</div>
+                </div>
+                <div class="nft-name">${nft.name}</div>
+                <div class="nft-price">${nft.price} BHS</div>
+                <div class="nft-type">${getTypeName(nft.type)}</div>
+                ${nft.forSale ? '<span class="status-badge status-for-sale">На продаже</span>' : ''}
+            `;
+            
+            // Обновляем информацию
+            updateInfoGrid(nft);
+            updateOwnerInfo(nft);
+            updateDescription(nft);
+            updateHistory(nft);
+        }
+
+        // Генерация цветов из ID
+        function generateColorsFromId(id) {
+            const hash = id.split('').reduce((acc, char) => {
+                return char.charCodeAt(0) + ((acc << 5) - acc);
+            }, 0);
+            
+            const hue = Math.abs(hash % 360);
+            const saturation = 70 + (hash % 30);
+            const lightness = 50 + (hash % 20);
+            
+            return [
+                `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+                `hsl(${(hue + 30) % 360}, ${saturation}%, ${lightness - 10}%)`
+            ];
+        }
+
+        // Получение названия типа
+        function getTypeName(type) {
+            const types = {
+                'art': 'Искусство',
+                'music': 'Музыка',
+                'game': 'Игровой',
+                'collectible': 'Коллекционный',
+                'special': 'Особый'
+            };
+            return types[type] || type;
+        }
+
+        // Обновление информационной сетки
+        function updateInfoGrid(nft) {
+            const grid = document.getElementById('nftInfoGrid');
+            
+            const infoItems = [
+                { label: 'ID NFT', value: nftId, copy: true },
+                { label: 'Дата создания', value: formatDate(nft.createdAt) },
+                { label: 'Последняя активность', value: formatDate(nft.lastActivity) },
+                { label: 'Копий', value: nft.copies || 1 },
+                { label: 'Тип', value: getTypeName(nft.type) },
+                { label: 'Цвет', value: nft.color ? 'Настроен' : 'Авто' }
+            ];
+            
+            grid.innerHTML = infoItems.map(item => `
+                <div class="info-item">
+                    <div class="info-label">${item.label}</div>
+                    <div class="info-value">
+                        ${item.value}
+                        ${item.copy ? `<button class="copy-btn" onclick="copyToClipboard('${item.value}')">Копировать</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Обновление информации о владельце
+        function updateOwnerInfo(nft) {
+            const ownerInfo = document.getElementById('ownerInfo');
+            
+            if (nft.owner === currentUser.id.toString()) {
+                ownerInfo.innerHTML = `
+                    <div class="owner-card">
+                        <div class="owner-avatar">Вы</div>
+                        <div class="owner-details">
+                            <div class="owner-name">${currentUser.username}</div>
+                            <div class="owner-id">ID: ${currentUser.id}</div>
+                        </div>
+                        <span class="status-badge status-owned">Ваш NFT</span>
+                    </div>
+                `;
+            } else {
+                // Загружаем информацию о владельце
+                database.ref(`users/${nft.owner}`).once('value').then((snapshot) => {
+                    const owner = snapshot.val();
+                    
+                    ownerInfo.innerHTML = `
+                        <div class="owner-card">
+                            <div class="owner-avatar">${owner?.username?.charAt(0) || 'U'}</div>
+                            <div class="owner-details">
+                                <div class="owner-name">${owner?.username || 'Неизвестно'}</div>
+                                <div class="owner-id">ID: ${nft.owner}</div>
+                            </div>
+                            ${nft.forSale ? '<span class="status-badge status-for-sale">Продается</span>' : ''}
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // Обновление описания
+        function updateDescription(nft) {
+            const desc = document.getElementById('nftDescription');
+            desc.textContent = nft.description || 'Описание отсутствует';
+        }
+
+        // Обновление истории
+        function updateHistory(nft) {
+            const history = document.getElementById('nftHistory');
+            
+            if (!nft.history || nft.history.length === 0) {
+                history.innerHTML = '<div style="text-align: center; color: var(--tg-theme-hint-color); padding: 20px;">История отсутствует</div>';
+                return;
+            }
+            
+            history.innerHTML = nft.history.slice().reverse().map(item => `
+                <div class="history-item">
+                    <div class="history-icon">
+                        ${getHistoryIcon(item.action)}
+                    </div>
+                    <div class="history-details">
+                        <div class="history-action">${getHistoryActionText(item.action)}</div>
+                        <div class="history-meta">
+                            ${item.user} • ${formatDate(item.timestamp)}
+                        </div>
+                    </div>
+                    ${item.price ? `<div class="history-price">${item.price} BHS</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Получение иконки для истории
+        function getHistoryIcon(action) {
+            switch(action) {
+                case 'create': return '➕';
+                case 'purchase': return '💰';
+                case 'sale': return '🛒';
+                case 'transfer': return '↗';
+                default: return '📝';
+            }
+        }
+
+        // Получение текста действия
+        function getHistoryActionText(action) {
+            const actions = {
+                'create': 'Создание NFT',
+                'purchase': 'Покупка',
+                'sale': 'Продажа',
+                'transfer': 'Перевод'
+            };
+            return actions[action] || action;
+        }
+
+        // Обновление кнопок действий
+        function updateActions(nft) {
+            const actions = document.getElementById('nftActions');
+            
+            if (nft.owner === currentUser.id.toString()) {
+                actions.style.display = 'flex';
+                
+                if (nft.forSale) {
+                    actions.innerHTML = `
+                        <button class="btn btn-danger" onclick="cancelSale()">Снять с продажи</button>
+                        <button class="btn btn-secondary" onclick="showTransferModal()">Перевести</button>
+                    `;
+                }
+            } else if (nft.forSale) {
+                actions.style.display = 'flex';
+                actions.innerHTML = `
+                    <button class="btn btn-primary" onclick="buyNFT()">
+                        Купить за ${nft.salePrice || nft.price} BHS
+                    </button>
+                `;
+            } else {
+                actions.style.display = 'none';
+            }
+        }
+
+        // Форматирование даты
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Копирование в буфер обмена
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Скопировано в буфер обмена');
+            });
+        }
+
+        // Навигация
+        function goBack() {
+            window.history.back();
+        }
+
+        // Показ/скрытие модальных окон
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            tg.disableVerticalSwipes();
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            tg.enableVerticalSwipes();
+        }
+
+        function showSellModal() {
+            showModal('sellModal');
+        }
+
+        function showTransferModal() {
+            showModal('transferModal');
+        }
+
+        // Продажа NFT
+        function sellNFT() {
+            const price = document.getElementById('sellPrice').value;
+            
+            if (!price || isNaN(price) || parseFloat(price) <= 0) {
+                alert('Введите корректную цену');
+                return;
+            }
+            
+            const updates = {
+                forSale: true,
+                salePrice: parseFloat(price),
+                lastActivity: new Date().toISOString()
+            };
+            
+            // Обновляем историю
+            const historyUpdate = currentNFT.history || [];
+            historyUpdate.push({
+                action: 'sale',
+                user: currentUser.username,
+                timestamp: new Date().toISOString(),
+                price: parseFloat(price)
+            });
+            
+            database.ref(`nfts/${nftId}`).update({
+                ...updates,
+                history: historyUpdate
+            }).then(() => {
+                alert('NFT выставлен на продажу!');
+                hideModal('sellModal');
+                document.getElementById('sellPrice').value = '';
+            }).catch(error => {
+                alert('Ошибка: ' + error.message);
+            });
+        }
+
+        // Отмена продажи
+        function cancelSale() {
+            if (confirm('Снять NFT с продажи?')) {
+                database.ref(`nfts/${nftId}`).update({
+                    forSale: false,
+                    salePrice: null,
+                    lastActivity: new Date().toISOString()
+                }).then(() => {
+                    alert('NFT снят с продажи');
+                });
+            }
+        }
+
+        // Покупка NFT
+        function buyNFT() {
+            const price = currentNFT.salePrice || currentNFT.price;
+            
+            // Проверяем баланс
+            database.ref(`users/${currentUser.id}/balance`).once('value').then((snapshot) => {
+                const balance = snapshot.val() || 0;
+                
+                if (balance < price) {
+                    alert(`Недостаточно средств. Нужно ${price} BHS, у вас ${balance} BHS`);
+                    return;
+                }
+                
+                if (confirm(`Купить NFT "${currentNFT.name}" за ${price} BHS?`)) {
+                    // Обновляем владельца
+                    database.ref(`nfts/${nftId}`).update({
+                        owner: currentUser.id.toString(),
+                        ownerName: currentUser.username,
+                        forSale: false,
+                        salePrice: null,
+                        lastActivity: new Date().toISOString()
+                    });
+                    
+                    // Обновляем историю
+                    const historyUpdate = currentNFT.history || [];
+                    historyUpdate.push({
+                        action: 'purchase',
+                        user: currentUser.username,
+                        timestamp: new Date().toISOString(),
+                        price: price
+                    });
+                    database.ref(`nfts/${nftId}/history`).set(historyUpdate);
+                    
+                    // Обновляем балансы
+                    database.ref(`users/${currentUser.id}/balance`).set(balance - price);
+                    database.ref(`users/${currentNFT.owner}/balance`).transaction((ownerBalance) => {
+                        return (ownerBalance || 0) + price;
+                    });
+                    
+                    // Создаем запись о сделке
+                    database.ref('trades').push({
+                        nftId: nftId,
+                        seller: currentNFT.owner,
+                        buyer: currentUser.id,
+                        price: price,
+                        timestamp: new Date().toISOString(),
+                        status: 'completed'
+                    });
+                    
+                    alert('Покупка успешна!');
+                    window.location.reload();
+                }
+            });
+        }
+
+        // Перевод NFT
+        function transferNFT() {
+            const recipient = document.getElementById('recipientUsername').value.replace('@', '');
+            
+            if (!recipient) {
+                alert('Введите username получателя');
+                return;
+            }
+            
+            if (recipient === currentUser.username) {
+                alert('Нельзя перевести NFT себе');
+                return;
+            }
+            
+            // Проверяем баланс для комиссии
+            database.ref(`users/${currentUser.id}/balance`).once('value').then((snapshot) => {
+                const balance = snapshot.val() || 0;
+                const fee = 1; // Комиссия за перевод
+                
+                if (balance < fee) {
+                    alert(`Недостаточно средств для комиссии. Нужно ${fee} BHS`);
+                    return;
+                }
+                
+                if (confirm(`Перевести NFT пользователю @${recipient}? Комиссия: ${fee} BHS`)) {
+                    // Здесь должна быть логика поиска пользователя по username
+                    // Для демо просто обновляем владельца
+                    
+                    const updates = {
+                        owner: 'new_owner_id', // Здесь должен быть ID получателя
+                        ownerName: recipient,
+                        lastActivity: new Date().toISOString()
+                    };
+                    
+                    // Обновляем историю
+                    const historyUpdate = currentNFT.history || [];
+                    historyUpdate.push({
+                        action: 'transfer',
+                        user: currentUser.username,
+                        recipient: recipient,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    database.ref(`nfts/${nftId}`).update({
+                        ...updates,
+                        history: historyUpdate
+                    }).then(() => {
+                        // Списание комиссии
+                        database.ref(`users/${currentUser.id}/balance`).set(balance - fee);
+                        
+                        alert('NFT переведен!');
+                        hideModal('transferModal');
+                        window.location.reload();
+                    });
+                }
+            });
+        }
+
+        // Показать ошибку
+        function showError(message) {
+            const nftDisplay = document.getElementById('nftDisplay');
+            nftDisplay.innerHTML = `
+                <div class="error">
+                    <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                    <div>${message}</div>
+                    <button class="btn btn-primary" onclick="goBack()" style="margin-top: 20px;">
+                        Назад
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('nftInfoGrid').innerHTML = '';
+            document.getElementById('ownerInfo').innerHTML = '';
+            document.getElementById('nftDescription').innerHTML = '';
+            document.getElementById('nftHistory').innerHTML = '';
+            document.getElementById('nftActions').style.display = 'none';
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
