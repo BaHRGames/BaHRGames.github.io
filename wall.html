@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>Стена</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Старые версии Firebase без ES6 модулей -->
+    <!-- Старые версии Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -14,13 +14,14 @@
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-            transition: all 0.3s ease;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
@@ -35,12 +36,53 @@
             align-items: center;
             padding: 12px 0;
             margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            z-index: 100;
             border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
         }
 
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--tg-theme-text-color, #000000);
+            padding: 4px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #ff3333;
+            color: white;
+            font-size: 12px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             object-fit: cover;
             cursor: pointer;
@@ -52,7 +94,6 @@
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .post-input {
@@ -66,7 +107,6 @@
             font-size: 16px;
             resize: none;
             margin-bottom: 12px;
-            transition: all 0.3s ease;
         }
 
         .post-input:focus {
@@ -91,66 +131,17 @@
             color: var(--tg-theme-button-text-color, #ffffff);
             border-radius: 20px;
             cursor: pointer;
-            transition: opacity 0.3s;
             font-size: 14px;
-        }
-
-        .file-input-label:hover {
-            opacity: 0.9;
         }
 
         #fileInput {
             display: none;
         }
 
-        .anonym-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--tg-theme-text-color, #000000);
-            font-size: 14px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 40px;
-            height: 20px;
-        }
-
-        .toggle-checkbox {
-            display: none;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 20px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        .toggle-checkbox:checked + .toggle-slider {
-            background-color: var(--tg-theme-button-color, #2481cc);
-        }
-
-        .toggle-checkbox:checked + .toggle-slider:before {
-            transform: translateX(20px);
+        .hashtag-hint {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666666);
+            margin-top: 4px;
         }
 
         .send-button {
@@ -162,11 +153,6 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            transition: opacity 0.3s;
-        }
-
-        .send-button:hover {
-            opacity: 0.9;
         }
 
         .send-button:disabled {
@@ -174,13 +160,22 @@
             cursor: not-allowed;
         }
 
-        .filters {
-            display: flex;
-            gap: 12px;
+        .filters-container {
+            position: relative;
             margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+        }
+
+        .filters-wrapper {
+            display: flex;
+            gap: 8px;
             overflow-x: auto;
+            padding-bottom: 12px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .filters-wrapper::-webkit-scrollbar {
+            display: none;
         }
 
         .filter-btn {
@@ -192,12 +187,17 @@
             cursor: pointer;
             font-size: 14px;
             white-space: nowrap;
-            transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
         .filter-btn.active {
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        .filter-btn.hashtag {
+            background: rgba(36, 129, 204, 0.1);
+            border-color: rgba(36, 129, 204, 0.3);
         }
 
         .posts-container {
@@ -211,12 +211,8 @@
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-radius: 16px;
             padding: 16px;
-            animation: fadeIn 0.5s ease;
-            transition: transform 0.3s ease;
-        }
-
-        .post:hover {
-            transform: translateY(-2px);
+            position: relative;
+            animation: fadeIn 0.3s ease;
         }
 
         .post-header {
@@ -243,6 +239,11 @@
             color: var(--tg-theme-text-color, #000000);
             cursor: pointer;
             margin-bottom: 2px;
+            display: inline-block;
+        }
+
+        .post-username:hover {
+            text-decoration: underline;
         }
 
         .post-time {
@@ -250,10 +251,46 @@
             color: var(--tg-theme-hint-color, #666666);
         }
 
+        .post-boost-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: linear-gradient(45deg, #ff6b00, #ff9500);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .post-boost-btn.boosted {
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+        }
+
         .post-content {
             margin-bottom: 12px;
             line-height: 1.5;
             color: var(--tg-theme-text-color, #000000);
+            word-break: break-word;
+        }
+
+        .hashtag {
+            color: var(--tg-theme-button-color, #2481cc);
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .mention {
+            color: var(--tg-theme-button-color, #2481cc);
+            font-weight: 500;
+            text-decoration: none;
         }
 
         .post-image {
@@ -262,7 +299,6 @@
             margin-bottom: 12px;
             max-height: 400px;
             object-fit: cover;
-            cursor: pointer;
         }
 
         .post-stats {
@@ -273,10 +309,10 @@
             border-top: 1px solid rgba(0,0,0,0.1);
         }
 
-        .reactions {
+        .post-actions {
             display: flex;
+            align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
         }
 
         .reaction-btn {
@@ -289,52 +325,114 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            transition: all 0.3s ease;
+            font-size: 14px;
         }
 
         .reaction-btn:hover {
-            transform: scale(1.05);
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
         }
 
-        .reaction-btn.liked {
-            border-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-color, #2481cc);
+        .reaction-count {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666666);
+            margin-left: 4px;
         }
 
-        .boost-btn {
-            padding: 6px 16px;
-            background: linear-gradient(45deg, #ff6b00, #ff9500);
-            color: white;
+        .reaction-picker-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .reaction-picker {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            z-index: 1001;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .reaction-picker.active {
+            transform: translateY(0);
+        }
+
+        .reaction-picker-title {
+            text-align: center;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .reactions-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .reaction-emoji {
+            font-size: 28px;
+            background: none;
             border: none;
-            border-radius: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .reaction-emoji:hover {
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+        }
+
+        .comment-btn {
+            padding: 4px 12px;
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            border-radius: 16px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(255, 107, 0, 0.3);
+            gap: 4px;
+            font-size: 14px;
         }
 
-        .boost-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4);
+        .comment-btn:hover {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
         }
 
-        .boost-btn.boosted {
-            background: linear-gradient(45deg, #00c6ff, #0072ff);
+        .comments-count {
+            color: var(--tg-theme-hint-color, #666666);
+            font-size: 14px;
+            margin-left: 4px;
         }
 
         .hot-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 2px 8px;
             background: linear-gradient(45deg, #ff3366, #ff6633);
             color: white;
             border-radius: 10px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             margin-left: 8px;
-            animation: pulse 2s infinite;
+        }
+
+        .boost-count {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .loading {
@@ -354,10 +452,314 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        /* Комментарии */
+        .comments-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .comments-panel {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 70vh;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px 20px 0 0;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .comments-panel.active {
+            transform: translateY(0);
+        }
+
+        .comments-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .comments-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .close-comments {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .comments-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .comment-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .comment-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-username {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--tg-theme-text-color, #000000);
+            cursor: pointer;
+        }
+
+        .comment-time {
+            font-size: 11px;
+            color: var(--tg-theme-hint-color, #666666);
+            margin-left: auto;
+        }
+
+        .comment-content {
+            font-size: 14px;
+            line-height: 1.4;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 8px;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .comment-like-btn {
+            background: none;
+            border: none;
+            color: var(--tg-theme-hint-color, #666666);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .comment-like-btn.liked {
+            color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        .comment-reply-btn {
+            background: none;
+            border: none;
+            color: var(--tg-theme-button-color, #2481cc);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .comment-input-container {
+            padding: 16px;
+            border-top: 1px solid var(--tg-theme-hint-color, #cccccc);
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+        }
+
+        .comment-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .comment-input {
+            flex: 1;
+            min-height: 40px;
+            max-height: 120px;
+            padding: 8px 12px;
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            border-radius: 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            font-size: 14px;
+            resize: none;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        .send-comment-btn {
+            padding: 8px 16px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .send-comment-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Уведомления */
+        .notifications-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100vh;
+            background: var(--tg-theme-bg-color, #ffffff);
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1002;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notifications-panel.active {
+            transform: translateX(0);
+        }
+
+        .notifications-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notifications-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .close-notifications {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .notifications-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .notification-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+            cursor: pointer;
+        }
+
+        .notification-item.unread {
+            background: rgba(36, 129, 204, 0.05);
+        }
+
+        .notification-text {
+            font-size: 14px;
+            line-height: 1.4;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 4px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666666);
+        }
+
+        /* Welcome Modal */
+        .welcome-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .welcome-modal {
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .welcome-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--tg-theme-text-color, #000000);
+            text-align: center;
+        }
+
+        .welcome-section {
+            margin-bottom: 20px;
+        }
+
+        .welcome-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--tg-theme-text-color, #000000);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 12px;
+        }
+
+        .welcome-emoji {
+            font-size: 20px;
+        }
+
+        .welcome-close-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
         }
 
         .image-preview {
@@ -401,6 +803,7 @@
             transition: opacity 0.3s;
             z-index: 1000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            pointer-events: none;
         }
 
         .toast.show {
@@ -411,40 +814,126 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1></h1>
-            <img id="userAvatar" class="user-avatar" src="" alt="Avatar" onclick="openTelegramProfile()">
+            <h1 class="header-title">Стена</h1>
+            <div class="header-controls">
+                <button class="notification-btn" onclick="toggleNotifications()">
+                    🔔
+                    <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+                </button>
+                <img id="userAvatar" class="user-avatar" src="" alt="Avatar" onclick="openTelegramProfile()">
+            </div>
         </div>
 
         <div class="input-section">
-            <textarea class="post-input" id="postInput" placeholder="Что у вас нового?..." maxlength="500"></textarea>
+            <textarea class="post-input" id="postInput" placeholder="Что у вас нового? Используйте #хештеги и @упоминания..." maxlength="500"></textarea>
+            <div class="hashtag-hint">Пример: #новости #юмор #идея @username</div>
             
             <div id="imagePreview" class="image-preview"></div>
             
             <div class="controls">
                 <label class="file-input-label">
                     📷 Фото
-                    <input type="file" id="fileInput" accept="image/*" capture="environment">
+                    <input type="file" id="fileInput" accept="image/*">
                 </label>
                 
-                <div class="anonym-toggle">
-                    <span>Анонимно</span>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="anonToggle" class="toggle-checkbox">
-                        <div class="toggle-slider"></div>
-                    </div>
-                </div>
-                
-                <button class="send-button" id="sendBtn" onclick="sendPost()" disabled>Отправить</button>
+                <button class="send-button" id="sendBtn" onclick="sendPost()" disabled>Опубликовать</button>
             </div>
         </div>
 
-        <div class="filters">
-            <button class="filter-btn active" onclick="setFilter('all')">Все</button>
-            <button class="filter-btn" onclick="setFilter('boosted')">🔥 Продвинутые</button>
+        <div class="filters-container">
+            <div class="filters-wrapper" id="filtersWrapper">
+                <button class="filter-btn active" onclick="setFilter('boosted')">🔥 Продвинутые</button>
+                <button class="filter-btn" onclick="setFilter('all')">🔄 Все</button>
+                <!-- Хештеги будут добавляться динамически -->
+            </div>
         </div>
 
         <div class="posts-container" id="postsContainer">
             <div class="loading">Загрузка постов...</div>
+        </div>
+
+        <!-- Пикер реакций -->
+        <div class="reaction-picker-overlay" id="reactionPickerOverlay" onclick="closeReactionPicker()"></div>
+        <div class="reaction-picker" id="reactionPicker">
+            <div class="reaction-picker-title">Выберите реакцию</div>
+            <div class="reactions-grid" id="reactionsGrid">
+                <!-- Реакции будут добавлены динамически -->
+            </div>
+        </div>
+
+        <!-- Комментарии -->
+        <div class="comments-overlay" id="commentsOverlay" onclick="closeComments()"></div>
+        <div class="comments-panel" id="commentsPanel">
+            <div class="comments-header">
+                <div class="comments-title" id="commentsTitle">Комментарии</div>
+                <button class="close-comments" onclick="closeComments()">×</button>
+            </div>
+            <div class="comments-list" id="commentsList">
+                <div class="loading">Загрузка комментариев...</div>
+            </div>
+            <div class="comment-input-container">
+                <div class="comment-input-wrapper">
+                    <textarea class="comment-input" id="commentInput" placeholder="Напишите комментарий..." maxlength="300"></textarea>
+                    <button class="send-comment-btn" id="sendCommentBtn" onclick="sendComment()" disabled>➤</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Уведомления -->
+        <div class="notifications-panel" id="notificationsPanel">
+            <div class="notifications-header">
+                <div class="notifications-title">Уведомления</div>
+                <button class="close-notifications" onclick="toggleNotifications()">×</button>
+            </div>
+            <div class="notifications-list" id="notificationsList">
+                <div class="loading">Загрузка уведомлений...</div>
+            </div>
+        </div>
+
+        <!-- Welcome Modal -->
+        <div class="welcome-modal-overlay" id="welcomeModal" style="display: none;">
+            <div class="welcome-modal">
+                <h2 class="welcome-title">🎉 Добро пожаловать на Стену!</h2>
+                
+                <div class="welcome-section">
+                    <div class="welcome-section-title">📝 Что это такое?</div>
+                    <div class="welcome-text">
+                        Это место, где можно делиться мыслями, идеями и новостями с сообществом. 
+                        Публикуйте посты, комментируйте и взаимодействуйте с другими участниками.
+                    </div>
+                </div>
+                
+                <div class="welcome-section">
+                    <div class="welcome-section-title">🔥 Что такое Бусты?</div>
+                    <div class="welcome-text">
+                        <span class="welcome-emoji">🔥</span> <strong>Буст</strong> — это способ поддержать интересный пост!<br><br>
+                        • Нажмите кнопку <strong>"Бустнуть"</strong> 🔥 в правом верхнем углу поста<br>
+                        • Пост поднимется в разделе "Продвинутые"<br>
+                        • Посты с большим количеством бустов получают специальную отметку<br>
+                        • Каждый пользователь может бустнуть пост только один раз
+                    </div>
+                </div>
+                
+                <div class="welcome-section">
+                    <div class="welcome-section-title">💬 Как работает?</div>
+                    <div class="welcome-text">
+                        <span class="welcome-emoji">💬</span> <strong>Реакции</strong> — нажмите на кнопку реакции под постом, чтобы выбрать эмодзи<br>
+                        <span class="welcome-emoji">#️⃣</span> <strong>Хештеги</strong> — используйте #новости #юмор #идея для категоризации<br>
+                        <span class="welcome-emoji">@</span> <strong>Упоминания</strong> — уведомляйте других пользователей через @username<br>
+                        <span class="welcome-emoji">💬</span> <strong>Комментарии</strong> — обсуждайте посты в комментариях
+                    </div>
+                </div>
+                
+                <div class="welcome-section">
+                    <div class="welcome-section-title">🏆 Продвинутые посты</div>
+                    <div class="welcome-text">
+                        В разделе "Продвинутые" отображаются посты с наибольшим количеством бустов. 
+                        Даже новые посты с 0 бустов показываются здесь — у них есть шанс стать популярными!
+                    </div>
+                </div>
+                
+                <button class="welcome-close-btn" onclick="closeWelcomeModal()">Понятно, начать!</button>
+            </div>
         </div>
 
         <div class="toast" id="toast"></div>
@@ -456,230 +945,328 @@
             databaseURL: "https://flum-2-default-rtdb.firebaseio.com/"
         };
         
-        // Проверяем, загрузился ли firebase
-        if (typeof firebase === 'undefined') {
-            console.error("Firebase не загружен!");
-            document.getElementById('postsContainer').innerHTML = 
-                '<div class="empty-state">Ошибка загрузки Firebase. Проверьте соединение.</div>';
-        } else {
-            firebase.initializeApp(firebaseConfig);
+        let app, database;
+        if (typeof firebase !== 'undefined') {
+            app = firebase.initializeApp(firebaseConfig);
+            database = firebase.database(app);
         }
         
         // Инициализация Telegram Web App
-        let tg = null;
-        if (window.Telegram && window.Telegram.WebApp) {
-            tg = window.Telegram.WebApp;
-            tg.expand();
-            if (tg.BackButton && tg.BackButton.hide) {
-                tg.BackButton.hide();
-            }
-        } else {
-            console.warn("Telegram Web App не обнаружен, запуск в тестовом режиме");
-            // Тестовый объект для локальной разработки
-            tg = {
-                initDataUnsafe: {
-                    user: {
-                        id: 123456789,
-                        username: "test_user",
-                        first_name: "Тест",
-                        last_name: "Пользователь",
-                        photo_url: "https://i.pravatar.cc/150?img=3"
-                    }
-                },
-                expand: function() {},
-                openLink: function(url) { window.open(url, '_blank'); }
-            };
-        }
+        let tg = window.Telegram?.WebApp || {
+            initDataUnsafe: {
+                user: {
+                    id: Date.now(),
+                    username: "test_user",
+                    first_name: "Тест",
+                    last_name: "",
+                    photo_url: "https://i.pravatar.cc/150?img=3"
+                }
+            },
+            expand: () => {},
+            openLink: (url) => window.open(url, '_blank')
+        };
+        
+        if (tg.expand) tg.expand();
         
         // Состояние приложения
         let currentUser = null;
         let posts = [];
-        let currentFilter = 'all';
+        let currentFilter = 'boosted';
         let selectedImage = null;
         let userReactions = {};
         let userBoosts = {};
+        let userCommentLikes = {};
+        let currentPostForComments = null;
+        let currentPostForReactions = null;
+        let notifications = [];
+        let unreadNotifications = 0;
+        let popularHashtags = [];
+        
+        // Эмодзи для реакций
+        const reactionEmojis = [
+            '👍', '❤️', '😂', '😮', '😢', '😡', '🎉', '👏', '🔥', '⭐',
+            '💯', '👀', '🤔', '🤯', '🥳', '😍', '🤮', '👎', '🙏', '✌️'
+        ];
+        
+        // Показываем welcome модалку при первом входе
+        function checkFirstVisit() {
+            const hasVisited = localStorage.getItem('wall_visited');
+            if (!hasVisited) {
+                setTimeout(() => {
+                    document.getElementById('welcomeModal').style.display = 'flex';
+                }, 1000);
+            }
+        }
+        
+        function closeWelcomeModal() {
+            document.getElementById('welcomeModal').style.display = 'none';
+            localStorage.setItem('wall_visited', 'true');
+        }
         
         // Инициализация пользователя
         function initUser() {
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                currentUser = {
-                    id: tg.initDataUnsafe.user.id.toString(),
-                    username: tg.initDataUnsafe.user.username || 'Пользователь',
-                    firstName: tg.initDataUnsafe.user.first_name || 'Пользователь',
-                    lastName: tg.initDataUnsafe.user.last_name || '',
-                    photoUrl: tg.initDataUnsafe.user.photo_url || 'https://i.pravatar.cc/150?img=3'
-                };
-            } else {
-                // Запасной вариант для тестирования
-                currentUser = {
-                    id: 'anonymous_' + Date.now(),
-                    username: 'Гость',
-                    firstName: 'Гость',
-                    lastName: '',
-                    photoUrl: 'https://i.pravatar.cc/150?img=3'
-                };
+            const tgUser = tg.initDataUnsafe?.user;
+            currentUser = {
+                id: tgUser?.id?.toString() || 'anonymous_' + Date.now(),
+                username: tgUser?.username || 'user_' + Math.random().toString(36).substr(2, 9),
+                firstName: tgUser?.first_name || 'Пользователь',
+                lastName: tgUser?.last_name || '',
+                photoUrl: tgUser?.photo_url || 'https://i.pravatar.cc/150?img=3'
+            };
+            
+            // Сохраняем пользователя в базу
+            if (database && currentUser.id && !currentUser.id.includes('anonymous')) {
+                database.ref('users/' + currentUser.id).set({
+                    username: currentUser.username,
+                    photoUrl: currentUser.photoUrl,
+                    firstName: currentUser.firstName,
+                    lastName: currentUser.lastName,
+                    lastSeen: Date.now()
+                });
             }
             
             document.getElementById('userAvatar').src = currentUser.photoUrl;
-            
-            // Загружаем реакции пользователя
-            loadUserReactions();
+            loadUserData();
+            checkFirstVisit();
         }
         
-        // Загрузка реакций пользователя
-        function loadUserReactions() {
-            if (!firebase.apps.length) return;
-            
-            const db = firebase.database();
-            const userId = currentUser.id;
+        // Загрузка данных пользователя
+        function loadUserData() {
+            if (!database) return;
             
             // Загружаем реакции
-            db.ref('user_reactions/' + userId).once('value')
+            database.ref('user_reactions/' + currentUser.id).once('value')
                 .then(snapshot => {
                     userReactions = snapshot.val() || {};
-                })
-                .catch(error => {
-                    console.error("Ошибка загрузки реакций:", error);
                 });
             
             // Загружаем бусты
-            db.ref('user_boosts/' + userId).once('value')
+            database.ref('user_boosts/' + currentUser.id).once('value')
                 .then(snapshot => {
                     userBoosts = snapshot.val() || {};
-                })
-                .catch(error => {
-                    console.error("Ошибка загрузки бустов:", error);
                 });
+            
+            // Загружаем лайки на комментарии
+            database.ref('user_comment_likes/' + currentUser.id).once('value')
+                .then(snapshot => {
+                    userCommentLikes = snapshot.val() || {};
+                });
+            
+            // Загружаем уведомления
+            loadNotifications();
+        }
+        
+        // Загрузка уведомлений
+        function loadNotifications() {
+            if (!database) return;
+            
+            database.ref('notifications/' + currentUser.id).orderByChild('timestamp').limitToLast(50).once('value')
+                .then(snapshot => {
+                    const data = snapshot.val();
+                    notifications = data ? Object.entries(data).map(([id, notif]) => ({ id, ...notif })) : [];
+                    notifications.sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    unreadNotifications = notifications.filter(n => !n.read).length;
+                    updateNotificationBadge();
+                    renderNotifications();
+                });
+        }
+        
+        // Обновление бейджа уведомлений
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            if (unreadNotifications > 0) {
+                badge.textContent = unreadNotifications > 99 ? '99+' : unreadNotifications;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+        
+        // Отправка уведомления
+        function sendNotification(userId, type, data) {
+            if (!database || userId === currentUser.id) return;
+            
+            const notificationRef = database.ref('notifications/' + userId).push();
+            notificationRef.set({
+                type: type,
+                data: data,
+                timestamp: Date.now(),
+                read: false,
+                fromUserId: currentUser.id,
+                fromUsername: currentUser.username
+            });
         }
         
         // Конвертация Data URL в ImgBB ссылку
         async function convertDataUrlToImgBB(dataUrl) {
             try {
                 const apiKey = "02cf7a0dc37b8a8adaedc9784752a3db";
-                
-                // Извлекаем base64 данные
                 const base64Data = dataUrl.split(',')[1];
-                if (!base64Data) {
-                    console.error("Некорректный Data URL");
-                    return null;
-                }
+                if (!base64Data) return null;
                 
-                // Создаем FormData
                 const formData = new FormData();
                 formData.append('key', apiKey);
                 formData.append('image', base64Data);
                 
-                // Отправляем запрос
                 const response = await fetch("https://api.imgbb.com/1/upload", {
                     method: "POST",
                     body: formData
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
                 const data = await response.json();
-                console.log("ImgBB ответ:", data);
-                
-                if (data.success && data.data && data.data.url) {
-                    return data.data.url;
-                } else {
-                    console.error("ImgBB API вернул ошибку:", data);
-                    return null;
-                }
+                return data.success ? data.data.url : null;
             } catch (error) {
-                console.error("Ошибка загрузки изображения в ImgBB:", error);
+                console.error("Ошибка загрузки изображения:", error);
                 return null;
             }
+        }
+        
+        // Поиск хештегов в тексте
+        function findHashtags(text) {
+            const hashtagRegex = /#([\w\u0400-\u04FF]+)/g;
+            const hashtags = [];
+            let match;
+            while ((match = hashtagRegex.exec(text)) !== null) {
+                hashtags.push(match[1].toLowerCase());
+            }
+            return [...new Set(hashtags)];
+        }
+        
+        // Поиск упоминаний в тексте
+        function findMentions(text) {
+            const mentionRegex = /@(\w+)/g;
+            const mentions = [];
+            let match;
+            while ((match = mentionRegex.exec(text)) !== null) {
+                mentions.push(match[1]);
+            }
+            return [...new Set(mentions)];
+        }
+        
+        // Загрузка популярных хештегов
+        function loadPopularHashtags() {
+            if (!database) return;
+            
+            database.ref('hashtags').orderByChild('count').limitToLast(5).once('value')
+                .then(snapshot => {
+                    const data = snapshot.val();
+                    popularHashtags = data ? Object.entries(data).map(([hashtag, info]) => ({ 
+                        hashtag, 
+                        count: info.count || 0 
+                    })) : [];
+                    
+                    popularHashtags.sort((a, b) => b.count - a.count);
+                    renderHashtagFilters();
+                });
+        }
+        
+        // Обновление счетчика хештегов
+        function updateHashtagCounts(hashtags) {
+            if (!database) return;
+            
+            hashtags.forEach(hashtag => {
+                const hashtagRef = database.ref('hashtags/' + hashtag);
+                hashtagRef.transaction(current => {
+                    if (current) {
+                        return { ...current, count: (current.count || 0) + 1 };
+                    }
+                    return { count: 1, lastUsed: Date.now() };
+                });
+            });
         }
         
         // Отправка поста
         async function sendPost() {
             const text = document.getElementById('postInput').value.trim();
-            const isAnonymous = document.getElementById('anonToggle').checked;
             
             if (!text && !selectedImage) {
                 showToast("Введите текст или добавьте фото");
                 return;
             }
             
-            if (!firebase.apps.length) {
-                showToast("Ошибка: Firebase не инициализирован");
-                return;
-            }
-            
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.disabled = true;
-            sendBtn.textContent = "Отправка...";
+            sendBtn.textContent = "Публикация...";
             
             let imageUrl = null;
             if (selectedImage) {
-                showToast("Загрузка фото...");
                 imageUrl = await convertDataUrlToImgBB(selectedImage);
                 if (!imageUrl) {
                     showToast("Ошибка загрузки фото");
                     sendBtn.disabled = false;
-                    sendBtn.textContent = "Отправить";
+                    sendBtn.textContent = "Опубликовать";
                     return;
                 }
             }
             
-            const db = firebase.database();
+            // Ищем хештеги и упоминания
+            const hashtags = findHashtags(text);
+            const mentions = findMentions(text);
+            
             const postData = {
-                userId: isAnonymous ? 'anonymous' : currentUser.id,
-                username: isAnonymous ? 'Аноним' : (currentUser.username || currentUser.firstName),
-                userPhoto: isAnonymous ? 'https://i.pravatar.cc/150?img=0' : currentUser.photoUrl,
+                userId: currentUser.id,
+                username: currentUser.username || currentUser.firstName,
+                userPhoto: currentUser.photoUrl,
                 text: text,
                 imageUrl: imageUrl,
                 timestamp: Date.now(),
-                reactions: {
-                    '👍': 0,
-                    '❤️': 0,
-                    '😂': 0,
-                    '😮': 0
-                },
                 boosts: 0,
-                boostedUsers: {}
+                boostedUsers: {},
+                commentsCount: 0,
+                hashtags: hashtags,
+                mentions: mentions,
+                reactions: {}
             };
             
             try {
-                const newPostRef = db.ref('posts').push();
+                const newPostRef = database.ref('posts').push();
                 await newPostRef.set(postData);
+                
+                // Обновляем счетчики хештегов
+                updateHashtagCounts(hashtags);
+                
+                // Отправляем уведомления об упоминаниях
+                mentions.forEach(mention => {
+                    database.ref('users').orderByChild('username').equalTo(mention).once('value')
+                        .then(snapshot => {
+                            const userData = snapshot.val();
+                            if (userData) {
+                                const userId = Object.keys(userData)[0];
+                                sendNotification(userId, 'mention', {
+                                    postId: newPostRef.key,
+                                    text: text.substring(0, 100) + '...'
+                                });
+                            }
+                        });
+                });
                 
                 // Очищаем форму
                 document.getElementById('postInput').value = '';
                 removeImagePreview();
                 selectedImage = null;
-                sendBtn.disabled = true;
+                updateSendButton();
                 
                 showToast("✅ Пост опубликован!");
-                
-                // Перезагружаем посты
                 loadPosts();
+                loadPopularHashtags();
             } catch (error) {
                 console.error("Ошибка отправки поста:", error);
-                showToast("❌ Ошибка отправки поста");
+                showToast("❌ Ошибка отправки");
             } finally {
                 sendBtn.disabled = false;
-                sendBtn.textContent = "Отправить";
+                sendBtn.textContent = "Опубликовать";
             }
         }
         
         // Загрузка постов
         function loadPosts() {
-            if (!firebase.apps.length) {
-                document.getElementById('postsContainer').innerHTML = 
-                    '<div class="empty-state">Ошибка загрузки Firebase</div>';
-                return;
-            }
+            if (!database) return;
             
             const postsContainer = document.getElementById('postsContainer');
             postsContainer.innerHTML = '<div class="loading">Загрузка постов...</div>';
             
-            const db = firebase.database();
-            
-            db.ref('posts').orderByChild('timestamp').once('value')
+            database.ref('posts').once('value')
                 .then(snapshot => {
                     const postsData = snapshot.val();
                     
@@ -689,17 +1276,16 @@
                         return;
                     }
                     
-                    // Преобразуем объект в массив и сортируем по времени
                     posts = Object.entries(postsData).map(([id, post]) => ({
                         id,
                         ...post
-                    })).sort((a, b) => b.timestamp - a.timestamp);
+                    }));
                     
                     renderPosts();
                 })
                 .catch(error => {
                     console.error("Ошибка загрузки постов:", error);
-                    postsContainer.innerHTML = '<div class="empty-state">Ошибка загрузки постов. Проверьте соединение.</div>';
+                    postsContainer.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
                 });
         }
         
@@ -709,29 +1295,38 @@
             const filteredPosts = filterPosts();
             
             if (filteredPosts.length === 0) {
-                postsContainer.innerHTML = '<div class="empty-state">Нет постов по выбранному фильтру</div>';
+                postsContainer.innerHTML = '<div class="empty-state">Нет постов</div>';
                 return;
             }
             
             postsContainer.innerHTML = '';
-            
             filteredPosts.forEach(post => {
-                const postElement = createPostElement(post);
-                postsContainer.appendChild(postElement);
+                postsContainer.appendChild(createPostElement(post));
             });
         }
         
         // Фильтрация постов
         function filterPosts() {
-            if (currentFilter === 'all') {
-                return posts;
-            } else if (currentFilter === 'boosted') {
-                // Фильтруем посты с бустами и сортируем по количеству бустов
-                return [...posts]
-                    .filter(post => post.boosts > 0)
-                    .sort((a, b) => b.boosts - a.boosts || b.timestamp - a.timestamp);
+            let filtered = [...posts];
+            
+            if (currentFilter === 'boosted') {
+                // Сначала сортируем по бустам, потом по времени
+                filtered.sort((a, b) => {
+                    if (b.boosts !== a.boosts) {
+                        return b.boosts - a.boosts;
+                    }
+                    return b.timestamp - a.timestamp;
+                });
+            } else if (currentFilter === 'all') {
+                filtered.sort((a, b) => b.timestamp - a.timestamp);
+            } else if (currentFilter.startsWith('#')) {
+                const hashtag = currentFilter.substring(1);
+                filtered = filtered.filter(post => 
+                    post.hashtags && post.hashtags.includes(hashtag)
+                ).sort((a, b) => b.timestamp - a.timestamp);
             }
-            return posts;
+            
+            return filtered;
         }
         
         // Создание элемента поста
@@ -739,13 +1334,7 @@
             const postDiv = document.createElement('div');
             postDiv.className = 'post';
             
-            const isHot = post.boosts >= 5; // Порог для "горячего" поста
-            
-            let hotBadge = '';
-            if (isHot && currentFilter === 'boosted') {
-                hotBadge = '<span class="hot-badge">🔥 ГОРЯЧИЙ</span>';
-            }
-            
+            const isHot = post.boosts >= 3;
             const time = new Date(post.timestamp).toLocaleString('ru-RU', {
                 day: 'numeric',
                 month: 'short',
@@ -753,161 +1342,525 @@
                 minute: '2-digit'
             });
             
-            // Проверяем реакции пользователя
-            const userReaction = userReactions[post.id] || null;
-            const hasBoosted = userBoosts[post.id] || false;
+            const hasBoosted = userBoosts[post.id];
+            const userReaction = userReactions[post.id];
             
-            let imageHtml = '';
-            if (post.imageUrl) {
-                imageHtml = `<img class="post-image" src="${post.imageUrl}" alt="Post image" onclick="openImage('${post.imageUrl.replace(/'/g, "\\'")}')">`;
+            // Обрабатываем текст с хештегами и упоминаниями
+            let processedText = escapeHtml(post.text || '');
+            
+            // Обрабатываем хештеги
+            if (post.hashtags) {
+                post.hashtags.forEach(hashtag => {
+                    const regex = new RegExp(`#${hashtag}`, 'gi');
+                    processedText = processedText.replace(regex, 
+                        `<span class="hashtag" onclick="setFilter('#${hashtag}')">#${hashtag}</span>`);
+                });
             }
             
-            // Создаем HTML для реакций
-            let reactionsHtml = '';
-            const reactions = post.reactions || {};
-            for (const [emoji, count] of Object.entries(reactions)) {
-                const isLiked = userReaction === emoji;
-                reactionsHtml += `
-                    <button class="reaction-btn ${isLiked ? 'liked' : ''}" 
-                            onclick="addReaction('${post.id}', '${emoji}')">
-                        ${emoji} ${count || 0}
-                    </button>
-                `;
+            // Обрабатываем упоминания
+            if (post.mentions) {
+                post.mentions.forEach(mention => {
+                    const regex = new RegExp(`@${mention}`, 'gi');
+                    processedText = processedText.replace(regex, 
+                        `<a href="https://t.me/${mention}" class="mention" target="_blank">@${mention}</a>`);
+                });
             }
+            
+            // Подсчитываем общее количество реакций
+            const totalReactions = post.reactions ? Object.values(post.reactions).reduce((a, b) => a + b, 0) : 0;
             
             postDiv.innerHTML = `
                 <div class="post-header">
                     <img class="post-avatar" src="${post.userPhoto || 'https://i.pravatar.cc/150?img=0'}" 
-                         alt="${post.username || 'Аноним'}" 
-                         onclick="openUserProfile('${post.userId || 'anonymous'}')">
+                         alt="${post.username}" 
+                         onclick="openUserProfile('${post.userId}')">
                     <div class="post-user-info">
-                        <div class="post-username" onclick="openUserProfile('${post.userId || 'anonymous'}')">
-                            ${post.username || 'Аноним'} ${hotBadge}
+                        <div>
+                            <span class="post-username" onclick="openUserProfile('${post.userId}')">
+                                ${post.username || 'Пользователь'}
+                                ${isHot ? '<span class="hot-badge">🔥 ГОРЯЧИЙ</span>' : ''}
+                            </span>
+                            <span class="post-time">${time}</span>
                         </div>
-                        <div class="post-time">${time}</div>
                     </div>
                 </div>
-                ${post.text ? `<div class="post-content">${escapeHtml(post.text)}</div>` : ''}
-                ${imageHtml}
+                
+                <button class="post-boost-btn ${hasBoosted ? 'boosted' : ''}" 
+                        onclick="boostPost('${post.id}')" title="Бустнуть пост">
+                    🔥 ${post.boosts || 0}
+                </button>
+                
+                ${processedText ? `<div class="post-content">${processedText}</div>` : ''}
+                
+                ${post.imageUrl ? `<img class="post-image" src="${post.imageUrl}" alt="Изображение">` : ''}
+                
                 <div class="post-stats">
-                    <div class="reactions">
-                        ${reactionsHtml}
+                    <div class="post-actions">
+                        <button class="reaction-btn" onclick="openReactionPicker('${post.id}')">
+                            ${userReaction ? userReaction : '👍'} Реакция
+                            ${totalReactions > 0 ? `<span class="reaction-count">${totalReactions}</span>` : ''}
+                        </button>
+                        <button class="comment-btn" onclick="openComments('${post.id}')">
+                            💬 Комментировать
+                            <span class="comments-count">(${post.commentsCount || 0})</span>
+                        </button>
                     </div>
-                    <button class="boost-btn ${hasBoosted ? 'boosted' : ''}" 
-                            onclick="boostPost('${post.id}')">
-                        🔥 ${post.boosts || 0}
-                    </button>
+                    <div class="boost-count">
+                        🔥 ${post.boosts || 0} бустов
+                    </div>
                 </div>
             `;
             
             return postDiv;
         }
         
+        // Открытие пикера реакций
+        function openReactionPicker(postId) {
+            currentPostForReactions = postId;
+            const overlay = document.getElementById('reactionPickerOverlay');
+            const picker = document.getElementById('reactionPicker');
+            const grid = document.getElementById('reactionsGrid');
+            
+            // Заполняем сетку эмодзи
+            grid.innerHTML = '';
+            reactionEmojis.forEach(emoji => {
+                const button = document.createElement('button');
+                button.className = 'reaction-emoji';
+                button.textContent = emoji;
+                button.onclick = () => addReaction(postId, emoji);
+                grid.appendChild(button);
+            });
+            
+            overlay.style.display = 'block';
+            picker.classList.add('active');
+        }
+        
+        function closeReactionPicker() {
+            const overlay = document.getElementById('reactionPickerOverlay');
+            const picker = document.getElementById('reactionPicker');
+            overlay.style.display = 'none';
+            picker.classList.remove('active');
+            currentPostForReactions = null;
+        }
+        
         // Добавление реакции
         function addReaction(postId, emoji) {
-            if (!currentUser || !firebase.apps.length) return;
+            if (!database) return;
             
-            const db = firebase.database();
-            const postRef = db.ref('posts/' + postId + '/reactions/' + emoji);
-            const userReactionRef = db.ref('user_reactions/' + currentUser.id + '/' + postId);
+            const postRef = database.ref('posts/' + postId + '/reactions/' + emoji);
+            const userReactionRef = database.ref('user_reactions/' + currentUser.id + '/' + postId);
             
-            // Получаем текущую реакцию пользователя
             const userReaction = userReactions[postId];
             
             if (userReaction === emoji) {
                 // Удаляем реакцию
-                postRef.once('value')
-                    .then(snapshot => {
-                        const currentCount = snapshot.val() || 0;
-                        return postRef.set(Math.max(0, currentCount - 1));
-                    })
-                    .then(() => userReactionRef.remove())
-                    .then(() => {
-                        delete userReactions[postId];
-                        loadPosts();
-                    })
-                    .catch(error => console.error("Ошибка удаления реакции:", error));
+                postRef.transaction(current => (current || 1) - 1);
+                userReactionRef.remove();
+                delete userReactions[postId];
             } else {
-                // Обновляем старую реакцию
-                const updatePromises = [];
-                
+                // Удаляем старую реакцию
                 if (userReaction) {
-                    const oldReactionRef = db.ref('posts/' + postId + '/reactions/' + userReaction);
-                    updatePromises.push(
-                        oldReactionRef.once('value')
-                            .then(snapshot => {
-                                const oldCount = snapshot.val() || 0;
-                                return oldReactionRef.set(Math.max(0, oldCount - 1));
-                            })
-                    );
+                    database.ref('posts/' + postId + '/reactions/' + userReaction)
+                        .transaction(current => (current || 1) - 1);
                 }
                 
-                // Добавляем новую реакцию
-                updatePromises.push(
-                    postRef.once('value')
-                        .then(snapshot => {
-                            const currentCount = snapshot.val() || 0;
-                            return postRef.set(currentCount + 1);
-                        })
-                );
+                // Добавляем новую
+                postRef.transaction(current => (current || 0) + 1);
+                userReactionRef.set(emoji);
+                userReactions[postId] = emoji;
                 
-                updatePromises.push(userReactionRef.set(emoji));
-                
-                Promise.all(updatePromises)
-                    .then(() => {
-                        userReactions[postId] = emoji;
-                        loadPosts();
-                    })
-                    .catch(error => console.error("Ошибка добавления реакции:", error));
+                // Уведомление о реакции
+                database.ref('posts/' + postId).once('value')
+                    .then(snapshot => {
+                        const post = snapshot.val();
+                        if (post && post.userId !== currentUser.id) {
+                            sendNotification(post.userId, 'reaction', {
+                                postId: postId,
+                                emoji: emoji,
+                                reactor: currentUser.username
+                            });
+                        }
+                    });
             }
+            
+            closeReactionPicker();
+            loadPosts();
         }
         
-        // Продвижение поста
+        // Буст поста
         function boostPost(postId) {
-            if (!currentUser || !firebase.apps.length) return;
+            if (!database) return;
             
             if (userBoosts[postId]) {
-                showToast("Вы уже продвигали этот пост!");
+                showToast("Вы уже бустнули этот пост!");
                 return;
             }
             
-            const db = firebase.database();
-            const postRef = db.ref('posts/' + postId);
-            const userBoostRef = db.ref('user_boosts/' + currentUser.id + '/' + postId);
+            const postRef = database.ref('posts/' + postId + '/boosts');
+            const userBoostRef = database.ref('user_boosts/' + currentUser.id + '/' + postId);
             
-            // Добавляем буст
-            postRef.child('boosts').once('value')
+            postRef.transaction(current => (current || 0) + 1);
+            userBoostRef.set(true);
+            userBoosts[postId] = true;
+            
+            showToast("🔥 Пост бустнут!");
+            loadPosts();
+        }
+        
+        // Открытие профиля
+        function openUserProfile(userId) {
+            database.ref('users/' + userId).once('value')
                 .then(snapshot => {
-                    const currentBoosts = snapshot.val() || 0;
-                    return postRef.child('boosts').set(currentBoosts + 1);
+                    const user = snapshot.val();
+                    if (user && user.username) {
+                        tg.openLink(`https://t.me/${user.username}`);
+                    } else {
+                        showToast("Профиль недоступен");
+                    }
                 })
-                .then(() => userBoostRef.set(true))
-                .then(() => {
-                    userBoosts[postId] = true;
-                    showToast("🔥 Пост продвинут!");
-                    loadPosts();
-                })
-                .catch(error => console.error("Ошибка продвижения поста:", error));
+                .catch(() => {
+                    showToast("Профиль недоступен");
+                });
+        }
+        
+        function openTelegramProfile() {
+            if (currentUser.username) {
+                tg.openLink(`https://t.me/${currentUser.username}`);
+            } else {
+                showToast("Профиль недоступен");
+            }
+        }
+        
+        // Работа с комментариями
+        let currentComments = [];
+        
+        function openComments(postId) {
+            currentPostForComments = postId;
+            const panel = document.getElementById('commentsPanel');
+            const overlay = document.getElementById('commentsOverlay');
+            const title = document.getElementById('commentsTitle');
+            
+            panel.classList.add('active');
+            overlay.style.display = 'block';
+            
+            // Загружаем комментарии
+            loadComments(postId);
+        }
+        
+        function closeComments() {
+            const panel = document.getElementById('commentsPanel');
+            const overlay = document.getElementById('commentsOverlay');
+            panel.classList.remove('active');
+            overlay.style.display = 'none';
+            currentPostForComments = null;
+        }
+        
+        function loadComments(postId) {
+            if (!database) return;
+            
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = '<div class="loading">Загрузка комментариев...</div>';
+            
+            database.ref('comments/' + postId).orderByChild('timestamp').once('value')
+                .then(snapshot => {
+                    const data = snapshot.val();
+                    currentComments = data ? Object.entries(data).map(([id, comment]) => ({ id, ...comment })) : [];
+                    currentComments.sort((a, b) => a.timestamp - b.timestamp);
+                    renderComments();
+                });
+        }
+        
+        function renderComments() {
+            const commentsList = document.getElementById('commentsList');
+            
+            if (currentComments.length === 0) {
+                commentsList.innerHTML = '<div class="empty-state">Нет комментариев</div>';
+                return;
+            }
+            
+            commentsList.innerHTML = '';
+            currentComments.forEach(comment => {
+                commentsList.appendChild(createCommentElement(comment));
+            });
+        }
+        
+        function createCommentElement(comment) {
+            const div = document.createElement('div');
+            div.className = 'comment-item';
+            
+            const time = new Date(comment.timestamp).toLocaleString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const isLiked = userCommentLikes[comment.id];
+            const likes = comment.likes || 0;
+            
+            // Обрабатываем упоминания
+            let processedText = escapeHtml(comment.text || '');
+            const mentions = findMentions(comment.text);
+            mentions.forEach(mention => {
+                const regex = new RegExp(`@${mention}`, 'g');
+                processedText = processedText.replace(regex, 
+                    `<a href="https://t.me/${mention}" class="mention" target="_blank">@${mention}</a>`);
+            });
+            
+            div.innerHTML = `
+                <div class="comment-header">
+                    <img class="comment-avatar" src="${comment.userPhoto || 'https://i.pravatar.cc/150?img=0'}" 
+                         alt="${comment.username}">
+                    <span class="comment-username" onclick="openCommentUserProfile('${comment.userId}')">
+                        ${comment.username || 'Пользователь'}
+                    </span>
+                    <span class="comment-time">${time}</span>
+                </div>
+                <div class="comment-content">${processedText}</div>
+                <div class="comment-actions">
+                    <button class="comment-like-btn ${isLiked ? 'liked' : ''}" 
+                            onclick="likeComment('${comment.id}')">
+                        👍 ${likes}
+                    </button>
+                    <button class="comment-reply-btn" onclick="replyToComment('${comment.username}')">
+                        Ответить
+                    </button>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        function sendComment() {
+            const text = document.getElementById('commentInput').value.trim();
+            if (!text || !currentPostForComments || !database) return;
+            
+            const commentRef = database.ref('comments/' + currentPostForComments).push();
+            const comment = {
+                userId: currentUser.id,
+                username: currentUser.username || currentUser.firstName,
+                userPhoto: currentUser.photoUrl,
+                text: text,
+                timestamp: Date.now(),
+                likes: 0,
+                mentions: findMentions(text)
+            };
+            
+            commentRef.set(comment).then(() => {
+                // Обновляем счетчик комментариев
+                database.ref('posts/' + currentPostForComments + '/commentsCount')
+                    .transaction(current => (current || 0) + 1);
+                
+                // Очищаем поле ввода
+                document.getElementById('commentInput').value = '';
+                document.getElementById('sendCommentBtn').disabled = true;
+                
+                // Уведомление владельцу поста
+                database.ref('posts/' + currentPostForComments).once('value')
+                    .then(snapshot => {
+                        const post = snapshot.val();
+                        if (post && post.userId !== currentUser.id) {
+                            sendNotification(post.userId, 'comment', {
+                                postId: currentPostForComments,
+                                commenter: currentUser.username,
+                                text: text.substring(0, 50) + '...'
+                            });
+                        }
+                    });
+                
+                // Перезагружаем комментарии
+                loadComments(currentPostForComments);
+                loadPosts();
+            });
+        }
+        
+        function likeComment(commentId) {
+            if (!database) return;
+            
+            const commentLikeRef = database.ref('user_comment_likes/' + currentUser.id + '/' + commentId);
+            const commentLikesRef = database.ref('comments/' + currentPostForComments + '/' + commentId + '/likes');
+            
+            if (userCommentLikes[commentId]) {
+                commentLikesRef.transaction(current => (current || 1) - 1);
+                commentLikeRef.remove();
+                delete userCommentLikes[commentId];
+            } else {
+                commentLikesRef.transaction(current => (current || 0) + 1);
+                commentLikeRef.set(true);
+                userCommentLikes[commentId] = true;
+            }
+            
+            loadComments(currentPostForComments);
+        }
+        
+        function replyToComment(username) {
+            const input = document.getElementById('commentInput');
+            input.value = `@${username} `;
+            input.focus();
+            updateCommentSendButton();
+        }
+        
+        function openCommentUserProfile(userId) {
+            openUserProfile(userId);
+        }
+        
+        // Уведомления
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationsPanel');
+            panel.classList.toggle('active');
+            
+            if (panel.classList.contains('active')) {
+                markNotificationsAsRead();
+            }
+        }
+        
+        function renderNotifications() {
+            const list = document.getElementById('notificationsList');
+            
+            if (notifications.length === 0) {
+                list.innerHTML = '<div class="empty-state">Нет уведомлений</div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            notifications.forEach(notif => {
+                const div = document.createElement('div');
+                div.className = `notification-item ${notif.read ? '' : 'unread'}`;
+                div.onclick = () => openNotification(notif);
+                
+                let text = '';
+                const time = new Date(notif.timestamp).toLocaleString('ru-RU', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                switch (notif.type) {
+                    case 'mention':
+                        text = `${notif.fromUsername} упомянул(а) вас в посте`;
+                        break;
+                    case 'reaction':
+                        text = `${notif.fromUsername} поставил(а) реакцию ${notif.data?.emoji}`;
+                        break;
+                    case 'comment':
+                        text = `${notif.fromUsername} прокомментировал(а) ваш пост`;
+                        break;
+                    default:
+                        text = 'Новое уведомление';
+                }
+                
+                div.innerHTML = `
+                    <div class="notification-text">${text}</div>
+                    <div class="notification-time">${time}</div>
+                `;
+                
+                list.appendChild(div);
+            });
+        }
+        
+        function markNotificationsAsRead() {
+            if (!database || unreadNotifications === 0) return;
+            
+            const updates = {};
+            notifications.forEach(notif => {
+                if (!notif.read) {
+                    updates[`notifications/${currentUser.id}/${notif.id}/read`] = true;
+                }
+            });
+            
+            database.ref().update(updates).then(() => {
+                unreadNotifications = 0;
+                updateNotificationBadge();
+            });
+        }
+        
+        function openNotification(notification) {
+            if (notification.data?.postId) {
+                closeComments();
+                toggleNotifications();
+                // Прокручиваем к посту
+                showToast("Переход к посту...");
+            }
+        }
+        
+        // Рендеринг фильтров хештегов
+        function renderHashtagFilters() {
+            const wrapper = document.getElementById('filtersWrapper');
+            
+            // Удаляем старые хештеги
+            const hashtagFilters = wrapper.querySelectorAll('.filter-btn.hashtag');
+            hashtagFilters.forEach(btn => btn.remove());
+            
+            // Добавляем популярные хештеги
+            popularHashtags.forEach(({ hashtag, count }) => {
+                const button = document.createElement('button');
+                button.className = 'filter-btn hashtag';
+                button.innerHTML = `#${hashtag}`;
+                button.title = `${count} постов`;
+                button.onclick = () => setFilter('#' + hashtag);
+                wrapper.appendChild(button);
+            });
         }
         
         // Установка фильтра
         function setFilter(filter) {
             currentFilter = filter;
-            
-            // Обновляем активные кнопки
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            
+            // Находим кнопку фильтра
+            const buttons = document.querySelectorAll('.filter-btn');
+            if (filter.startsWith('#')) {
+                // Для хештегов ищем соответствующую кнопку
+                buttons.forEach(btn => {
+                    if (btn.textContent === `#${filter.substring(1)}`) {
+                        btn.classList.add('active');
+                    }
+                });
+            } else {
+                // Для обычных фильтров
+                buttons.forEach(btn => {
+                    if (btn.textContent.includes(filter === 'boosted' ? 'Продвинутые' : 'Все')) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
             
             renderPosts();
         }
         
-        // Управление изображениями
+        // Вспомогательные функции
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+        
+        // Обновление кнопок
+        function updateSendButton() {
+            const text = document.getElementById('postInput').value.trim();
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = text.length === 0 && !selectedImage;
+        }
+        
+        function updateCommentSendButton() {
+            const text = document.getElementById('commentInput').value.trim();
+            document.getElementById('sendCommentBtn').disabled = text.length === 0;
+        }
+        
+        // Работа с изображениями
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file && file.type.startsWith('image/')) {
-                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                if (file.size > 5 * 1024 * 1024) {
                     showToast("Изображение должно быть меньше 5MB");
                     return;
                 }
@@ -938,80 +1891,49 @@
             updateSendButton();
         }
         
-        // Обновление состояния кнопки отправки
-        function updateSendButton() {
-            const text = document.getElementById('postInput').value.trim();
-            const sendBtn = document.getElementById('sendBtn');
-            sendBtn.disabled = text.length === 0 && !selectedImage;
-        }
-        
-        // Открытие профиля пользователя
-        function openUserProfile(userId) {
-            if (userId === 'anonymous' || userId.startsWith('anonymous_')) {
-                showToast("Это анонимный пользователь");
-                return;
-            }
-            
-            // В реальном приложении можно открыть профиль Telegram
-            showToast("Профиль пользователя");
-        }
-        
-        function openTelegramProfile() {
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                showToast("Ваш профиль Telegram");
-            }
-        }
-        
-        function openImage(imageUrl) {
-            if (tg && tg.openLink) {
-                tg.openLink(imageUrl);
-            } else {
-                window.open(imageUrl, '_blank');
-            }
-        }
-        
-        // Вспомогательные функции
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-        
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Инициализация при загрузке
+        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            // Ждем загрузки Firebase
-            setTimeout(() => {
-                initUser();
-                loadPosts();
-                
-                // Автоматическая перезагрузка постов каждые 10 секунд
-                setInterval(loadPosts, 10000);
-            }, 1000);
+            initUser();
+            loadPosts();
+            loadPopularHashtags();
+            
+            // Слушатели событий
+            document.getElementById('postInput').addEventListener('input', updateSendButton);
+            document.getElementById('commentInput').addEventListener('input', updateCommentSendButton);
+            
+            // Слушаем изменения в реальном времени
+            if (database) {
+                database.ref('posts').on('value', () => {
+                    loadPosts();
+                    loadPopularHashtags();
+                });
+                database.ref('notifications/' + currentUser.id).on('value', () => {
+                    loadNotifications();
+                });
+                database.ref('hashtags').on('value', () => {
+                    loadPopularHashtags();
+                });
+            }
         });
         
-        // Следим за изменением текста
-        document.getElementById('postInput').addEventListener('input', updateSendButton);
-        
-        // Глобальные функции для вызова из HTML
+        // Глобальные функции
         window.sendPost = sendPost;
         window.setFilter = setFilter;
+        window.openReactionPicker = openReactionPicker;
+        window.closeReactionPicker = closeReactionPicker;
         window.addReaction = addReaction;
         window.boostPost = boostPost;
         window.openUserProfile = openUserProfile;
         window.openTelegramProfile = openTelegramProfile;
-        window.openImage = openImage;
         window.removeImagePreview = removeImagePreview;
+        window.openComments = openComments;
+        window.closeComments = closeComments;
+        window.sendComment = sendComment;
+        window.likeComment = likeComment;
+        window.replyToComment = replyToComment;
+        window.toggleNotifications = toggleNotifications;
+        window.updateSendButton = updateSendButton;
+        window.closeWelcomeModal = closeWelcomeModal;
     </script>
 </body>
 </html>
