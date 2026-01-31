@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Store</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            z-index: 100;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid var(--tg-theme-button-color, #2481cc);
+        }
+
+        .storage-info {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 16px;
+            margin: 0 16px 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .storage-progress {
+            height: 6px;
+            background: var(--tg-theme-hint-color, #cccccc);
+            border-radius: 3px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .storage-progress-fill {
+            height: 100%;
+            background: var(--tg-theme-button-color, #2481cc);
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .storage-text {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+        }
+
+        .storage-text strong {
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        /* Upload Button */
+        .upload-btn-container {
+            padding: 0 16px 16px;
+        }
+
+        .upload-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+            background: var(--tg-theme-bg-color, #ffffff);
+            position: sticky;
+            top: 60px;
+            z-index: 90;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 0;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--tg-theme-hint-color, #666666);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .tab.active {
+            color: var(--tg-theme-button-color, #2481cc);
+            border-bottom-color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        /* Content */
+        .content {
+            padding: 16px;
+        }
+
+        /* Search */
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            border-radius: 12px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+            font-size: 16px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--tg-theme-hint-color, #666666);
+        }
+
+        /* Filters */
+        .filters-wrapper {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .filters-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            border-radius: 20px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .filter-btn.active {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border-color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        /* Files Grid */
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .file-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .file-icon {
+            width: 100%;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            background: linear-gradient(45deg, #2481cc, #4ca1ff);
+            color: white;
+        }
+
+        .file-info {
+            padding: 12px;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 14px;
+        }
+
+        .file-meta {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666666);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-size {
+            white-space: nowrap;
+        }
+
+        /* Files List */
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .file-item {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .file-item-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: white;
+        }
+
+        .file-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-item-name {
+            font-weight: 500;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-item-details {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666666);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-action-btn {
+            background: none;
+            border: none;
+            color: var(--tg-theme-hint-color, #666666);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+        }
+
+        .file-action-btn:hover {
+            color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        /* Upload Panel */
+        .upload-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+            display: none;
+        }
+
+        .upload-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80vh;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px 20px 0 0;
+            z-index: 3001;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .upload-panel.active {
+            transform: translateY(0);
+        }
+
+        .upload-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upload-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .close-upload {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .upload-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            color: var(--tg-theme-text-color, #000000);
+            font-weight: 500;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            border-radius: 12px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 40px;
+            border: 2px dashed var(--tg-theme-hint-color, #cccccc);
+            border-radius: 16px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            cursor: pointer;
+            text-align: center;
+            flex-direction: column;
+        }
+
+        .file-input-label:hover {
+            border-color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        .file-input-text {
+            font-size: 14px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .file-input-subtext {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666666);
+            margin-top: 4px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+        }
+
+        .upload-footer {
+            padding: 20px;
+            border-top: 1px solid var(--tg-theme-hint-color, #cccccc);
+        }
+
+        .upload-button {
+            width: 100%;
+            padding: 16px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .upload-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* File Details Panel */
+        .file-details-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 85vh;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px 20px 0 0;
+            z-index: 3001;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .file-details-panel.active {
+            transform: translateY(0);
+        }
+
+        .file-details-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-details-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .file-details-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .file-preview {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .file-preview-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+            background: linear-gradient(45deg, #2481cc, #4ca1ff);
+            color: white;
+        }
+
+        .file-details-info {
+            margin-bottom: 32px;
+        }
+
+        .file-details-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 12px;
+            word-break: break-all;
+        }
+
+        .file-details-meta {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .file-meta-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+        }
+
+        .file-meta-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-meta-label {
+            color: var(--tg-theme-hint-color, #666666);
+            font-size: 14px;
+        }
+
+        .file-meta-value {
+            color: var(--tg-theme-text-color, #000000);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-action-btn-large {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .file-action-btn-large.primary {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        .file-action-btn-large.secondary {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tg-theme-secondary-bg-color, #333);
+            color: var(--tg-theme-text-color, #fff);
+            padding: 12px 24px;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 4000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+            line-height: 1.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--tg-theme-hint-color, #666666);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="header-title">Cloud Store</h1>
+            <img id="userAvatar" class="user-avatar" src="" alt="Avatar" onclick="openTelegramProfile()">
+        </div>
+
+        <!-- Storage Info -->
+        <div class="storage-info">
+            <div class="storage-progress">
+                <div class="storage-progress-fill" id="storageProgress"></div>
+            </div>
+            <div class="storage-text">
+                Использовано: <strong id="storageUsed">0 MB</strong> из <strong id="storageTotal">1 GB</strong>
+            </div>
+        </div>
+
+        <!-- Upload Button -->
+        <div class="upload-btn-container">
+            <button class="upload-btn" onclick="openUploadPanel()">
+                📁 Загрузить файл
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('grid')">📁</button>
+            <button class="tab" onclick="switchTab('list')">📋</button>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="gridTab">
+            <!-- Search -->
+            <div class="search-container">
+                <div class="search-icon">🔍</div>
+                <input type="text" class="search-input" id="searchInput" placeholder="Поиск файлов..." oninput="searchFiles()">
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-wrapper" id="filtersWrapper">
+                <button class="filter-btn active" onclick="setFilter('all')">Все</button>
+                <button class="filter-btn" onclick="setFilter('image')">Изображения</button>
+                <button class="filter-btn" onclick="setFilter('video')">Видео</button>
+                <button class="filter-btn" onclick="setFilter('audio')">Аудио</button>
+                <button class="filter-btn" onclick="setFilter('document')">Документы</button>
+            </div>
+
+            <!-- Files Grid -->
+            <div class="files-grid" id="filesGrid">
+                <div class="loading">Загрузка файлов...</div>
+            </div>
+        </div>
+
+        <div class="content" id="listTab" style="display: none;">
+            <!-- Search -->
+            <div class="search-container">
+                <div class="search-icon">🔍</div>
+                <input type="text" class="search-input" id="listSearchInput" placeholder="Поиск файлов..." oninput="searchFilesList()">
+            </div>
+
+            <!-- Files List -->
+            <div class="files-list" id="filesList">
+                <div class="loading">Загрузка файлов...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Panel -->
+    <div class="upload-overlay" id="uploadOverlay" onclick="closeUploadPanel()"></div>
+    <div class="upload-panel" id="uploadPanel">
+        <div class="upload-header">
+            <div class="upload-title">Загрузить файл</div>
+            <button class="close-upload" onclick="closeUploadPanel()">×</button>
+        </div>
+        <div class="upload-content">
+            <form class="upload-form" id="uploadForm">
+                <div class="form-group">
+                    <label class="form-label">Файл *</label>
+                    <label class="file-input-label" id="fileLabel">
+                        <div class="file-input-text">Нажмите для выбора файла</div>
+                        <div class="file-input-subtext">Максимальный размер: 100MB</div>
+                        <input type="file" id="fileInput">
+                    </label>
+                    <div class="file-info" id="fileInfo"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Название файла *</label>
+                    <input type="text" class="form-input" id="fileName" placeholder="Введите название" maxlength="100" oninput="validateForm()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Описание (опционально)</label>
+                    <textarea class="form-input" id="fileDescription" placeholder="Описание файла..." rows="3" maxlength="500"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="upload-footer">
+            <button class="upload-button" id="uploadBtn" onclick="uploadFile()" disabled>
+                Загрузить файл
+            </button>
+        </div>
+    </div>
+
+    <!-- File Details Panel -->
+    <div class="upload-overlay" id="fileDetailsOverlay" onclick="closeFileDetails()"></div>
+    <div class="file-details-panel" id="fileDetailsPanel">
+        <div class="file-details-header">
+            <div class="upload-title">Информация о файле</div>
+            <button class="file-details-close" onclick="closeFileDetails()">×</button>
+        </div>
+        <div class="file-details-content">
+            <div class="file-preview">
+                <div class="file-preview-icon" id="filePreviewIcon">📄</div>
+            </div>
+            <div class="file-details-info">
+                <div class="file-details-name" id="fileDetailsName">Название файла</div>
+                <div class="file-details-meta">
+                    <div class="file-meta-item">
+                        <span class="file-meta-label">Тип:</span>
+                        <span class="file-meta-value" id="fileDetailsType">Файл</span>
+                    </div>
+                    <div class="file-meta-item">
+                        <span class="file-meta-label">Размер:</span>
+                        <span class="file-meta-value" id="fileDetailsSize">0 MB</span>
+                    </div>
+                    <div class="file-meta-item">
+                        <span class="file-meta-label">Загружен:</span>
+                        <span class="file-meta-value" id="fileDetailsDate">Сегодня</span>
+                    </div>
+                    <div class="file-meta-item">
+                        <span class="file-meta-label">Ссылка:</span>
+                        <span class="file-meta-value" id="fileDetailsLink">Нажмите "Поделиться"</span>
+                    </div>
+                </div>
+            </div>
+            <div class="file-actions">
+                <button class="file-action-btn-large primary" onclick="shareFile()">
+                    <span>📤</span> Поделиться ссылкой
+                </button>
+                <button class="file-action-btn-large secondary" onclick="copyFileLink()">
+                    <span>📋</span> Копировать ссылку
+                </button>
+                <button class="file-action-btn-large secondary" onclick="deleteFile()" style="color: #ff3366;">
+                    <span>🗑️</span> Удалить файл
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEXAMPLE1234567890",
+            authDomain: "b-store-c3b22.firebaseapp.com",
+            databaseURL: "https://b-store-c3b22-default-rtdb.firebaseio.com",
+            projectId: "b-store-c3b22",
+            storageBucket: "b-store-c3b22.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef1234567890"
+        };
+        
+        let app, database;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            database = firebase.database(app);
+        } catch (error) {
+            console.log("Firebase инициализирован в другом приложении");
+            database = firebase.database();
+        }
+        
+        // Инициализация Telegram Web App
+        let tg = window.Telegram?.WebApp || {
+            initDataUnsafe: {
+                user: {
+                    id: Date.now(),
+                    username: "test_user",
+                    first_name: "Тест",
+                    last_name: "",
+                    photo_url: "https://i.pravatar.cc/150?img=3"
+                }
+            },
+            expand: () => {},
+            openLink: (url) => window.open(url, '_blank'),
+            showConfirm: (message, callback) => callback(window.confirm(message))
+        };
+        
+        if (tg.expand) tg.expand();
+        
+        // Состояние приложения
+        let currentUser = null;
+        let files = [];
+        let filteredFiles = [];
+        let currentFilter = 'all';
+        let selectedFile = null;
+        let selectedFileForUpload = null;
+        let currentView = 'grid';
+        let userStorage = {
+            used: 0, // в байтах
+            total: 1024 * 1024 * 1024, // 1 GB по умолчанию
+            premium: false
+        };
+        
+        // Инициализация пользователя
+        function initUser() {
+            const tgUser = tg.initDataUnsafe?.user;
+            currentUser = {
+                id: tgUser?.id?.toString() || 'anonymous_' + Date.now(),
+                username: tgUser?.username || 'user_' + Math.random().toString(36).substr(2, 9),
+                firstName: tgUser?.first_name || 'Пользователь',
+                lastName: tgUser?.last_name || '',
+                photoUrl: tgUser?.photo_url || 'https://i.pravatar.cc/150?img=3'
+            };
+            
+            // Проверяем премиум статус
+            userStorage.premium = tg.initDataUnsafe?.user?.is_premium || false;
+            userStorage.total = userStorage.premium ? 5 * 1024 * 1024 * 1024 : 1024 * 1024 * 1024;
+            
+            document.getElementById('userAvatar').src = currentUser.photoUrl;
+            updateStorageDisplay();
+            loadUserFiles();
+            
+            // Обновляем заголовок с информацией о премиум
+            if (userStorage.premium) {
+                document.querySelector('.header-title').textContent = 'Cloud Store ⭐';
+            }
+        }
+        
+        // Обновление отображения хранилища
+        function updateStorageDisplay() {
+            const usedMB = (userStorage.used / 1024 / 1024).toFixed(1);
+            const totalGB = (userStorage.total / 1024 / 1024 / 1024).toFixed(1);
+            const percentage = (userStorage.used / userStorage.total) * 100;
+            
+            document.getElementById('storageUsed').textContent = `${usedMB} MB`;
+            document.getElementById('storageTotal').textContent = `${totalGB} GB`;
+            document.getElementById('storageProgress').style.width = `${percentage}%`;
+        }
+        
+        // Переключение вкладок
+        function switchTab(view) {
+            currentView = view;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('gridTab').style.display = view === 'grid' ? 'block' : 'none';
+            document.getElementById('listTab').style.display = view === 'list' ? 'block' : 'none';
+            
+            if (view === 'grid') {
+                renderFilesGrid();
+            } else {
+                renderFilesList();
+            }
+        }
+        
+        // Загрузка файлов пользователя
+        function loadUserFiles() {
+            if (!database) {
+                showFilesError();
+                return;
+            }
+            
+            database.ref('user_files/' + currentUser.id).once('value')
+                .then(snapshot => {
+                    const filesData = snapshot.val();
+                    
+                    if (!filesData) {
+                        files = [];
+                        userStorage.used = 0;
+                        updateStorageDisplay();
+                        renderEmptyFiles();
+                        return;
+                    }
+                    
+                    files = Object.entries(filesData).map(([id, file]) => ({
+                        id,
+                        ...file
+                    }));
+                    
+                    // Пересчитываем общий размер
+                    userStorage.used = files.reduce((total, file) => total + (file.size || 0), 0);
+                    updateStorageDisplay();
+                    
+                    applyFilter();
+                })
+                .catch(error => {
+                    console.error("Ошибка загрузки файлов:", error);
+                    showFilesError();
+                });
+        }
+        
+        // Отображение ошибки загрузки
+        function showFilesError() {
+            const gridContainer = document.getElementById('filesGrid');
+            const listContainer = document.getElementById('filesList');
+            
+            gridContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <div class="empty-title">Ошибка загрузки</div>
+                    <div class="empty-text">Проверьте подключение к интернету</div>
+                </div>
+            `;
+            
+            listContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <div class="empty-title">Ошибка загрузки</div>
+                    <div class="empty-text">Проверьте подключение к интернету</div>
+                </div>
+            `;
+        }
+        
+        // Отображение пустого состояния
+        function renderEmptyFiles() {
+            const gridContainer = document.getElementById('filesGrid');
+            const listContainer = document.getElementById('filesList');
+            
+            gridContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📁</div>
+                    <div class="empty-title">Файлов нет</div>
+                    <div class="empty-text">Загрузите свой первый файл!</div>
+                </div>
+            `;
+            
+            listContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📁</div>
+                    <div class="empty-title">Файлов нет</div>
+                    <div class="empty-text">Загрузите свой первый файл!</div>
+                </div>
+            `;
+        }
+        
+        // Применение фильтра
+        function applyFilter() {
+            switch (currentFilter) {
+                case 'image':
+                    filteredFiles = files.filter(file => 
+                        file.type && (file.type.startsWith('image/') || 
+                        ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => 
+                            file.name.toLowerCase().endsWith(ext))));
+                    break;
+                case 'video':
+                    filteredFiles = files.filter(file => 
+                        file.type && (file.type.startsWith('video/') || 
+                        ['.mp4', '.avi', '.mov', '.wmv', '.mkv'].some(ext => 
+                            file.name.toLowerCase().endsWith(ext))));
+                    break;
+                case 'audio':
+                    filteredFiles = files.filter(file => 
+                        file.type && (file.type.startsWith('audio/') || 
+                        ['.mp3', '.wav', '.ogg', '.m4a'].some(ext => 
+                            file.name.toLowerCase().endsWith(ext))));
+                    break;
+                case 'document':
+                    filteredFiles = files.filter(file => 
+                        file.type && (file.type.startsWith('application/') || 
+                        ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'].some(ext => 
+                            file.name.toLowerCase().endsWith(ext))));
+                    break;
+                default:
+                    filteredFiles = [...files].sort((a, b) => b.timestamp - a.timestamp);
+            }
+            
+            if (currentView === 'grid') {
+                renderFilesGrid();
+            } else {
+                renderFilesList();
+            }
+        }
+        
+        // Установка фильтра
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('listSearchInput').value = '';
+            
+            applyFilter();
+        }
+        
+        // Поиск файлов
+        function searchFiles() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!query) {
+                applyFilter();
+                return;
+            }
+            
+            const searchResults = filteredFiles.filter(file =>
+                file.name.toLowerCase().includes(query) ||
+                (file.description && file.description.toLowerCase().includes(query))
+            );
+            
+            renderFilesGrid(searchResults);
+        }
+        
+        function searchFilesList() {
+            const query = document.getElementById('listSearchInput').value.toLowerCase().trim();
+            
+            if (!query) {
+                applyFilter();
+                return;
+            }
+            
+            const searchResults = filteredFiles.filter(file =>
+                file.name.toLowerCase().includes(query) ||
+                (file.description && file.description.toLowerCase().includes(query))
+            );
+            
+            renderFilesList(searchResults);
+        }
+        
+        // Отображение файлов в виде сетки
+        function renderFilesGrid(filesToRender = filteredFiles) {
+            const container = document.getElementById('filesGrid');
+            
+            if (filesToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-title">Ничего не найдено</div>
+                        <div class="empty-text">Попробуйте изменить запрос</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filesToRender.map(file => createFileCard(file)).join('');
+        }
+        
+        // Создание карточки файла
+        function createFileCard(file) {
+            const fileIcon = getFileIcon(file);
+            const fileSize = formatFileSize(file.size);
+            
+            return `
+                <div class="file-card" onclick="openFileDetails('${file.id}')">
+                    <div class="file-icon">
+                        ${fileIcon}
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">${escapeHtml(file.name)}</div>
+                        <div class="file-meta">
+                            <span class="file-size">${fileSize}</span>
+                            <span>📅</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Отображение файлов в виде списка
+        function renderFilesList(filesToRender = filteredFiles) {
+            const container = document.getElementById('filesList');
+            
+            if (filesToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-title">Ничего не найдено</div>
+                        <div class="empty-text">Попробуйте изменить запрос</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filesToRender.map(file => createFileListItem(file)).join('');
+        }
+        
+        // Создание элемента списка файлов
+        function createFileListItem(file) {
+            const fileIcon = getFileIcon(file);
+            const fileSize = formatFileSize(file.size);
+            const fileDate = formatDate(file.timestamp);
+            
+            return `
+                <div class="file-item" onclick="openFileDetails('${file.id}')">
+                    <div class="file-item-icon">
+                        ${fileIcon}
+                    </div>
+                    <div class="file-item-info">
+                        <div class="file-item-name">${escapeHtml(file.name)}</div>
+                        <div class="file-item-details">${fileSize} • ${fileDate}</div>
+                    </div>
+                    <div class="file-item-actions">
+                        <button class="file-action-btn" onclick="shareFileDirect('${file.id}', event)">
+                            📤
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Получение иконки для типа файла
+        function getFileIcon(file) {
+            const name = file.name.toLowerCase();
+            const type = file.type || '';
+            
+            if (type.startsWith('image/') || ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => name.endsWith(ext))) {
+                return '🖼️';
+            } else if (type.startsWith('video/') || ['.mp4', '.avi', '.mov', '.wmv', '.mkv'].some(ext => name.endsWith(ext))) {
+                return '🎥';
+            } else if (type.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a'].some(ext => name.endsWith(ext))) {
+                return '🎵';
+            } else if (type.startsWith('application/pdf') || name.endsWith('.pdf')) {
+                return '📕';
+            } else if (['.doc', '.docx'].some(ext => name.endsWith(ext))) {
+                return '📄';
+            } else if (['.xls', '.xlsx'].some(ext => name.endsWith(ext))) {
+                return '📊';
+            } else if (['.ppt', '.pptx'].some(ext => name.endsWith(ext))) {
+                return '📽️';
+            } else if (name.endsWith('.txt')) {
+                return '📝';
+            } else if (name.endsWith('.zip') || name.endsWith('.rar') || name.endsWith('.7z')) {
+                return '📦';
+            } else {
+                return '📄';
+            }
+        }
+        
+        // Форматирование размера файла
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Форматирование даты
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                return 'Сегодня';
+            } else if (diffDays === 1) {
+                return 'Вчера';
+            } else if (diffDays < 7) {
+                return `${diffDays} дней назад`;
+            } else {
+                return date.toLocaleDateString('ru-RU');
+            }
+        }
+        
+        // Открытие деталей файла
+        function openFileDetails(fileId) {
+            const file = files.find(f => f.id === fileId);
+            if (!file) return;
+            
+            selectedFile = file;
+            
+            const fileIcon = getFileIcon(file);
+            const fileSize = formatFileSize(file.size);
+            const fileDate = formatDate(file.timestamp);
+            
+            // Определяем тип файла
+            let fileType = 'Файл';
+            if (file.type) {
+                if (file.type.startsWith('image/')) fileType = 'Изображение';
+                else if (file.type.startsWith('video/')) fileType = 'Видео';
+                else if (file.type.startsWith('audio/')) fileType = 'Аудио';
+                else if (file.type.startsWith('application/pdf')) fileType = 'PDF документ';
+                else if (file.type.startsWith('application/')) fileType = 'Документ';
+                else fileType = file.type;
+            }
+            
+            document.getElementById('filePreviewIcon').textContent = fileIcon;
+            document.getElementById('fileDetailsName').textContent = file.name;
+            document.getElementById('fileDetailsType').textContent = fileType;
+            document.getElementById('fileDetailsSize').textContent = fileSize;
+            document.getElementById('fileDetailsDate').textContent = fileDate;
+            document.getElementById('fileDetailsLink').textContent = file.url ? 'Готово' : 'Ошибка загрузки';
+            
+            document.getElementById('fileDetailsOverlay').style.display = 'block';
+            document.getElementById('fileDetailsPanel').classList.add('active');
+        }
+        
+        // Закрытие деталей файла
+        function closeFileDetails() {
+            document.getElementById('fileDetailsOverlay').style.display = 'none';
+            document.getElementById('fileDetailsPanel').classList.remove('active');
+            selectedFile = null;
+        }
+        
+        // Поделиться файлом через Telegram
+        function shareFile() {
+            if (!selectedFile || !selectedFile.url) {
+                showToast("❌ Ошибка: нет ссылки на файл");
+                return;
+            }
+            
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(selectedFile.url)}&text=${encodeURIComponent(`Файл: ${selectedFile.name}`)}`;
+            tg.openLink(shareUrl);
+        }
+        
+        // Прямой шаринг файла из списка
+        function shareFileDirect(fileId, event) {
+            if (event) event.stopPropagation();
+            
+            const file = files.find(f => f.id === fileId);
+            if (!file || !file.url) {
+                showToast("❌ Ошибка: нет ссылки на файл");
+                return;
+            }
+            
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(file.url)}&text=${encodeURIComponent(`Файл: ${file.name}`)}`;
+            tg.openLink(shareUrl);
+        }
+        
+        // Копирование ссылки на файл
+        function copyFileLink() {
+            if (!selectedFile || !selectedFile.url) {
+                showToast("❌ Ошибка: нет ссылки на файл");
+                return;
+            }
+            
+            navigator.clipboard.writeText(selectedFile.url)
+                .then(() => {
+                    showToast("✅ Ссылка скопирована в буфер обмена");
+                })
+                .catch(() => {
+                    // Fallback для старых браузеров
+                    const textArea = document.createElement('textarea');
+                    textArea.value = selectedFile.url;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showToast("✅ Ссылка скопирована в буфер обмена");
+                });
+        }
+        
+        // Удаление файла
+        function deleteFile() {
+            if (!selectedFile) return;
+            
+            tg.showConfirm(`Удалить файл "${selectedFile.name}"?`, (confirmed) => {
+                if (confirmed) {
+                    deleteFileFromStorage(selectedFile.id);
+                }
+            });
+        }
+        
+        // Удаление файла из хранилища
+        function deleteFileFromStorage(fileId) {
+            if (!database) return;
+            
+            const file = files.find(f => f.id === fileId);
+            if (!file) return;
+            
+            // Уменьшаем использованное место
+            userStorage.used -= file.size || 0;
+            updateStorageDisplay();
+            
+            // Удаляем из Firebase
+            database.ref(`user_files/${currentUser.id}/${fileId}`).remove()
+                .then(() => {
+                    // Удаляем из локального массива
+                    files = files.filter(f => f.id !== fileId);
+                    filteredFiles = filteredFiles.filter(f => f.id !== fileId);
+                    
+                    showToast("🗑️ Файл удален");
+                    closeFileDetails();
+                    
+                    // Перерисовываем файлы
+                    if (currentView === 'grid') {
+                        renderFilesGrid();
+                    } else {
+                        renderFilesList();
+                    }
+                })
+                .catch(error => {
+                    console.error("Ошибка удаления файла:", error);
+                    showToast("❌ Ошибка при удалении файла");
+                });
+        }
+        
+        // Панель загрузки файла
+        function openUploadPanel() {
+            // Проверяем есть ли место
+            if (userStorage.used >= userStorage.total) {
+                showToast(userStorage.premium ? 
+                    "❌ Хранилище заполнено (5 GB)" : 
+                    "❌ Хранилище заполнено (1 GB). Получите Telegram Premium для 5 GB!");
+                return;
+            }
+            
+            document.getElementById('uploadOverlay').style.display = 'block';
+            document.getElementById('uploadPanel').classList.add('active');
+        }
+        
+        function closeUploadPanel() {
+            document.getElementById('uploadOverlay').style.display = 'none';
+            document.getElementById('uploadPanel').classList.remove('active');
+            resetUploadForm();
+        }
+        
+        // Сброс формы загрузки
+        function resetUploadForm() {
+            document.getElementById('uploadForm').reset();
+            document.getElementById('fileInfo').textContent = '';
+            selectedFileForUpload = null;
+            validateForm();
+        }
+        
+        // Валидация формы
+        function validateForm() {
+            const name = document.getElementById('fileName').value.trim();
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = !name || !selectedFileForUpload;
+        }
+        
+        // Обработка выбора файла
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Проверяем размер файла
+                if (file.size > 100 * 1024 * 1024) {
+                    showToast("❌ Файл слишком большой (макс. 100MB)", "error");
+                    return;
+                }
+                
+                // Проверяем есть ли место
+                if (userStorage.used + file.size > userStorage.total) {
+                    showToast("❌ Недостаточно места в хранилище");
+                    return;
+                }
+                
+                selectedFileForUpload = file;
+                document.getElementById('fileName').value = file.name;
+                document.getElementById('fileInfo').textContent = 
+                    `${file.name} • ${formatFileSize(file.size)}`;
+                document.getElementById('fileInfo').style.color = "var(--tg-theme-button-color, #2481cc)";
+                validateForm();
+            }
+        });
+        
+        // Загрузка файла
+        async function uploadFile() {
+            if (!selectedFileForUpload) {
+                showToast("❌ Выберите файл для загрузки");
+                return;
+            }
+            
+            const name = document.getElementById('fileName').value.trim();
+            if (!name) {
+                showToast("❌ Введите название файла");
+                return;
+            }
+            
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span style="animation: spin 1s linear infinite">⌛</span> Загрузка...';
+            
+            try {
+                // Загружаем файл на сервер
+                const fileUrl = await uploadToYeetYourFiles(selectedFileForUpload);
+                
+                // Сохраняем в Firebase
+                const fileData = {
+                    userId: currentUser.id,
+                    username: currentUser.username || currentUser.firstName,
+                    name: name,
+                    description: document.getElementById('fileDescription').value.trim() || null,
+                    type: selectedFileForUpload.type,
+                    size: selectedFileForUpload.size,
+                    url: fileUrl,
+                    timestamp: Date.now()
+                };
+                
+                const newFileRef = database.ref('user_files/' + currentUser.id).push();
+                await newFileRef.set(fileData);
+                
+                // Обновляем использованное место
+                userStorage.used += selectedFileForUpload.size;
+                updateStorageDisplay();
+                
+                // Добавляем в локальный массив
+                const newFile = { id: newFileRef.key, ...fileData };
+                files.unshift(newFile);
+                
+                showToast("✅ Файл успешно загружен!");
+                closeUploadPanel();
+                
+                // Перерисовываем файлы
+                applyFilter();
+                
+            } catch (error) {
+                console.error("Ошибка загрузки:", error);
+                showToast("❌ Ошибка при загрузке файла");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Загрузить файл';
+            }
+        }
+        
+        // Загрузка на YeetYourFiles
+        async function uploadToYeetYourFiles(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch('https://yyf.mubilop.com/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Upload failed: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            return 'https://yyf.mubilop.com' + result.fileUrl;
+        }
+        
+        // Вспомогательные функции
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function openTelegramProfile() {
+            if (currentUser.username) {
+                tg.openLink(`https://t.me/${currentUser.username}`);
+            } else {
+                showToast("Профиль недоступен");
+            }
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            initUser();
+            
+            // Слушаем изменения в реальном времени
+            if (database) {
+                database.ref('user_files/' + currentUser.id).on('value', () => {
+                    loadUserFiles();
+                });
+            }
+        });
+        
+        // Глобальные функции
+        window.switchTab = switchTab;
+        window.openUploadPanel = openUploadPanel;
+        window.closeUploadPanel = closeUploadPanel;
+        window.validateForm = validateForm;
+        window.uploadFile = uploadFile;
+        window.searchFiles = searchFiles;
+        window.searchFilesList = searchFilesList;
+        window.setFilter = setFilter;
+        window.openFileDetails = openFileDetails;
+        window.closeFileDetails = closeFileDetails;
+        window.shareFile = shareFile;
+        window.shareFileDirect = shareFileDirect;
+        window.copyFileLink = copyFileLink;
+        window.deleteFile = deleteFile;
+        window.openTelegramProfile = openTelegramProfile;
+    </script>
+</body>
+</html>
