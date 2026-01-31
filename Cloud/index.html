@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Store</title>
+    <title>Bahr Cloud</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -27,7 +27,7 @@
         .container {
             max-width: 600px;
             margin: 0 auto;
-            padding-bottom: 100px;
+            padding-bottom: 80px;
         }
 
         /* Header */
@@ -36,8 +36,6 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
-            position: sticky;
-            top: 0;
             background: var(--tg-theme-bg-color, #ffffff);
             z-index: 100;
             border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
@@ -58,12 +56,38 @@
             border: 2px solid var(--tg-theme-button-color, #2481cc);
         }
 
+        /* Storage Info */
         .storage-info {
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             padding: 16px;
-            margin: 0 16px 16px;
+            margin: 0 16px;
             border-radius: 12px;
             text-align: center;
+        }
+
+        .storage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .storage-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .storage-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .storage-progress {
@@ -91,9 +115,16 @@
             color: var(--tg-theme-text-color, #000000);
         }
 
+        .storage-upgrade {
+            font-size: 12px;
+            color: var(--tg-theme-button-color, #2481cc);
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
         /* Upload Button */
         .upload-btn-container {
-            padding: 0 16px 16px;
+            padding: 16px;
         }
 
         .upload-btn {
@@ -112,14 +143,56 @@
             gap: 8px;
         }
 
+        /* Selection Mode */
+        .selection-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .selection-mode.active {
+            transform: translateY(0);
+        }
+
+        .selection-count {
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .selection-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .selection-btn {
+            background: none;
+            border: none;
+            color: var(--tg-theme-text-color, #000000);
+            cursor: pointer;
+            padding: 8px;
+            font-size: 20px;
+        }
+
+        .selection-btn.delete {
+            color: #ff3366;
+        }
+
         /* Tabs */
         .tabs {
             display: flex;
             padding: 0 16px;
             border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
             background: var(--tg-theme-bg-color, #ffffff);
-            position: sticky;
-            top: 60px;
             z-index: 90;
         }
 
@@ -222,10 +295,35 @@
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.2s;
+            position: relative;
         }
 
         .file-card:hover {
             transform: translateY(-2px);
+        }
+
+        .file-card.selected {
+            outline: 3px solid var(--tg-theme-button-color, #2481cc);
+        }
+
+        .file-card.selected .file-checkbox {
+            display: block;
+        }
+
+        .file-checkbox {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: var(--tg-theme-button-color, #2481cc);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            z-index: 2;
         }
 
         .file-icon {
@@ -237,6 +335,16 @@
             font-size: 40px;
             background: linear-gradient(45deg, #2481cc, #4ca1ff);
             color: white;
+            position: relative;
+        }
+
+        .file-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .file-info {
@@ -280,6 +388,47 @@
             align-items: center;
             gap: 12px;
             cursor: pointer;
+            position: relative;
+        }
+
+        .file-item.selected {
+            background: rgba(36, 129, 204, 0.1);
+            outline: 2px solid var(--tg-theme-button-color, #2481cc);
+        }
+
+        .file-item.selected .item-checkbox {
+            display: flex;
+        }
+
+        .item-checkbox {
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: var(--tg-theme-button-color, #2481cc);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            transition: left 0.3s ease;
+        }
+
+        .files-list-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .files-list-container.selection-active .item-checkbox {
+            left: 12px;
+            display: flex;
+        }
+
+        .files-list-container.selection-active .file-item {
+            padding-left: 40px;
         }
 
         .file-item-icon {
@@ -293,6 +442,17 @@
             font-size: 24px;
             background: var(--tg-theme-button-color, #2481cc);
             color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-item-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .file-item-info {
@@ -529,7 +689,7 @@
             padding: 20px;
         }
 
-        .file-preview {
+        .file-preview-container {
             text-align: center;
             margin-bottom: 32px;
         }
@@ -545,6 +705,17 @@
             font-size: 48px;
             background: linear-gradient(45deg, #2481cc, #4ca1ff);
             color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .file-details-info {
@@ -646,9 +817,9 @@
         }
 
         .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
         }
 
         .empty-title {
@@ -680,37 +851,65 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .animated-emoji {
+            animation: bounce 2s infinite;
+        }
     </style>
 </head>
 <body>
+    <!-- Selection Mode Bar -->
+    <div class="selection-mode" id="selectionMode">
+        <div class="selection-count" id="selectionCount">0 selected</div>
+        <div class="selection-actions">
+            <button class="selection-btn" onclick="selectAllFiles()">Select All</button>
+            <button class="selection-btn delete" onclick="deleteSelectedFiles()">Delete</button>
+            <button class="selection-btn" onclick="exitSelectionMode()">Cancel</button>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1 class="header-title">Cloud Store</h1>
+            <h1 class="header-title">Bahr Cloud</h1>
             <img id="userAvatar" class="user-avatar" src="" alt="Avatar" onclick="openTelegramProfile()">
         </div>
 
         <!-- Storage Info -->
         <div class="storage-info">
+            <div class="storage-header">
+                <div class="storage-title">Storage</div>
+                <div class="storage-badge" id="premiumBadge" style="display: none;">
+                    <span>⭐</span> Premium
+                </div>
+            </div>
             <div class="storage-progress">
                 <div class="storage-progress-fill" id="storageProgress"></div>
             </div>
             <div class="storage-text">
-                Использовано: <strong id="storageUsed">0 MB</strong> из <strong id="storageTotal">1 GB</strong>
+                Used: <strong id="storageUsed">0 MB</strong> of <strong id="storageTotal">1 GB</strong>
+            </div>
+            <div class="storage-upgrade" id="storageUpgrade" style="display: none;" onclick="openPremiumInfo()">
+                Get Telegram Premium for 5 GB storage
             </div>
         </div>
 
         <!-- Upload Button -->
         <div class="upload-btn-container">
             <button class="upload-btn" onclick="openUploadPanel()">
-                📁 Загрузить файл
+                Upload File
             </button>
         </div>
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('grid')">📁</button>
-            <button class="tab" onclick="switchTab('list')">📋</button>
+            <button class="tab active" onclick="switchTab('grid')">Grid</button>
+            <button class="tab" onclick="switchTab('list')">List</button>
         </div>
 
         <!-- Content -->
@@ -718,21 +917,21 @@
             <!-- Search -->
             <div class="search-container">
                 <div class="search-icon">🔍</div>
-                <input type="text" class="search-input" id="searchInput" placeholder="Поиск файлов..." oninput="searchFiles()">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search files..." oninput="searchFiles()">
             </div>
 
             <!-- Filters -->
             <div class="filters-wrapper" id="filtersWrapper">
-                <button class="filter-btn active" onclick="setFilter('all')">Все</button>
-                <button class="filter-btn" onclick="setFilter('image')">Изображения</button>
-                <button class="filter-btn" onclick="setFilter('video')">Видео</button>
-                <button class="filter-btn" onclick="setFilter('audio')">Аудио</button>
-                <button class="filter-btn" onclick="setFilter('document')">Документы</button>
+                <button class="filter-btn active" onclick="setFilter('all')">All</button>
+                <button class="filter-btn" onclick="setFilter('image')">Images</button>
+                <button class="filter-btn" onclick="setFilter('video')">Videos</button>
+                <button class="filter-btn" onclick="setFilter('audio')">Audio</button>
+                <button class="filter-btn" onclick="setFilter('document')">Documents</button>
             </div>
 
             <!-- Files Grid -->
             <div class="files-grid" id="filesGrid">
-                <div class="loading">Загрузка файлов...</div>
+                <div class="loading">Loading files...</div>
             </div>
         </div>
 
@@ -740,12 +939,14 @@
             <!-- Search -->
             <div class="search-container">
                 <div class="search-icon">🔍</div>
-                <input type="text" class="search-input" id="listSearchInput" placeholder="Поиск файлов..." oninput="searchFilesList()">
+                <input type="text" class="search-input" id="listSearchInput" placeholder="Search files..." oninput="searchFilesList()">
             </div>
 
             <!-- Files List -->
-            <div class="files-list" id="filesList">
-                <div class="loading">Загрузка файлов...</div>
+            <div class="files-list-container" id="filesListContainer">
+                <div class="files-list" id="filesList">
+                    <div class="loading">Loading files...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -754,35 +955,35 @@
     <div class="upload-overlay" id="uploadOverlay" onclick="closeUploadPanel()"></div>
     <div class="upload-panel" id="uploadPanel">
         <div class="upload-header">
-            <div class="upload-title">Загрузить файл</div>
+            <div class="upload-title">Upload File</div>
             <button class="close-upload" onclick="closeUploadPanel()">×</button>
         </div>
         <div class="upload-content">
             <form class="upload-form" id="uploadForm">
                 <div class="form-group">
-                    <label class="form-label">Файл *</label>
+                    <label class="form-label">File *</label>
                     <label class="file-input-label" id="fileLabel">
-                        <div class="file-input-text">Нажмите для выбора файла</div>
-                        <div class="file-input-subtext">Максимальный размер: 100MB</div>
+                        <div class="file-input-text">Click to select file</div>
+                        <div class="file-input-subtext">Max size: 100MB</div>
                         <input type="file" id="fileInput">
                     </label>
                     <div class="file-info" id="fileInfo"></div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Название файла *</label>
-                    <input type="text" class="form-input" id="fileName" placeholder="Введите название" maxlength="100" oninput="validateForm()">
+                    <label class="form-label">File name *</label>
+                    <input type="text" class="form-input" id="fileName" placeholder="Enter file name" maxlength="100" oninput="validateForm()">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Описание (опционально)</label>
-                    <textarea class="form-input" id="fileDescription" placeholder="Описание файла..." rows="3" maxlength="500"></textarea>
+                    <label class="form-label">Description (optional)</label>
+                    <textarea class="form-input" id="fileDescription" placeholder="File description..." rows="3" maxlength="500"></textarea>
                 </div>
             </form>
         </div>
         <div class="upload-footer">
             <button class="upload-button" id="uploadBtn" onclick="uploadFile()" disabled>
-                Загрузить файл
+                Upload File
             </button>
         </div>
     </div>
@@ -791,43 +992,41 @@
     <div class="upload-overlay" id="fileDetailsOverlay" onclick="closeFileDetails()"></div>
     <div class="file-details-panel" id="fileDetailsPanel">
         <div class="file-details-header">
-            <div class="upload-title">Информация о файле</div>
+            <div class="upload-title">File Details</div>
             <button class="file-details-close" onclick="closeFileDetails()">×</button>
         </div>
         <div class="file-details-content">
-            <div class="file-preview">
-                <div class="file-preview-icon" id="filePreviewIcon">📄</div>
+            <div class="file-preview-container">
+                <div class="file-preview-icon" id="filePreviewIcon">
+                    <img id="filePreviewImage" class="file-preview-image" style="display: none;">
+                </div>
             </div>
             <div class="file-details-info">
-                <div class="file-details-name" id="fileDetailsName">Название файла</div>
+                <div class="file-details-name" id="fileDetailsName">File name</div>
                 <div class="file-details-meta">
                     <div class="file-meta-item">
-                        <span class="file-meta-label">Тип:</span>
-                        <span class="file-meta-value" id="fileDetailsType">Файл</span>
+                        <span class="file-meta-label">Type:</span>
+                        <span class="file-meta-value" id="fileDetailsType">File</span>
                     </div>
                     <div class="file-meta-item">
-                        <span class="file-meta-label">Размер:</span>
+                        <span class="file-meta-label">Size:</span>
                         <span class="file-meta-value" id="fileDetailsSize">0 MB</span>
                     </div>
                     <div class="file-meta-item">
-                        <span class="file-meta-label">Загружен:</span>
-                        <span class="file-meta-value" id="fileDetailsDate">Сегодня</span>
-                    </div>
-                    <div class="file-meta-item">
-                        <span class="file-meta-label">Ссылка:</span>
-                        <span class="file-meta-value" id="fileDetailsLink">Нажмите "Поделиться"</span>
+                        <span class="file-meta-label">Uploaded:</span>
+                        <span class="file-meta-value" id="fileDetailsDate">Today</span>
                     </div>
                 </div>
             </div>
             <div class="file-actions">
-                <button class="file-action-btn-large primary" onclick="shareFile()">
-                    <span>📤</span> Поделиться ссылкой
+                <button class="file-action-btn-large primary" onclick="openFileLink()">
+                    Open File
                 </button>
-                <button class="file-action-btn-large secondary" onclick="copyFileLink()">
-                    <span>📋</span> Копировать ссылку
+                <button class="file-action-btn-large secondary" onclick="shareFile()">
+                    Share Link
                 </button>
                 <button class="file-action-btn-large secondary" onclick="deleteFile()" style="color: #ff3366;">
-                    <span>🗑️</span> Удалить файл
+                    Delete File
                 </button>
             </div>
         </div>
@@ -853,7 +1052,7 @@
             app = firebase.initializeApp(firebaseConfig);
             database = firebase.database(app);
         } catch (error) {
-            console.log("Firebase инициализирован в другом приложении");
+            console.log("Firebase already initialized");
             database = firebase.database();
         }
         
@@ -863,14 +1062,15 @@
                 user: {
                     id: Date.now(),
                     username: "test_user",
-                    first_name: "Тест",
+                    first_name: "Test",
                     last_name: "",
                     photo_url: "https://i.pravatar.cc/150?img=3"
                 }
             },
             expand: () => {},
             openLink: (url) => window.open(url, '_blank'),
-            showConfirm: (message, callback) => callback(window.confirm(message))
+            showConfirm: (message, callback) => callback(window.confirm(message)),
+            showAlert: (message) => window.alert(message)
         };
         
         if (tg.expand) tg.expand();
@@ -884,9 +1084,20 @@
         let selectedFileForUpload = null;
         let currentView = 'grid';
         let userStorage = {
-            used: 0, // в байтах
-            total: 1024 * 1024 * 1024, // 1 GB по умолчанию
+            used: 0,
+            total: 1024 * 1024 * 1024,
             premium: false
+        };
+        let selectionMode = false;
+        let selectedFiles = new Set();
+        let loadingFiles = false;
+        
+        // Animated emojis
+        const animatedEmojis = {
+            empty: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Smileys/Thinking%20Face.webp',
+            error: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Smileys/Confused%20Face.webp',
+            success: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Smileys/Star%20Struck.webp',
+            noResults: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Smileys/Exploding%20Head.webp'
         };
         
         // Инициализация пользователя
@@ -895,7 +1106,7 @@
             currentUser = {
                 id: tgUser?.id?.toString() || 'anonymous_' + Date.now(),
                 username: tgUser?.username || 'user_' + Math.random().toString(36).substr(2, 9),
-                firstName: tgUser?.first_name || 'Пользователь',
+                firstName: tgUser?.first_name || 'User',
                 lastName: tgUser?.last_name || '',
                 photoUrl: tgUser?.photo_url || 'https://i.pravatar.cc/150?img=3'
             };
@@ -905,24 +1116,38 @@
             userStorage.total = userStorage.premium ? 5 * 1024 * 1024 * 1024 : 1024 * 1024 * 1024;
             
             document.getElementById('userAvatar').src = currentUser.photoUrl;
+            
+            // Обновляем отображение премиума
+            const premiumBadge = document.getElementById('premiumBadge');
+            const upgradeText = document.getElementById('storageUpgrade');
+            
+            if (userStorage.premium) {
+                premiumBadge.style.display = 'flex';
+                upgradeText.style.display = 'none';
+                document.querySelector('.header-title').textContent = 'Bahr Cloud ⭐';
+            } else {
+                premiumBadge.style.display = 'none';
+                upgradeText.style.display = 'block';
+            }
+            
             updateStorageDisplay();
             loadUserFiles();
-            
-            // Обновляем заголовок с информацией о премиум
-            if (userStorage.premium) {
-                document.querySelector('.header-title').textContent = 'Cloud Store ⭐';
-            }
         }
         
         // Обновление отображения хранилища
         function updateStorageDisplay() {
             const usedMB = (userStorage.used / 1024 / 1024).toFixed(1);
             const totalGB = (userStorage.total / 1024 / 1024 / 1024).toFixed(1);
-            const percentage = (userStorage.used / userStorage.total) * 100;
+            const percentage = Math.min(100, (userStorage.used / userStorage.total) * 100);
             
             document.getElementById('storageUsed').textContent = `${usedMB} MB`;
             document.getElementById('storageTotal').textContent = `${totalGB} GB`;
             document.getElementById('storageProgress').style.width = `${percentage}%`;
+        }
+        
+        // Информация о премиуме
+        function openPremiumInfo() {
+            tg.showAlert("With Telegram Premium, you get 5 GB of cloud storage instead of 1 GB. Upgrade in Telegram settings!");
         }
         
         // Переключение вкладок
@@ -943,11 +1168,9 @@
         
         // Загрузка файлов пользователя
         function loadUserFiles() {
-            if (!database) {
-                showFilesError();
-                return;
-            }
+            if (!database || loadingFiles) return;
             
+            loadingFiles = true;
             database.ref('user_files/' + currentUser.id).once('value')
                 .then(snapshot => {
                     const filesData = snapshot.val();
@@ -957,6 +1180,7 @@
                         userStorage.used = 0;
                         updateStorageDisplay();
                         renderEmptyFiles();
+                        loadingFiles = false;
                         return;
                     }
                     
@@ -965,15 +1189,30 @@
                         ...file
                     }));
                     
+                    // Убираем дубликаты по ID
+                    const uniqueFiles = [];
+                    const seenIds = new Set();
+                    
+                    for (const file of files) {
+                        if (!seenIds.has(file.id)) {
+                            seenIds.add(file.id);
+                            uniqueFiles.push(file);
+                        }
+                    }
+                    
+                    files = uniqueFiles;
+                    
                     // Пересчитываем общий размер
                     userStorage.used = files.reduce((total, file) => total + (file.size || 0), 0);
                     updateStorageDisplay();
                     
                     applyFilter();
+                    loadingFiles = false;
                 })
                 .catch(error => {
-                    console.error("Ошибка загрузки файлов:", error);
+                    console.error("Error loading files:", error);
                     showFilesError();
+                    loadingFiles = false;
                 });
         }
         
@@ -984,17 +1223,17 @@
             
             gridContainer.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">⚠️</div>
-                    <div class="empty-title">Ошибка загрузки</div>
-                    <div class="empty-text">Проверьте подключение к интернету</div>
+                    <img src="${animatedEmojis.error}" class="empty-icon animated-emoji" alt="Error">
+                    <div class="empty-title">Loading Error</div>
+                    <div class="empty-text">Check your internet connection</div>
                 </div>
             `;
             
             listContainer.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">⚠️</div>
-                    <div class="empty-title">Ошибка загрузки</div>
-                    <div class="empty-text">Проверьте подключение к интернету</div>
+                    <img src="${animatedEmojis.error}" class="empty-icon animated-emoji" alt="Error">
+                    <div class="empty-title">Loading Error</div>
+                    <div class="empty-text">Check your internet connection</div>
                 </div>
             `;
         }
@@ -1006,17 +1245,17 @@
             
             gridContainer.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">📁</div>
-                    <div class="empty-title">Файлов нет</div>
-                    <div class="empty-text">Загрузите свой первый файл!</div>
+                    <img src="${animatedEmojis.empty}" class="empty-icon animated-emoji" alt="Empty">
+                    <div class="empty-title">No Files Yet</div>
+                    <div class="empty-text">Upload your first file!</div>
                 </div>
             `;
             
             listContainer.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">📁</div>
-                    <div class="empty-title">Файлов нет</div>
-                    <div class="empty-text">Загрузите свой первый файл!</div>
+                    <img src="${animatedEmojis.empty}" class="empty-icon animated-emoji" alt="Empty">
+                    <div class="empty-title">No Files Yet</div>
+                    <div class="empty-text">Upload your first file!</div>
                 </div>
             `;
         }
@@ -1103,7 +1342,17 @@
                 (file.description && file.description.toLowerCase().includes(query))
             );
             
-            renderFilesList(searchResults);
+            if (searchResults.length === 0) {
+                document.getElementById('filesList').innerHTML = `
+                    <div class="empty-state">
+                        <img src="${animatedEmojis.noResults}" class="empty-icon animated-emoji" alt="No results">
+                        <div class="empty-title">No Results Found</div>
+                        <div class="empty-text">Try different keywords</div>
+                    </div>
+                `;
+            } else {
+                renderFilesList(searchResults);
+            }
         }
         
         // Отображение файлов в виде сетки
@@ -1113,8 +1362,9 @@
             if (filesToRender.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-title">Ничего не найдено</div>
-                        <div class="empty-text">Попробуйте изменить запрос</div>
+                        <img src="${animatedEmojis.noResults}" class="empty-icon animated-emoji" alt="No results">
+                        <div class="empty-title">No Files Found</div>
+                        <div class="empty-text">Try changing the filter</div>
                     </div>
                 `;
                 return;
@@ -1127,17 +1377,32 @@
         function createFileCard(file) {
             const fileIcon = getFileIcon(file);
             const fileSize = formatFileSize(file.size);
+            const isSelected = selectedFiles.has(file.id);
+            
+            // Проверяем, является ли файл изображением для превью
+            const isImage = file.type && (file.type.startsWith('image/') || 
+                ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => 
+                    file.name.toLowerCase().endsWith(ext)));
+            
+            let previewHtml = '';
+            if (isImage && file.url) {
+                previewHtml = `<img src="${file.url}" class="file-preview" alt="${file.name}" onerror="this.style.display='none'">`;
+            }
             
             return `
-                <div class="file-card" onclick="openFileDetails('${file.id}')">
+                <div class="file-card ${isSelected ? 'selected' : ''}" 
+                     onclick="${selectionMode ? `toggleFileSelection('${file.id}')` : `openFileDetails('${file.id}')`}"
+                     oncontextmenu="event.preventDefault(); toggleFileSelection('${file.id}')">
+                    ${selectionMode ? '<div class="file-checkbox">✓</div>' : ''}
                     <div class="file-icon">
-                        ${fileIcon}
+                        ${previewHtml}
+                        ${!isImage || !file.url ? fileIcon : ''}
                     </div>
                     <div class="file-info">
                         <div class="file-name">${escapeHtml(file.name)}</div>
                         <div class="file-meta">
                             <span class="file-size">${fileSize}</span>
-                            <span>📅</span>
+                            <span>${getFileTypeIcon(file)}</span>
                         </div>
                     </div>
                 </div>
@@ -1147,18 +1412,27 @@
         // Отображение файлов в виде списка
         function renderFilesList(filesToRender = filteredFiles) {
             const container = document.getElementById('filesList');
+            const listContainer = document.getElementById('filesListContainer');
             
             if (filesToRender.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-title">Ничего не найдено</div>
-                        <div class="empty-text">Попробуйте изменить запрос</div>
+                        <img src="${animatedEmojis.noResults}" class="empty-icon animated-emoji" alt="No results">
+                        <div class="empty-title">No Files Found</div>
+                        <div class="empty-text">Try changing the filter</div>
                     </div>
                 `;
                 return;
             }
             
             container.innerHTML = filesToRender.map(file => createFileListItem(file)).join('');
+            
+            // Обновляем класс контейнера для режима выбора
+            if (selectionMode) {
+                listContainer.classList.add('selection-active');
+            } else {
+                listContainer.classList.remove('selection-active');
+            }
         }
         
         // Создание элемента списка файлов
@@ -1166,11 +1440,26 @@
             const fileIcon = getFileIcon(file);
             const fileSize = formatFileSize(file.size);
             const fileDate = formatDate(file.timestamp);
+            const isSelected = selectedFiles.has(file.id);
+            
+            // Проверяем, является ли файл изображением для превью
+            const isImage = file.type && (file.type.startsWith('image/') || 
+                ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => 
+                    file.name.toLowerCase().endsWith(ext)));
+            
+            let previewHtml = '';
+            if (isImage && file.url) {
+                previewHtml = `<img src="${file.url}" class="file-item-preview" alt="${file.name}" onerror="this.style.display='none'">`;
+            }
             
             return `
-                <div class="file-item" onclick="openFileDetails('${file.id}')">
+                <div class="file-item ${isSelected ? 'selected' : ''}" 
+                     onclick="${selectionMode ? `toggleFileSelection('${file.id}')` : `openFileDetails('${file.id}')`}"
+                     oncontextmenu="event.preventDefault(); toggleFileSelection('${file.id}')">
+                    <div class="item-checkbox">✓</div>
                     <div class="file-item-icon">
-                        ${fileIcon}
+                        ${previewHtml}
+                        ${!isImage || !file.url ? fileIcon : ''}
                     </div>
                     <div class="file-item-info">
                         <div class="file-item-name">${escapeHtml(file.name)}</div>
@@ -1178,7 +1467,7 @@
                     </div>
                     <div class="file-item-actions">
                         <button class="file-action-btn" onclick="shareFileDirect('${file.id}', event)">
-                            📤
+                            Share
                         </button>
                     </div>
                 </div>
@@ -1193,7 +1482,7 @@
             if (type.startsWith('image/') || ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => name.endsWith(ext))) {
                 return '🖼️';
             } else if (type.startsWith('video/') || ['.mp4', '.avi', '.mov', '.wmv', '.mkv'].some(ext => name.endsWith(ext))) {
-                return '🎥';
+                return '🎬';
             } else if (type.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a'].some(ext => name.endsWith(ext))) {
                 return '🎵';
             } else if (type.startsWith('application/pdf') || name.endsWith('.pdf')) {
@@ -1213,9 +1502,23 @@
             }
         }
         
+        // Получение иконки типа файла для метаданных
+        function getFileTypeIcon(file) {
+            const name = file.name.toLowerCase();
+            const type = file.type || '';
+            
+            if (type.startsWith('image/')) return '🖼️';
+            if (type.startsWith('video/')) return '🎬';
+            if (type.startsWith('audio/')) return '🎵';
+            if (type.startsWith('application/pdf')) return '📕';
+            if (['.doc', '.docx'].some(ext => name.endsWith(ext))) return '📄';
+            if (['.xls', '.xlsx'].some(ext => name.endsWith(ext))) return '📊';
+            return '📄';
+        }
+        
         // Форматирование размера файла
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
+            if (!bytes || bytes === 0) return '0 Bytes';
             
             const k = 1024;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -1232,13 +1535,13 @@
             const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             
             if (diffDays === 0) {
-                return 'Сегодня';
+                return 'Today';
             } else if (diffDays === 1) {
-                return 'Вчера';
+                return 'Yesterday';
             } else if (diffDays < 7) {
-                return `${diffDays} дней назад`;
+                return `${diffDays} days ago`;
             } else {
-                return date.toLocaleDateString('ru-RU');
+                return date.toLocaleDateString('en-US');
             }
         }
         
@@ -1254,22 +1557,37 @@
             const fileDate = formatDate(file.timestamp);
             
             // Определяем тип файла
-            let fileType = 'Файл';
+            let fileType = 'File';
             if (file.type) {
-                if (file.type.startsWith('image/')) fileType = 'Изображение';
-                else if (file.type.startsWith('video/')) fileType = 'Видео';
-                else if (file.type.startsWith('audio/')) fileType = 'Аудио';
-                else if (file.type.startsWith('application/pdf')) fileType = 'PDF документ';
-                else if (file.type.startsWith('application/')) fileType = 'Документ';
+                if (file.type.startsWith('image/')) fileType = 'Image';
+                else if (file.type.startsWith('video/')) fileType = 'Video';
+                else if (file.type.startsWith('audio/')) fileType = 'Audio';
+                else if (file.type.startsWith('application/pdf')) fileType = 'PDF Document';
+                else if (file.type.startsWith('application/')) fileType = 'Document';
                 else fileType = file.type;
             }
             
-            document.getElementById('filePreviewIcon').textContent = fileIcon;
+            const previewIcon = document.getElementById('filePreviewIcon');
+            const previewImage = document.getElementById('filePreviewImage');
+            
+            // Проверяем, является ли файл изображением
+            const isImage = file.type && (file.type.startsWith('image/') || 
+                ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => 
+                    file.name.toLowerCase().endsWith(ext)));
+            
+            if (isImage && file.url) {
+                previewImage.src = file.url;
+                previewImage.style.display = 'block';
+                previewIcon.textContent = '';
+            } else {
+                previewImage.style.display = 'none';
+                previewIcon.textContent = fileIcon;
+            }
+            
             document.getElementById('fileDetailsName').textContent = file.name;
             document.getElementById('fileDetailsType').textContent = fileType;
             document.getElementById('fileDetailsSize').textContent = fileSize;
             document.getElementById('fileDetailsDate').textContent = fileDate;
-            document.getElementById('fileDetailsLink').textContent = file.url ? 'Готово' : 'Ошибка загрузки';
             
             document.getElementById('fileDetailsOverlay').style.display = 'block';
             document.getElementById('fileDetailsPanel').classList.add('active');
@@ -1282,14 +1600,25 @@
             selectedFile = null;
         }
         
-        // Поделиться файлом через Telegram
-        function shareFile() {
+        // Открытие ссылки на файл
+        function openFileLink() {
             if (!selectedFile || !selectedFile.url) {
-                showToast("❌ Ошибка: нет ссылки на файл");
+                showToast("Error: No file link");
                 return;
             }
             
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(selectedFile.url)}&text=${encodeURIComponent(`Файл: ${selectedFile.name}`)}`;
+            tg.openLink(selectedFile.url);
+        }
+        
+        // Поделиться файлом через Telegram
+        function shareFile() {
+            if (!selectedFile || !selectedFile.url) {
+                showToast("Error: No file link");
+                return;
+            }
+            
+            const message = `File: ${selectedFile.name}\n\nFrom @bahrcloud_bot`;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(selectedFile.url)}&text=${encodeURIComponent(message)}`;
             tg.openLink(shareUrl);
         }
         
@@ -1299,42 +1628,20 @@
             
             const file = files.find(f => f.id === fileId);
             if (!file || !file.url) {
-                showToast("❌ Ошибка: нет ссылки на файл");
+                showToast("Error: No file link");
                 return;
             }
             
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(file.url)}&text=${encodeURIComponent(`Файл: ${file.name}`)}`;
+            const message = `File: ${file.name}\n\nFrom @bahrcloud_bot`;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(file.url)}&text=${encodeURIComponent(message)}`;
             tg.openLink(shareUrl);
-        }
-        
-        // Копирование ссылки на файл
-        function copyFileLink() {
-            if (!selectedFile || !selectedFile.url) {
-                showToast("❌ Ошибка: нет ссылки на файл");
-                return;
-            }
-            
-            navigator.clipboard.writeText(selectedFile.url)
-                .then(() => {
-                    showToast("✅ Ссылка скопирована в буфер обмена");
-                })
-                .catch(() => {
-                    // Fallback для старых браузеров
-                    const textArea = document.createElement('textarea');
-                    textArea.value = selectedFile.url;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    showToast("✅ Ссылка скопирована в буфер обмена");
-                });
         }
         
         // Удаление файла
         function deleteFile() {
             if (!selectedFile) return;
             
-            tg.showConfirm(`Удалить файл "${selectedFile.name}"?`, (confirmed) => {
+            tg.showConfirm(`Delete file "${selectedFile.name}"?`, (confirmed) => {
                 if (confirmed) {
                     deleteFileFromStorage(selectedFile.id);
                 }
@@ -1359,8 +1666,12 @@
                     files = files.filter(f => f.id !== fileId);
                     filteredFiles = filteredFiles.filter(f => f.id !== fileId);
                     
-                    showToast("🗑️ Файл удален");
+                    showToast("File deleted");
                     closeFileDetails();
+                    
+                    // Удаляем из выбранных, если есть
+                    selectedFiles.delete(fileId);
+                    updateSelectionMode();
                     
                     // Перерисовываем файлы
                     if (currentView === 'grid') {
@@ -1370,9 +1681,125 @@
                     }
                 })
                 .catch(error => {
-                    console.error("Ошибка удаления файла:", error);
-                    showToast("❌ Ошибка при удалении файла");
+                    console.error("Error deleting file:", error);
+                    showToast("Error deleting file");
                 });
+        }
+        
+        // Режим выбора файлов
+        function toggleFileSelection(fileId) {
+            if (!selectionMode) {
+                // Входим в режим выбора
+                selectionMode = true;
+                document.getElementById('selectionMode').classList.add('active');
+                
+                if (currentView === 'list') {
+                    document.getElementById('filesListContainer').classList.add('selection-active');
+                }
+            }
+            
+            if (selectedFiles.has(fileId)) {
+                selectedFiles.delete(fileId);
+            } else {
+                selectedFiles.add(fileId);
+            }
+            
+            updateSelectionMode();
+            
+            // Перерисовываем файлы
+            if (currentView === 'grid') {
+                renderFilesGrid();
+            } else {
+                renderFilesList();
+            }
+        }
+        
+        function selectAllFiles() {
+            if (selectionMode) {
+                const currentFiles = currentView === 'grid' ? filteredFiles : filteredFiles;
+                currentFiles.forEach(file => {
+                    selectedFiles.add(file.id);
+                });
+                
+                updateSelectionMode();
+                
+                if (currentView === 'grid') {
+                    renderFilesGrid();
+                } else {
+                    renderFilesList();
+                }
+            }
+        }
+        
+        function deleteSelectedFiles() {
+            if (selectedFiles.size === 0) return;
+            
+            tg.showConfirm(`Delete ${selectedFiles.size} selected file(s)?`, (confirmed) => {
+                if (confirmed) {
+                    deleteSelectedFilesFromStorage();
+                }
+            });
+        }
+        
+        function deleteSelectedFilesFromStorage() {
+            if (!database || selectedFiles.size === 0) return;
+            
+            const deletePromises = [];
+            let totalSize = 0;
+            
+            selectedFiles.forEach(fileId => {
+                const file = files.find(f => f.id === fileId);
+                if (file) {
+                    totalSize += file.size || 0;
+                    deletePromises.push(
+                        database.ref(`user_files/${currentUser.id}/${fileId}`).remove()
+                    );
+                }
+            });
+            
+            Promise.all(deletePromises)
+                .then(() => {
+                    // Обновляем использованное место
+                    userStorage.used -= totalSize;
+                    updateStorageDisplay();
+                    
+                    // Удаляем из локальных массивов
+                    files = files.filter(f => !selectedFiles.has(f.id));
+                    filteredFiles = filteredFiles.filter(f => !selectedFiles.has(f.id));
+                    
+                    showToast(`${selectedFiles.size} file(s) deleted`);
+                    
+                    // Выходим из режима выбора
+                    exitSelectionMode();
+                    
+                    // Перерисовываем файлы
+                    if (currentView === 'grid') {
+                        renderFilesGrid();
+                    } else {
+                        renderFilesList();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error deleting files:", error);
+                    showToast("Error deleting files");
+                });
+        }
+        
+        function exitSelectionMode() {
+            selectionMode = false;
+            selectedFiles.clear();
+            document.getElementById('selectionMode').classList.remove('active');
+            document.getElementById('filesListContainer').classList.remove('selection-active');
+            
+            if (currentView === 'grid') {
+                renderFilesGrid();
+            } else {
+                renderFilesList();
+            }
+        }
+        
+        function updateSelectionMode() {
+            document.getElementById('selectionCount').textContent = `${selectedFiles.size} selected`;
         }
         
         // Панель загрузки файла
@@ -1380,8 +1807,8 @@
             // Проверяем есть ли место
             if (userStorage.used >= userStorage.total) {
                 showToast(userStorage.premium ? 
-                    "❌ Хранилище заполнено (5 GB)" : 
-                    "❌ Хранилище заполнено (1 GB). Получите Telegram Premium для 5 GB!");
+                    "Storage full (5 GB)" : 
+                    "Storage full (1 GB). Get Telegram Premium for 5 GB!");
                 return;
             }
             
@@ -1416,13 +1843,13 @@
             if (file) {
                 // Проверяем размер файла
                 if (file.size > 100 * 1024 * 1024) {
-                    showToast("❌ Файл слишком большой (макс. 100MB)", "error");
+                    showToast("File too large (max 100MB)");
                     return;
                 }
                 
                 // Проверяем есть ли место
                 if (userStorage.used + file.size > userStorage.total) {
-                    showToast("❌ Недостаточно места в хранилище");
+                    showToast("Not enough storage space");
                     return;
                 }
                 
@@ -1438,19 +1865,19 @@
         // Загрузка файла
         async function uploadFile() {
             if (!selectedFileForUpload) {
-                showToast("❌ Выберите файл для загрузки");
+                showToast("Select a file to upload");
                 return;
             }
             
             const name = document.getElementById('fileName').value.trim();
             if (!name) {
-                showToast("❌ Введите название файла");
+                showToast("Enter file name");
                 return;
             }
             
             const btn = document.getElementById('uploadBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span style="animation: spin 1s linear infinite">⌛</span> Загрузка...';
+            btn.innerHTML = '<span style="animation: spin 1s linear infinite">⌛</span> Uploading...';
             
             try {
                 // Загружаем файл на сервер
@@ -1479,18 +1906,18 @@
                 const newFile = { id: newFileRef.key, ...fileData };
                 files.unshift(newFile);
                 
-                showToast("✅ Файл успешно загружен!");
+                showToast("File uploaded successfully!");
                 closeUploadPanel();
                 
                 // Перерисовываем файлы
                 applyFilter();
                 
             } catch (error) {
-                console.error("Ошибка загрузки:", error);
-                showToast("❌ Ошибка при загрузке файла");
+                console.error("Upload error:", error);
+                showToast("Error uploading file");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = 'Загрузить файл';
+                btn.innerHTML = 'Upload File';
             }
         }
         
@@ -1531,9 +1958,35 @@
             if (currentUser.username) {
                 tg.openLink(`https://t.me/${currentUser.username}`);
             } else {
-                showToast("Профиль недоступен");
+                showToast("Profile unavailable");
             }
         }
+        
+        // Обработка долгого нажатия для входа в режим выбора
+        let longPressTimer;
+        let longPressTarget;
+        
+        document.addEventListener('touchstart', function(e) {
+            const fileCard = e.target.closest('.file-card, .file-item');
+            if (fileCard && !selectionMode) {
+                longPressTarget = fileCard;
+                longPressTimer = setTimeout(() => {
+                    const fileId = fileCard.dataset.fileId || 
+                        fileCard.querySelector('.file-name, .file-item-name')?.textContent;
+                    if (fileId) {
+                        toggleFileSelection(fileId);
+                    }
+                }, 800);
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchend', function(e) {
+            clearTimeout(longPressTimer);
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', function(e) {
+            clearTimeout(longPressTimer);
+        }, { passive: true });
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
@@ -1545,6 +1998,18 @@
                     loadUserFiles();
                 });
             }
+            
+            // Прямое открытие файла по долгому нажатию
+            document.addEventListener('contextmenu', function(e) {
+                const fileCard = e.target.closest('.file-card, .file-item');
+                if (fileCard && !selectionMode) {
+                    e.preventDefault();
+                    const fileId = fileCard.dataset.fileId;
+                    if (fileId) {
+                        openFileDetails(fileId);
+                    }
+                }
+            });
         });
         
         // Глобальные функции
@@ -1558,11 +2023,16 @@
         window.setFilter = setFilter;
         window.openFileDetails = openFileDetails;
         window.closeFileDetails = closeFileDetails;
+        window.openFileLink = openFileLink;
         window.shareFile = shareFile;
         window.shareFileDirect = shareFileDirect;
-        window.copyFileLink = copyFileLink;
         window.deleteFile = deleteFile;
         window.openTelegramProfile = openTelegramProfile;
+        window.toggleFileSelection = toggleFileSelection;
+        window.selectAllFiles = selectAllFiles;
+        window.deleteSelectedFiles = deleteSelectedFiles;
+        window.exitSelectionMode = exitSelectionMode;
+        window.openPremiumInfo = openPremiumInfo;
     </script>
 </body>
 </html>
