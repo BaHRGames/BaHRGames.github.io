@@ -1237,8 +1237,8 @@
                     <label class="form-label">Аудио файл *</label>
                     <label class="file-input-label" id="audioLabel">
                         <div class="file-input-text">Нажмите для загрузки аудио</div>
-                        <div class="file-input-subtext">MP3 до 50MB</div>
-                        <input type="file" id="audioInput" accept="audio/*">
+                        <div class="file-input-subtext">MP3, M4A, AAC, WAV до 50MB</div>
+                        <input type="file" id="audioInput" accept="audio/*, .mp3, .m4a, .aac, .wav">
                     </label>
                     <div class="file-info" id="audioInfo"></div>
                 </div>
@@ -2152,8 +2152,18 @@
         document.getElementById('audioInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                if (!file.type.startsWith('audio/')) {
-                    showToast("Выберите аудио файл", "error");
+                // Проверяем тип файла для iOS
+                const fileType = file.type;
+                const fileName = file.name.toLowerCase();
+                const isAudioFile = fileType.startsWith('audio/') || 
+                                   fileName.endsWith('.mp3') || 
+                                   fileName.endsWith('.m4a') || 
+                                   fileName.endsWith('.aac') || 
+                                   fileName.endsWith('.wav') ||
+                                   fileName.endsWith('.ogg');
+                
+                if (!isAudioFile) {
+                    showToast("Выберите аудио файл (MP3, M4A, AAC, WAV)", "error");
                     return;
                 }
                 
