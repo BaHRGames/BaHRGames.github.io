@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App Info</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #f5f5f5);
+            color: var(--tg-theme-text-color, #222222);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: var(--tg-theme-text-color, #222222);
+            border-bottom: 2px solid var(--tg-theme-hint-color, #999999);
+            padding-bottom: 12px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin: 20px 0 12px 0;
+            color: var(--tg-theme-text-color, #222222);
+        }
+
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 12px 8px;
+            margin-top: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--tg-theme-hint-color, #666666);
+            word-break: break-word;
+        }
+
+        .info-value {
+            color: var(--tg-theme-text-color, #222222);
+            word-break: break-word;
+            font-family: 'Courier New', monospace;
+        }
+
+        .user-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color, #40a7e3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-right: 16px;
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .username {
+            color: var(--tg-theme-hint-color, #666666);
+            margin-top: 4px;
+        }
+
+        .badge {
+            background: var(--tg-theme-button-color, #40a7e3);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .raw-data {
+            background: var(--tg-theme-secondary-bg-color, #1f1f1f);
+            color: var(--tg-theme-text-color, #e0e0e0);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-top: 16px;
+        }
+
+        .status {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--tg-theme-hint-color, #666666);
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .theme-colors {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .color-sample {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Telegram Mini App Info</h1>
+        
+        <div id="loading" class="loading">
+            <p>Загрузка данных...</p>
+        </div>
+
+        <div id="content">
+            <div class="card" id="user-info">
+                <h2>👤 Информация о пользователе</h2>
+                <div id="user-data"></div>
+            </div>
+
+            <div class="card" id="chat-info">
+                <h2>💬 Информация о чате</h2>
+                <div id="chat-data"></div>
+            </div>
+
+            <div class="card" id="theme-info">
+                <h2>🎨 Тема оформления</h2>
+                <div id="theme-data"></div>
+            </div>
+
+            <div class="card" id="device-info">
+                <h2>📱 Информация об устройстве</h2>
+                <div id="device-data"></div>
+            </div>
+
+            <div class="card" id="platform-info">
+                <h2>⚙️ Платформа и настройки</h2>
+                <div id="platform-data"></div>
+            </div>
+
+            <div class="card" id="init-data">
+                <h2>🔐 Init Data (сырые данные)</h2>
+                <div id="init-data-content" class="raw-data"></div>
+            </div>
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        // Функция для безопасного получения свойства
+        function safeGet(obj, path, defaultValue = 'Не указано') {
+            try {
+                const value = path.split('.').reduce((current, key) => current?.[key], obj);
+                return value !== undefined && value !== null ? value : defaultValue;
+            } catch {
+                return defaultValue;
+            }
+        }
+
+        // Форматирование значения для отображения
+        function formatValue(value) {
+            if (value === null || value === undefined) return 'Не указано';
+            if (typeof value === 'boolean') return value ? '✅ Да' : '❌ Нет';
+            if (typeof value === 'object') {
+                try {
+                    return JSON.stringify(value, null, 2);
+                } catch {
+                    return 'Не удалось распарсить';
+                }
+            }
+            return String(value);
+        }
+
+        // Создание HTML для объекта
+        function createInfoGrid(data) {
+            if (!data || Object.keys(data).length === 0) {
+                return '<p>Нет данных</p>';
+            }
+
+            let html = '<div class="info-grid">';
+            for (const [key, value] of Object.entries(data)) {
+                html += `
+                    <div class="info-label">${key}:</div>
+                    <div class="info-value">${formatValue(value)}</div>
+                `;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        // Получение информации о пользователе
+        function getUserInfo(initDataUnsafe) {
+            const user = initDataUnsafe.user || {};
+            
+            // Аватар на основе инициалов
+            const firstName = user.first_name || '';
+            const lastName = user.last_name || '';
+            const initials = (firstName.charAt(0) + (lastName.charAt(0) || '')).toUpperCase() || '?';
+            
+            return {
+                'ID': user.id || 'Не указано',
+                'Имя': user.first_name || 'Не указано',
+                'Фамилия': user.last_name || 'Не указано',
+                'Username': user.username ? '@' + user.username : 'Не указано',
+                'Язык': user.language_code || 'Не указано',
+                'Премиум': user.is_premium ? '✅ Да' : '❌ Нет',
+                'Бот': user.is_bot ? '✅ Да' : '❌ Нет',
+                'Разрешил сообщения': user.allows_write_to_pm ? '✅ Да' : '❌ Нет',
+                'Фото профиля': user.photo_url ? '✅ Есть' : '❌ Нет'
+            };
+        }
+
+        // Получение информации о чате
+        function getChatInfo(initDataUnsafe) {
+            const chat = initDataUnsafe.chat || {};
+            const chatType = initDataUnsafe.chat_type || 'unknown';
+            const chatInstance = initDataUnsafe.chat_instance || 'unknown';
+
+            return {
+                'ID': chat.id || 'Не указано',
+                'Тип': chat.type || chatType || 'Не указано',
+                'Название': chat.title || 'Не указано',
+                'Username': chat.username ? '@' + chat.username : 'Не указано',
+                'Instance': chatInstance || 'Не указано',
+                'Фото': chat.photo_url ? '✅ Есть' : '❌ Нет'
+            };
+        }
+
+        // Получение информации о платформе
+        function getPlatformInfo(WebApp) {
+            return {
+                'Платформа': WebApp.platform || 'Не указано',
+                'Версия': WebApp.version || 'Не указано',
+                'Цветовая схема': WebApp.colorScheme || 'Не указано',
+                'Развернуто': WebApp.isExpanded ? '✅ Да' : '❌ Нет',
+                'На весь экран': WebApp.isFullscreen ? '✅ Да' : '❌ Нет',
+                'В активном состоянии': WebApp.isActive ? '✅ Да' : '❌ Нет',
+                'Viewport stable': WebApp.isViewportStable ? '✅ Да' : '❌ Нет',
+                'Closing confirmation': WebApp.isClosingConfirmationEnabled ? '✅ Да' : '❌ Нет',
+                'Vertical swipes': WebApp.isVerticalSwipesEnabled ? '✅ Да' : '❌ Нет'
+            };
+        }
+
+        // Получение информации об устройстве
+        function getDeviceInfo(WebApp) {
+            return {
+                'Высота экрана': WebApp.viewportHeight + 'px',
+                'Ширина экрана': WebApp.viewportWidth + 'px',
+                'Высота (stable)': WebApp.viewportStableHeight + 'px',
+                'Высота (raw)': window.innerHeight + 'px',
+                'Ширина (raw)': window.innerWidth + 'px',
+                'Соотношение сторон': (window.innerWidth / window.innerHeight).toFixed(2),
+                'Pixel ratio': window.devicePixelRatio || 'Не указано'
+            };
+        }
+
+        // Получение информации о теме
+        function getThemeInfo(WebApp) {
+            const theme = WebApp.themeParams || {};
+            const colors = {};
+            
+            // Собираем все цвета темы
+            for (const [key, value] of Object.entries(theme)) {
+                colors[key] = value;
+            }
+
+            return {
+                'Цветов в теме': Object.keys(colors).length,
+                'Доступные цвета': colors
+            };
+        }
+
+        // Основная функция инициализации
+        function initApp() {
+            const statusEl = document.getElementById('status');
+            
+            try {
+                // Проверяем, запущено ли приложение в Telegram
+                if (typeof window.Telegram === 'undefined' || !window.Telegram.WebApp) {
+                    statusEl.innerHTML = '⚠️ Это приложение должно быть запущено в Telegram Mini App';
+                    return;
+                }
+
+                const WebApp = window.Telegram.WebApp;
+                
+                // Сообщаем Telegram, что приложение готово
+                WebApp.ready();
+                
+                // Расширяем на весь доступный экран
+                WebApp.expand();
+
+                // Получаем initData
+                const initData = WebApp.initData || 'Нет initData';
+                const initDataUnsafe = WebApp.initDataUnsafe || {};
+
+                // Отображаем информацию о пользователе
+                document.getElementById('user-data').innerHTML = createInfoGrid(getUserInfo(initDataUnsafe));
+                
+                // Отображаем информацию о чате
+                document.getElementById('chat-data').innerHTML = createInfoGrid(getChatInfo(initDataUnsafe));
+                
+                // Отображаем информацию о платформе
+                document.getElementById('platform-data').innerHTML = createInfoGrid(getPlatformInfo(WebApp));
+                
+                // Отображаем информацию об устройстве
+                document.getElementById('device-data').innerHTML = createInfoGrid(getDeviceInfo(WebApp));
+                
+                // Отображаем информацию о теме
+                const themeInfo = getThemeInfo(WebApp);
+                let themeHtml = `<p>Всего цветов: ${themeInfo['Цветов в теме']}</p>`;
+                
+                if (Object.keys(themeInfo['Доступные цвета']).length > 0) {
+                    themeHtml += '<div class="theme-colors">';
+                    for (const [colorName, colorValue] of Object.entries(themeInfo['Доступные цвета'])) {
+                        themeHtml += `
+                            <div class="color-sample">
+                                <div class="color-dot" style="background: ${colorValue}"></div>
+                                <span>${colorName}: ${colorValue}</span>
+                            </div>
+                        `;
+                    }
+                    themeHtml += '</div>';
+                } else {
+                    themeHtml += '<p>Цвета темы не указаны</p>';
+                }
+                document.getElementById('theme-data').innerHTML = themeHtml;
+
+                // Отображаем сырые initData
+                let initDataDisplay;
+                try {
+                    if (initData && initData !== 'Нет initData') {
+                        // Пытаемся распарсить как URL-encoded строку
+                        const params = new URLSearchParams(initData);
+                        const parsedData = {};
+                        for (const [key, value] of params.entries()) {
+                            try {
+                                // Пробуем распарсить JSON, если это user
+                                if (key === 'user') {
+                                    parsedData[key] = JSON.parse(decodeURIComponent(value));
+                                } else {
+                                    parsedData[key] = decodeURIComponent(value);
+                                }
+                            } catch {
+                                parsedData[key] = value;
+                            }
+                        }
+                        initDataDisplay = JSON.stringify(parsedData, null, 2);
+                    } else {
+                        initDataDisplay = initData;
+                    }
+                } catch {
+                    initDataDisplay = initData;
+                }
+                document.getElementById('init-data-content').textContent = initDataDisplay;
+
+                statusEl.innerHTML = '✅ Приложение успешно загружено';
+
+            } catch (error) {
+                console.error('Ошибка:', error);
+                statusEl.innerHTML = '❌ Ошибка при загрузке данных: ' + error.message;
+            }
+        }
+
+        // Запускаем приложение после загрузки страницы
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        // Обновляем информацию при изменении размеров окна
+        window.addEventListener('resize', () => {
+            const WebApp = window.Telegram?.WebApp;
+            if (WebApp) {
+                const deviceData = getDeviceInfo(WebApp);
+                document.getElementById('device-data').innerHTML = createInfoGrid(deviceData);
+            }
+        });
+
+        // Следим за изменениями темы
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.onEvent('themeChanged', function() {
+                const WebApp = window.Telegram.WebApp;
+                const themeInfo = getThemeInfo(WebApp);
+                
+                let themeHtml = `<p>Всего цветов: ${themeInfo['Цветов в теме']}</p>`;
+                
+                if (Object.keys(themeInfo['Доступные цвета']).length > 0) {
+                    themeHtml += '<div class="theme-colors">';
+                    for (const [colorName, colorValue] of Object.entries(themeInfo['Доступные цвета'])) {
+                        themeHtml += `
+                            <div class="color-sample">
+                                <div class="color-dot" style="background: ${colorValue}"></div>
+                                <span>${colorName}: ${colorValue}</span>
+                            </div>
+                        `;
+                    }
+                    themeHtml += '</div>';
+                }
+                document.getElementById('theme-data').innerHTML = themeHtml;
+            });
+        }
+    </script>
+</body>
+</html>
