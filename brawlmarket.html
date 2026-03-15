@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Brawl Market — бусты и донат</title>
+    <!-- Telegram Web App -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Тот же стиль что в мотосалоне -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --blue: #1f4fd8;
+            --blue-dark: #163aa3;
+            --blue-light: #eef3ff;
+            --text: #1e1e2f;
+            --gray-bg: #f5f7fa;
+            --border: #e9ecf0;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --radius: 24px;
+            --radius-sm: 16px;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            color: var(--text);
+            line-height: 1.4;
+            padding-bottom: 80px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        
+        /* Шапка как в мотосалоне */
+        header {
+            background: white;
+            padding: 16px 0 8px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+        
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo i {
+            color: #f5b342; /* золотой для brawl stars */
+        }
+        
+        .cart-icon {
+            position: relative;
+            font-size: 22px;
+            color: var(--text);
+            text-decoration: none;
+            padding: 8px;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--blue);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+        
+        /* Навигация по страницам (как в мотосалоне, но теперь переключает страницы) */
+        .page-nav {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding: 4px 0;
+        }
+        
+        .page-nav::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .page-tab {
+            background: var(--gray-bg);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .page-tab.active {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+        
+        .page-tab i {
+            margin-right: 6px;
+        }
+        
+        /* Страницы */
+        .page {
+            display: none;
+        }
+        
+        .page.active-page {
+            display: block;
+        }
+        
+        /* Категории как в мотосалоне (адаптировано под бусты) */
+        .categories {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-chip {
+            background: var(--gray-bg);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        
+        .category-chip.active {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+        
+        /* Поиск */
+        .search-box {
+            margin: 16px 0;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 16px 20px;
+            padding-left: 52px;
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            font-size: 16px;
+            background: var(--gray-bg);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #8e9db2;
+        }
+        
+        /* Заголовки разделов */
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 24px 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-title a {
+            color: var(--blue);
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        
+        /* Сетка товаров/услуг - в стиле мотосалона */
+        .offers-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .offer-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .offer-card:active {
+            background: var(--gray-bg);
+        }
+        
+        .offer-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--blue-light);
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+            border: 2px solid white;
+            box-shadow: var(--shadow);
+        }
+        
+        .offer-info {
+            flex: 1;
+        }
+        
+        .offer-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        
+        .offer-seller {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .offer-rating {
+            color: #f5b342;
+            font-size: 13px;
+        }
+        
+        .offer-rating i {
+            margin-right: 2px;
+        }
+        
+        .offer-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .offer-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            color: #6f7d95;
+            margin-bottom: 8px;
+        }
+        
+        .offer-meta i {
+            margin-right: 4px;
+            font-size: 12px;
+        }
+        
+        .offer-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--blue);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .offer-price small {
+            font-size: 14px;
+            font-weight: 400;
+            color: #6f7d95;
+        }
+        
+        .offer-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* Кнопка */
+        .btn {
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--blue);
+            border: 1px solid var(--blue);
+        }
+        
+        /* Нижняя навигация (как в мотосалоне) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 16px;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #8e9db2;
+            font-size: 12px;
+            gap: 4px;
+            flex: 1;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .nav-item i {
+            font-size: 22px;
+        }
+        
+        .nav-item.active {
+            color: var(--blue);
+            font-weight: 500;
+        }
+        
+        /* Статистика продавца */
+        .seller-stats {
+            display: flex;
+            gap: 16px;
+            background: var(--gray-bg);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--blue);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6f7d95;
+        }
+        
+        /* Заказы */
+        .order-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .order-status {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        /* Уведомление */
+        .notification {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 14px;
+            z-index: 200;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Шапка как в мотосалоне -->
+    <header>
+        <div class="container header-inner">
+            <div class="logo">
+                <i class="fas fa-fist-raised"></i> Brawl Market
+            </div>
+            <a href="#" class="cart-icon" onclick="switchPage('cart'); return false;">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-badge" id="cartCounter">0</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Навигация по страницам (как в мотосалоне, но табы) -->
+    <div class="container">
+        <div class="page-nav">
+            <button class="page-tab active" onclick="switchPage('market')"><i class="fas fa-store"></i> Маркет</button>
+            <button class="page-tab" onclick="switchPage('orders')"><i class="fas fa-clipboard-list"></i> Мои заказы</button>
+            <button class="page-tab" onclick="switchPage('profile')"><i class="fas fa-user"></i> Профиль</button>
+        </div>
+    </div>
+
+    <main class="container">
+        <!-- СТРАНИЦА МАРКЕТА -->
+        <div id="market" class="page active-page">
+            <!-- Поиск -->
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Поиск бустов, прокачки..." oninput="filterOffers()">
+            </div>
+
+            <!-- Категории -->
+            <div class="categories">
+                <span class="category-chip active" data-category="all" onclick="filterCategory('all')">Все</span>
+                <span class="category-chip" data-category="boost" onclick="filterCategory('boost')"><i class="fas fa-chart-line"></i> Бусты</span>
+                <span class="category-chip" data-category="coach" onclick="filterCategory('coach')"><i class="fas fa-graduation-cap"></i> Тренировки</span>
+                <span class="category-chip" data-category="gems" onclick="filterCategory('gems')"><i class="fas fa-gem"></i> Донат</span>
+                <span class="category-chip" data-category="account" onclick="filterCategory('account')"><i class="fas fa-user"></i> Аккаунты</span>
+            </div>
+
+            <!-- Рекомендации -->
+            <div class="section-title">
+                <span>🔥 Популярное</span>
+                <a href="#" onclick="return false;">Все →</a>
+            </div>
+
+            <div class="offers-grid" id="featuredOffers"></div>
+
+            <div class="section-title">
+                <span>📦 Все предложения</span>
+                <a href="#" onclick="return false;">123 объявлений</a>
+            </div>
+
+            <div class="offers-grid" id="allOffers"></div>
+        </div>
+
+        <!-- СТРАНИЦА ЗАКАЗОВ -->
+        <div id="orders" class="page">
+            <div class="section-title">Мои заказы</div>
+            <div id="ordersList"></div>
+        </div>
+
+        <!-- СТРАНИЦА ПРОФИЛЯ -->
+        <div id="profile" class="page">
+            <div class="offer-card" style="padding: 24px; flex-direction: column; text-align: center;">
+                <div class="offer-avatar" style="width: 80px; height: 80px; font-size: 32px; margin-bottom: 12px;">
+                    👤
+                </div>
+                <h3 id="profileName">Игрок</h3>
+                <div style="color: #f5b342; margin: 8px 0;">
+                    <i class="fas fa-star"></i> 4.9 · 156 отзывов
+                </div>
+            </div>
+
+            <div class="seller-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="profileOrders">0</div>
+                    <div class="stat-label">Заказов</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="profileSales">0</div>
+                    <div class="stat-label">Продаж</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="profileRating">5.0</div>
+                    <div class="stat-label">Рейтинг</div>
+                </div>
+            </div>
+
+            <button class="btn btn-outline" style="margin-bottom: 24px;" onclick="createOffer()">
+                <i class="fas fa-plus"></i> Создать предложение
+            </button>
+        </div>
+    </main>
+
+    <!-- Нижняя навигация (как в мотосалоне) -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchPage('market')">
+            <i class="fas fa-store"></i>
+            <span>Маркет</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('orders')">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Заказы</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('profile')">
+            <i class="fas fa-user"></i>
+            <span>Профиль</span>
+        </button>
+    </nav>
+
+    <!-- Уведомление -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Инициализация Telegram
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Данные предложений (бусты, донат и т.д.)
+        const offers = [
+            {
+                id: 1,
+                seller: 'BrawlMaster',
+                avatar: '⚔️',
+                title: 'Буст до 750 кубков',
+                description: 'Быстрый буст с гарантией',
+                price: 599,
+                category: 'boost',
+                rating: 4.9,
+                reviews: 127,
+                time: '2-3 часа',
+                featured: true,
+                badge: '🚀 Топ'
+            },
+            {
+                id: 2,
+                seller: 'ProPlayer',
+                avatar: '🎮',
+                title: 'Тренировка 1 на 1',
+                description: 'Научу играть на любом бойце',
+                price: 399,
+                category: 'coach',
+                rating: 5.0,
+                reviews: 89,
+                time: '1 час',
+                featured: true
+            },
+            {
+                id: 3,
+                seller: 'GemSeller',
+                avatar: '💎',
+                title: '1000 самоцветов',
+                description: 'Донат в игру (пополнение)',
+                price: 799,
+                category: 'gems',
+                rating: 4.8,
+                reviews: 342,
+                time: '5 мин',
+                featured: true,
+                badge: '⚡ Моментально'
+            },
+            {
+                id: 4,
+                seller: 'AccountKing',
+                avatar: '👑',
+                title: 'Аккаунт с 50+ бойцами',
+                description: 'Легендарки, скины, кубки 20к',
+                price: 2499,
+                category: 'account',
+                rating: 4.7,
+                reviews: 56,
+                time: '1 день',
+                featured: false
+            },
+            {
+                id: 5,
+                seller: 'BoosterPro',
+                avatar: '⭐',
+                title: 'Буст до Легенды',
+                description: 'Доведу до легендарной лиги',
+                price: 1499,
+                category: 'boost',
+                rating: 5.0,
+                reviews: 234,
+                time: '4-6 часов',
+                featured: false,
+                badge: '🎯 Гарантия'
+            },
+            {
+                id: 6,
+                seller: 'CoachMike',
+                avatar: '🏆',
+                title: 'Разбор игры + стрим',
+                description: 'Посмотрю игру и укажу на ошибки',
+                price: 499,
+                category: 'coach',
+                rating: 4.9,
+                reviews: 67,
+                time: '1.5 часа',
+                featured: false
+            }
+        ];
+
+        // Состояние приложения
+        let appState = {
+            cart: JSON.parse(localStorage.getItem('brawlCart')) || [],
+            orders: JSON.parse(localStorage.getItem('brawlOrders')) || [],
+            currentCategory: 'all',
+            searchQuery: '',
+            user: tg.initDataUnsafe?.user || { first_name: 'Игрок' }
+        };
+
+        // Сохранение
+        function saveState() {
+            localStorage.setItem('brawlCart', JSON.stringify(appState.cart));
+            localStorage.setItem('brawlOrders', JSON.stringify(appState.orders));
+            updateCartBadge();
+        }
+
+        // Уведомление
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+
+        // Обновление счетчика корзины
+        function updateCartBadge() {
+            const total = appState.cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCounter').textContent = total;
+        }
+
+        // Переключение страниц
+        function switchPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(page).classList.add('active-page');
+            
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.page-tab').forEach(tab => tab.classList.remove('active'));
+            
+            if (page === 'market') {
+                document.querySelectorAll('.nav-item')[0].classList.add('active');
+                document.querySelectorAll('.page-tab')[0].classList.add('active');
+            } else if (page === 'orders') {
+                document.querySelectorAll('.nav-item')[1].classList.add('active');
+                document.querySelectorAll('.page-tab')[1].classList.add('active');
+            } else if (page === 'profile') {
+                document.querySelectorAll('.nav-item')[2].classList.add('active');
+                document.querySelectorAll('.page-tab')[2].classList.add('active');
+            }
+            
+            renderCurrentPage(page);
+        }
+
+        // Фильтр по категории
+        function filterCategory(category) {
+            appState.currentCategory = category;
+            document.querySelectorAll('.category-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.category === category);
+            });
+            renderMarket();
+        }
+
+        // Поиск
+        function filterOffers() {
+            appState.searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            renderMarket();
+        }
+
+        // Добавление в корзину
+        function addToCart(offerId) {
+            const existing = appState.cart.find(item => item.id === offerId);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                appState.cart.push({ id: offerId, quantity: 1 });
+            }
+            saveState();
+            showNotification('Добавлено в корзину 🛒');
+        }
+
+        // Оформление заказа
+        function checkout(offerId) {
+            const offer = offers.find(o => o.id === offerId);
+            if (!offer) return;
+            
+            const order = {
+                id: Date.now(),
+                offerId: offerId,
+                title: offer.title,
+                seller: offer.seller,
+                price: offer.price,
+                status: 'Оплачен',
+                date: new Date().toLocaleString()
+            };
+            
+            appState.orders.push(order);
+            saveState();
+            showNotification('Заказ оформлен! Продавец свяжется с вами');
+            
+            // Отправка в Telegram
+            tg.sendData(JSON.stringify({
+                action: 'order',
+                order: order
+            }));
+        }
+
+        // Рендер предложения
+        function renderOfferCard(offer, showActions = true) {
+            return `
+                <div class="offer-card">
+                    <div class="offer-avatar">${offer.avatar}</div>
+                    <div class="offer-info">
+                        <div class="offer-header">
+                            <span class="offer-seller">${offer.seller}</span>
+                            <span class="offer-rating">
+                                <i class="fas fa-star"></i> ${offer.rating}
+                            </span>
+                        </div>
+                        <div class="offer-title">${offer.title}</div>
+                        <div class="offer-meta">
+                            <span><i class="far fa-clock"></i> ${offer.time}</span>
+                            <span><i class="far fa-comment"></i> ${offer.reviews} отзывов</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="offer-price">
+                                ${offer.price} ₽ <small>(${Math.round(offer.price/70)} 💎)</small>
+                            </div>
+                            <button class="btn" style="width: auto; padding: 10px 16px;" onclick="checkout(${offer.id})">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Рендер маркета
+        function renderMarket() {
+            const featuredContainer = document.getElementById('featuredOffers');
+            const allContainer = document.getElementById('allOffers');
+            
+            let filtered = offers;
+            
+            // Фильтр по категории
+            if (appState.currentCategory !== 'all') {
+                filtered = filtered.filter(o => o.category === appState.currentCategory);
+            }
+            
+            // Фильтр по поиску
+            if (appState.searchQuery) {
+                filtered = filtered.filter(o => 
+                    o.title.toLowerCase().includes(appState.searchQuery) ||
+                    o.seller.toLowerCase().includes(appState.searchQuery)
+                );
+            }
+            
+            featuredContainer.innerHTML = filtered
+                .filter(o => o.featured)
+                .map(renderOfferCard).join('');
+            
+            allContainer.innerHTML = filtered
+                .map(renderOfferCard).join('');
+        }
+
+        // Рендер заказов
+        function renderOrders() {
+            const container = document.getElementById('ordersList');
+            
+            if (appState.orders.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: #8e9db2;">
+                        <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <p>У вас пока нет заказов</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = appState.orders.slice().reverse().map(order => `
+                <div class="order-item">
+                    <div class="order-header">
+                        <span style="font-weight: 600;">${order.title}</span>
+                        <span class="order-status">${order.status}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                        <span>Продавец: ${order.seller}</span>
+                        <span class="offer-price" style="font-size: 16px;">${order.price} ₽</span>
+                    </div>
+                    <div style="font-size: 12px; color: #8e9db2; margin-top: 8px;">
+                        ${order.date}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Рендер профиля
+        function renderProfile() {
+            document.getElementById('profileName').textContent = appState.user.first_name || 'Игрок';
+            document.getElementById('profileOrders').textContent = appState.orders.length;
+            document.getElementById('profileSales').textContent = Math.floor(Math.random() * 10); // для демо
+        }
+
+        // Рендер текущей страницы
+        function renderCurrentPage(page) {
+            if (page === 'market') renderMarket();
+            if (page === 'orders') renderOrders();
+            if (page === 'profile') renderProfile();
+        }
+
+        // Создание предложения
+        function createOffer() {
+            showNotification('Функция создания предложения будет доступна в Telegram');
+        }
+
+        // Инициализация
+        function init() {
+            updateCartBadge();
+            renderMarket();
+            renderOrders();
+            renderProfile();
+        }
+
+        init();
+    </script>
+</body>
+</html>
