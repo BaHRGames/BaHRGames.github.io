@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars Music Player</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #1a1e2f 0%, #2a2f45 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .player-container {
+            max-width: 1100px;
+            width: 100%;
+            background: rgba(20, 24, 39, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 25px;
+            box-shadow: 0 25px 50px -8px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        /* Шапка с обложкой и текущим треком */
+        .current-track {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 30px;
+            padding: 20px;
+            border: 1px solid #3a3f5e;
+        }
+
+        .cover-art {
+            width: 120px;
+            height: 120px;
+            border-radius: 24px;
+            background: #2f354a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid gold;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .cover-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .track-info {
+            flex-grow: 1;
+        }
+
+        .track-info h2 {
+            color: #ffd966;
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+            text-shadow: 2px 2px 0 #2a2f45;
+            letter-spacing: 0.5px;
+        }
+
+        .track-info p {
+            color: #b9c2e0;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .track-info .composer {
+            color: #8e9ac0;
+            font-style: italic;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .composer span {
+            background: #2f354a;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-style: normal;
+            color: #ffd966;
+        }
+
+        /* Аудиоплеер */
+        audio {
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 30px;
+            background: #1e2235;
+            border: 1px solid #4c5280;
+            height: 50px;
+        }
+
+        /* Список музыки */
+        .music-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: #ffd966 #2f354a;
+        }
+
+        .music-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .music-list::-webkit-scrollbar-track {
+            background: #2f354a;
+            border-radius: 20px;
+        }
+
+        .music-list::-webkit-scrollbar-thumb {
+            background: #ffd966;
+            border-radius: 20px;
+            border: 2px solid #2f354a;
+        }
+
+        .track-item {
+            background: rgba(30, 34, 53, 0.7);
+            border-radius: 60px;
+            margin-bottom: 10px;
+            padding: 12px 20px 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            border: 1px solid #3d4262;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .track-item:hover {
+            background: #3d4270;
+            border-color: #ffd966;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px #00000055;
+        }
+
+        .track-item.active {
+            background: #4f5590;
+            border: 2px solid #ffd966;
+            box-shadow: 0 0 20px #ffd96655;
+        }
+
+        .track-num {
+            width: 35px;
+            height: 35px;
+            background: gold;
+            color: #1e1e2f;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 0 #b8860b;
+        }
+
+        .track-details {
+            flex-grow: 1;
+        }
+
+        .track-details h3 {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .track-details .tags {
+            color: #aab4d9;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .track-meta {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #b5c0f0;
+            background: #2f354a;
+            padding: 6px 14px;
+            border-radius: 30px;
+            white-space: nowrap;
+            border: 1px solid #5f6a9f;
+        }
+
+        .track-meta i {
+            margin-right: 6px;
+            color: #ffd966;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .error {
+            color: #ff8a8a;
+            background: #440000;
+            padding: 20px;
+            border-radius: 30px;
+            text-align: center;
+        }
+
+        .error-details {
+            font-size: 0.9rem;
+            color: #ffb3b3;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #7b85b0;
+            font-size: 0.9rem;
+        }
+
+        .test-button {
+            background: #4f5590;
+            color: white;
+            border: 1px solid gold;
+            padding: 8px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .test-button:hover {
+            background: #6a70b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container" id="app">
+        <!-- Шапка с плеером -->
+        <div class="current-track">
+            <div class="cover-art" id="currentCover">
+                🎵
+            </div>
+            <div class="track-info">
+                <h2 id="trackName">Brawl Stars Music</h2>
+                <p id="trackFont">Loading tracks...</p>
+                <div class="composer" id="trackComposer"></div>
+                <audio id="audioPlayer" controls controlsList="nodownload"></audio>
+                <div style="margin-top: 8px; font-size: 0.8rem; color: #aab4d9; word-break: break-all;" id="debugUrl"></div>
+            </div>
+        </div>
+
+        <!-- Список треков -->
+        <div class="music-list" id="musicList">
+            <div class="loading">🎵 Загрузка музыки из Brawl Stars...</div>
+        </div>
+        <footer>🎧 Все треки из Brawl Stars Archive • <span id="trackCounter"></span></footer>
+    </div>
+
+    <script>
+        (async function() {
+            const BASE_URL = 'https://sound.brawlarchive.com';
+            const JSON_URL = `${BASE_URL}/js/all.json`;
+            const IMG_BASE = `${BASE_URL}/assets/loadingscreen/compressed/`;
+
+            const app = document.getElementById('app');
+            const musicListEl = document.getElementById('musicList');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const trackNameEl = document.getElementById('trackName');
+            const trackFontEl = document.getElementById('trackFont');
+            const trackComposerEl = document.getElementById('trackComposer');
+            const currentCover = document.getElementById('currentCover');
+            const trackCounter = document.getElementById('trackCounter');
+            const debugUrl = document.getElementById('debugUrl');
+
+            let tracks = [];
+            let currentTrackIndex = 0;
+
+            // ИСПРАВЛЕНИЕ: правильное формирование путей к аудио
+            function getAudioUrl(track) {
+                // Убираем лишние слеши и проверяем пути
+                let path = track.path || track.path_alt;
+                if (!path) return null;
+                
+                // Убираем начальный слеш, если он есть, чтобы избежать двойных слешей
+                path = path.replace(/^\/+/, '');
+                
+                // ВАЖНО: В примере ссылка была https://sound.brawlarchive.com/music/Menu-Music/lose_screen_loop_4x_01.ogg
+                // То есть после base_url идет /music/ + path
+                // Но в JSON пути начинаются с /Menu-Music/, /InGame/, /Lobby/ и т.д.
+                // Значит нужно добавлять /music/ перед путем
+                
+                // Проверяем, не начинается ли уже путь с music/
+                if (!path.startsWith('music/')) {
+                    // Для Menu-Music, InGame, Lobby и других папок - они должны быть внутри music/
+                    return `${BASE_URL}/music/${path}`;
+                } else {
+                    return `${BASE_URL}/${path}`;
+                }
+            }
+
+            // Тестовая функция для проверки первого трека
+            function testFirstTrack() {
+                if (tracks.length > 0) {
+                    const testTrack = tracks[0];
+                    const url = getAudioUrl(testTrack);
+                    debugUrl.innerHTML = `Тестовый URL: <a href="${url}" target="_blank">${url}</a> (откроется в новой вкладке для проверки)`;
+                }
+            }
+
+            // Загрузка изображения загрузочного экрана
+            function getCoverUrl(loadingImage) {
+                if (!loadingImage) return null;
+                let imageId = String(loadingImage).trim();
+                
+                // Пример: 01.jpeg, 02.jpeg, а также clash_extra.jpg?
+                if (imageId.includes('_extra')) {
+                    return `${BASE_URL}/assets/loadingscreen/compressed/${imageId}.jpeg`;
+                } else {
+                    // Дополняем нулем если нужно? В JSON цифры уже с нулем: "01", "02" и т.д.
+                    return `${BASE_URL}/assets/loadingscreen/compressed/${imageId}.jpeg`;
+                }
+            }
+
+            // Обновить информацию о текущем треке
+            function updateCurrentTrack(index) {
+                const track = tracks[index];
+                if (!track) return;
+
+                currentTrackIndex = index;
+                const audioUrl = getAudioUrl(track);
+                
+                // Показываем URL для отладки
+                debugUrl.innerHTML = `Путь к аудио: <a href="${audioUrl}" target="_blank" style="color: #ffd966;">${audioUrl}</a>`;
+                
+                if (audioUrl) {
+                    audioPlayer.src = audioUrl;
+                    audioPlayer.load();
+                    audioPlayer.play().catch(e => {
+                        console.log('Автовоспроизведение не разрешено или ошибка:', e);
+                        debugUrl.innerHTML += `<br>⚠️ Ошибка воспроизведения: ${e.message}`;
+                    });
+                } else {
+                    audioPlayer.src = '';
+                    debugUrl.innerHTML = 'Нет доступного аудио для этого трека';
+                }
+
+                trackNameEl.textContent = track.name || 'Unknown';
+                trackFontEl.textContent = track.font || 'Menu';
+                
+                let composerText = '';
+                if (track.composer) composerText += `🎼 ${track.composer}`;
+                if (track.version) composerText += ` <span>v${track.version}</span>`;
+                trackComposerEl.innerHTML = composerText || '';
+
+                // Загружаем обложку
+                const coverUrl = getCoverUrl(track.loadingimage);
+                if (coverUrl) {
+                    const img = new Image();
+                    img.onload = () => {
+                        currentCover.innerHTML = '';
+                        currentCover.appendChild(img);
+                    };
+                    img.onerror = () => {
+                        currentCover.innerHTML = '🎵';
+                    };
+                    img.src = coverUrl;
+                    img.alt = 'cover';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                } else {
+                    currentCover.innerHTML = '🎵';
+                }
+
+                // Подсветка активного элемента в списке
+                document.querySelectorAll('.track-item').forEach((el, i) => {
+                    if (i === index) {
+                        el.classList.add('active');
+                        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } else {
+                        el.classList.remove('active');
+                    }
+                });
+            }
+
+            // Рендер списка треков
+            function renderTrackList() {
+                if (!tracks.length) {
+                    musicListEl.innerHTML = '<div class="error">❌ Нет треков для отображения</div>';
+                    return;
+                }
+
+                let html = '';
+                tracks.forEach((track, idx) => {
+                    const tags = track.tags ? track.tags.split(' ').slice(0, 4).join(' · ') : '';
+                    html += `
+                        <div class="track-item" data-index="${idx}">
+                            <div class="track-num">${idx + 1}</div>
+                            <div class="track-details">
+                                <h3>${track.name || 'Без названия'}</h3>
+                                <div class="tags">${tags}</div>
+                            </div>
+                            <div class="track-meta">
+                                <i>📁</i> ${track.font || '—'}
+                            </div>
+                        </div>
+                    `;
+                });
+                musicListEl.innerHTML = html;
+                trackCounter.textContent = `${tracks.length} треков`;
+
+                // Добавляем обработчики клика
+                document.querySelectorAll('.track-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const index = item.dataset.index;
+                        if (index !== undefined) {
+                            updateCurrentTrack(parseInt(index));
+                        }
+                    });
+                });
+                
+                // Добавляем тестовую кнопку
+                const testBtn = document.createElement('div');
+                testBtn.innerHTML = '<button class="test-button" id="testFirstTrack">🔊 Проверить первый трек</button>';
+                musicListEl.appendChild(testBtn);
+                
+                document.getElementById('testFirstTrack')?.addEventListener('click', testFirstTrack);
+            }
+
+            // Загрузка данных
+            try {
+                musicListEl.innerHTML = '<div class="loading">🎵 Загрузка музыки из Brawl Stars...</div>';
+                const response = await fetch(JSON_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                if (data && Array.isArray(data.musics)) {
+                    tracks = data.musics;
+                } else {
+                    throw new Error('Некорректный формат JSON: ожидался массив musics');
+                }
+
+                renderTrackList();
+
+                if (tracks.length > 0) {
+                    // Автоматически выбираем первый трек
+                    updateCurrentTrack(0);
+                } else {
+                    musicListEl.innerHTML = '<div class="error">❌ В архиве нет музыкальных треков</div>';
+                }
+
+            } catch (err) {
+                console.error(err);
+                musicListEl.innerHTML = `<div class="error">❌ Ошибка загрузки музыки: ${err.message}<br>
+                <div class="error-details">Проверьте подключение к интернету и доступность ${JSON_URL}</div>
+                <button class="test-button" onclick="location.reload()">🔄 Обновить страницу</button>
+                </div>`;
+                trackNameEl.textContent = 'Ошибка загрузки';
+            }
+
+            // Обработка окончания трека — переход к следующему
+            audioPlayer.addEventListener('ended', () => {
+                if (currentTrackIndex + 1 < tracks.length) {
+                    updateCurrentTrack(currentTrackIndex + 1);
+                }
+            });
+            
+            // Обработка ошибок аудио
+            audioPlayer.addEventListener('error', (e) => {
+                console.error('Audio error:', e);
+                debugUrl.innerHTML += `<br>❌ Ошибка воспроизведения. Возможно файл не найден или не поддерживается.`;
+            });
+
+        })();
+    </script>
+</body>
+</html>
