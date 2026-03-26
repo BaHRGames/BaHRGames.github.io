@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Telegram TikTok · Mini App</title>
-    <!-- Font Awesome + Telegram SDK -->
+    <title>TeleTok · Mini App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,18 +13,17 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Telegram Adaptive Theme (как во втором файле) */
+        /* Telegram Theme Variables (полная интеграция) */
         :root {
             --tg-bg: var(--tg-theme-bg-color, #000000);
             --tg-text: var(--tg-theme-text-color, #ffffff);
             --tg-hint: var(--tg-theme-hint-color, #aaaaaa);
-            --tg-link: var(--tg-theme-link-color, #6ab0f3);
-            --tg-button: var(--tg-theme-button-color, #40a7e3);
+            --tg-link: var(--tg-theme-link-color, #6ab2f2);
+            --tg-button: var(--tg-theme-button-color, #3b88c3);
             --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
             --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #1f1f1f);
-            --tg-section-bg: var(--tg-theme-section-bg-color, #111111);
-            --tg-separator: var(--tg-theme-section-separator-color, #2c2c2c);
-            --tg-destructive: var(--tg-theme-destructive-text-color, #e34a4a);
+            --tg-section-separator: var(--tg-theme-section-separator-color, #2c2c2c);
+            --tg-accent: var(--tg-theme-accent-text-color, #6ab2f2);
         }
 
         body {
@@ -38,8 +35,8 @@
             touch-action: pan-y;
         }
 
-        /* Главный контейнер */
-        .tiktok-app {
+        /* Основной контейнер как в Telegram Mini App */
+        .telegram-app {
             width: 100vw;
             height: 100vh;
             background: var(--tg-bg);
@@ -48,52 +45,62 @@
             position: relative;
         }
 
-        /* HEADER в стиле Telegram Mini App (как в примере) */
+        /* Хедер — стиль Telegram */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 20px 8px;
-            background: transparent;
+            padding: 12px 20px;
+            background: var(--tg-secondary-bg);
+            border-bottom: 1px solid var(--tg-section-separator);
             z-index: 20;
-            position: relative;
             flex-shrink: 0;
         }
+
         .header-left {
             display: flex;
-            gap: 20px;
+            gap: 24px;
             font-weight: 600;
             font-size: 18px;
         }
+
         .tab {
-            opacity: 0.6;
+            opacity: 0.7;
             transition: 0.2s;
             cursor: pointer;
-            padding: 4px 0;
+            padding-bottom: 4px;
             color: var(--tg-text);
-        }
-        .tab.active {
-            opacity: 1;
-            font-weight: 600;
-            border-bottom: 2px solid var(--tg-button);
-        }
-        .header-right {
-            display: flex;
-            gap: 18px;
-            font-size: 20px;
-            color: var(--tg-text);
-            opacity: 0.8;
-        }
-        .header-right i {
-            cursor: pointer;
         }
 
-        /* Страницы */
+        .tab.active {
+            opacity: 1;
+            border-bottom: 2px solid var(--tg-button);
+            color: var(--tg-accent);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 20px;
+            font-size: 20px;
+            color: var(--tg-hint);
+        }
+
+        .header-right i {
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .header-right i:active {
+            transform: scale(0.94);
+        }
+
+        /* Контейнер страниц */
         .pages-container {
             flex: 1;
             position: relative;
             overflow: hidden;
         }
+
         .page {
             width: 100%;
             height: 100%;
@@ -103,34 +110,37 @@
             left: 0;
             display: none;
             scroll-behavior: smooth;
+            background: var(--tg-bg);
         }
+
         .page.active {
             display: block;
         }
 
-        /* Лента — style как у Telegram Cards */
+        /* Лента TikTok-style с автовоспроизведением и звуком */
         .feed-container {
             height: 100%;
             overflow-y: auto;
             scroll-snap-type: y mandatory;
-            -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
         .feed-container::-webkit-scrollbar {
             display: none;
         }
+
         .video-card {
             height: 100%;
             scroll-snap-align: start;
-            scroll-snap-stop: always;
             position: relative;
-            background: var(--tg-bg);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            padding: 16px;
+            padding: 20px 16px 28px;
+            background: #000;
+            overflow: hidden;
         }
+
         .bg-video {
             position: absolute;
             top: 0;
@@ -138,26 +148,31 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            pointer-events: auto;
             z-index: 0;
+            pointer-events: auto;
         }
-        /* градиент как в TikTok но мягче под Telegram */
+
         .video-card::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
             pointer-events: none;
             z-index: 1;
         }
-        /* информация о видео */
+
+        /* Информация видео */
         .video-info {
             position: relative;
             z-index: 2;
-            max-width: 75%;
+            max-width: 70%;
             pointer-events: none;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
+
         .user-row {
             display: flex;
             align-items: center;
@@ -166,6 +181,7 @@
             pointer-events: auto;
             cursor: pointer;
         }
+
         .avatar {
             width: 44px;
             height: 44px;
@@ -174,42 +190,47 @@
             object-fit: cover;
             background: var(--tg-secondary-bg);
         }
+
         .username {
             font-weight: 700;
             font-size: 16px;
             color: var(--tg-text);
         }
+
         .verified {
-            color: var(--tg-button);
+            color: var(--tg-accent);
             font-size: 14px;
         }
+
         .caption {
             font-size: 14px;
             line-height: 1.3;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
+
         .music-row {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 13px;
             opacity: 0.85;
         }
+
         .music-icon {
-            width: 26px;
-            height: 26px;
-            border-radius: 6px;
-            background: rgba(255,255,255,0.15);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* Action bar (лайки, комменты) */
+        /* Боковая панель действий */
         .action-bar {
             position: absolute;
-            right: 16px;
+            right: 12px;
             bottom: 100px;
             z-index: 3;
             display: flex;
@@ -218,6 +239,7 @@
             gap: 20px;
             pointer-events: auto;
         }
+
         .action-item {
             display: flex;
             flex-direction: column;
@@ -225,63 +247,65 @@
             gap: 4px;
             font-size: 12px;
             font-weight: 600;
-            text-shadow: 0 2px 4px black;
+            text-shadow: 0 1px 3px black;
         }
+
         .action-item i {
             font-size: 32px;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
             cursor: pointer;
             transition: 0.1s;
-            color: white;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
         }
+
         .action-item i:active {
-            transform: scale(1.15);
+            transform: scale(1.1);
         }
-        .action-item .count {
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .action-item .fa-heart.liked {
+
+        .liked {
             color: #ff3b5c;
             font-weight: 900;
         }
-        .action-item .fa-bookmark.saved {
-            color: #ffc107;
+
+        .saved {
+            color: #f9b234;
         }
 
-        /* сердечко двойного клика */
+        /* Анимация сердечка при двойном тапе */
         .heart-overlay {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 90px;
+            font-size: 80px;
             color: #ff3b5c;
             opacity: 0;
             pointer-events: none;
-            z-index: 10;
-        }
-        .heart-overlay.show {
-            animation: heartPop 0.5s ease forwards;
-        }
-        @keyframes heartPop {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4);}
-            30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2);}
-            80% { opacity: 1; transform: translate(-50%, -50%) scale(1);}
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8);}
+            z-index: 15;
         }
 
-        /* Нижняя навигация Telegram style */
+        .heart-overlay.show {
+            animation: popHeart 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        @keyframes popHeart {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2);}
+            40% { opacity: 1; transform: translate(-50%, -50%) scale(1.3);}
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1);}
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.6);}
+        }
+
+        /* Нижняя навигация в стиле Telegram */
         .bottom-nav {
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 8px 16px 12px;
-            background: var(--tg-section-bg);
-            border-top: 1px solid var(--tg-separator);
+            padding: 8px 20px 12px;
+            background: var(--tg-secondary-bg);
+            border-top: 1px solid var(--tg-section-separator);
             flex-shrink: 0;
-            z-index: 20;
+            backdrop-filter: blur(10px);
         }
+
         .nav-item {
             display: flex;
             flex-direction: column;
@@ -290,136 +314,134 @@
             color: var(--tg-hint);
             transition: 0.2s;
             cursor: pointer;
+            gap: 2px;
         }
+
         .nav-item i {
             font-size: 24px;
-            margin-bottom: 2px;
         }
+
         .nav-item.active {
-            color: var(--tg-button);
+            color: var(--tg-accent);
         }
+
         .plus-button {
             background: var(--tg-button);
             color: var(--tg-button-text);
-            width: 44px;
-            height: 30px;
+            width: 48px;
+            height: 32px;
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
+            margin-top: -6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
-        /* Спиннер загрузки */
-        .loading-spinner {
-            height: 80px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            color: var(--tg-hint);
-            background: var(--tg-bg);
-            scroll-snap-align: start;
-        }
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid var(--tg-separator);
-            border-top: 3px solid var(--tg-button);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ПРОФИЛЬ в стиле Telegram */
+        /* Профиль — сетка видео */
         .profile-header {
-            padding: 20px;
+            padding: 24px 20px;
             background: var(--tg-secondary-bg);
-            border-radius: 0;
-            margin-bottom: 2px;
+            margin-bottom: 8px;
         }
+
         .profile-avatar {
-            width: 80px;
-            height: 80px;
+            width: 84px;
+            height: 84px;
             border-radius: 50%;
             border: 3px solid var(--tg-button);
             object-fit: cover;
-            margin-bottom: 12px;
         }
+
         .profile-stats {
             display: flex;
             gap: 32px;
             margin: 16px 0;
         }
+
         .stat {
             text-align: center;
         }
+
         .stat-number {
             font-size: 20px;
             font-weight: 700;
         }
+
         .stat-label {
             font-size: 12px;
             color: var(--tg-hint);
         }
+
         .follow-btn {
             background: var(--tg-button);
             border: none;
-            border-radius: 30px;
+            border-radius: 12px;
             padding: 10px;
             color: var(--tg-button-text);
             font-weight: 600;
             width: 100%;
             cursor: pointer;
-            margin-top: 8px;
+            transition: 0.2s;
         }
+
         .follow-btn.following {
             background: var(--tg-secondary-bg);
             color: var(--tg-text);
-            border: 1px solid var(--tg-separator);
+            border: 1px solid var(--tg-section-separator);
         }
+
         .video-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 2px;
             background: var(--tg-bg);
         }
+
         .grid-video {
             aspect-ratio: 9/16;
-            background: var(--tg-secondary-bg);
+            background: #2a2a2a;
             object-fit: cover;
             width: 100%;
-        }
-
-        /* Upload секция */
-        .upload-container {
-            padding: 24px;
-            background: var(--tg-section-bg);
-            height: 100%;
-        }
-        .upload-area {
-            border: 2px dashed var(--tg-separator);
-            border-radius: 24px;
-            padding: 30px;
-            text-align: center;
-            background: var(--tg-secondary-bg);
             cursor: pointer;
         }
+
+        /* Стили загрузки */
+        .upload-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--tg-hint);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--tg-secondary-bg);
+        }
+
         .upload-input {
             background: var(--tg-secondary-bg);
-            border: 1px solid var(--tg-separator);
+            border: none;
             border-radius: 16px;
-            padding: 12px;
+            padding: 14px;
             color: var(--tg-text);
-            width: 100%;
-            margin: 12px 0;
+            font-size: 16px;
         }
-        /* Модалка комментариев */
+
+        /* Модалка комментариев (Telegram стиль) */
         .comment-modal {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.75);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
             backdrop-filter: blur(10px);
             z-index: 200;
             display: flex;
@@ -428,72 +450,111 @@
             opacity: 0;
             transition: 0.2s;
         }
+
         .comment-modal.show {
             visibility: visible;
             opacity: 1;
         }
+
         .comment-sheet {
-            background: var(--tg-section-bg);
+            background: var(--tg-secondary-bg);
             width: 100%;
-            border-radius: 24px 24px 0 0;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
             padding: 20px;
-            max-height: 65%;
-            overflow-y: auto;
+            color: var(--tg-text);
             transform: translateY(100%);
-            transition: 0.2s;
+            transition: 0.25s;
+            max-height: 60%;
+            overflow-y: auto;
         }
+
         .comment-modal.show .comment-sheet {
             transform: translateY(0);
         }
+
         .comment-header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 16px;
         }
-        .comment-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 20px;
+
+        .close-comments {
+            font-size: 26px;
+            cursor: pointer;
         }
+
         .comment-item {
             display: flex;
             gap: 12px;
+            margin-bottom: 16px;
         }
+
         .comment-avatar {
             width: 36px;
             height: 36px;
-            border-radius: 50%;
             background: var(--tg-button);
+            border-radius: 50%;
         }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-name {
+            font-weight: 600;
+        }
+
         .comment-input-area {
             display: flex;
-            gap: 12px;
-            margin-top: 12px;
+            gap: 10px;
+            margin-top: 20px;
         }
+
         .comment-input {
             flex: 1;
-            background: var(--tg-secondary-bg);
+            background: var(--tg-bg);
             border: none;
             border-radius: 30px;
             padding: 12px 16px;
             color: var(--tg-text);
         }
+
         .comment-send {
             background: var(--tg-button);
             border: none;
             border-radius: 30px;
             padding: 0 20px;
             color: var(--tg-button-text);
-            font-weight: 600;
+            font-weight: bold;
         }
+
+        .loading-spinner {
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            color: var(--tg-hint);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--tg-hint);
+            border-top: 2px solid var(--tg-button);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-<div class="tiktok-app">
+<div class="telegram-app">
     <div class="header">
         <div class="header-left">
-            <span class="tab active" data-tab="home">Для тебя</span>
+            <span class="tab active" data-tab="home">Главная</span>
             <span class="tab" data-tab="friends">Друзья</span>
         </div>
         <div class="header-right">
@@ -505,9 +566,18 @@
     <div class="pages-container">
         <div class="page active" id="page-feed"><div class="feed-container" id="feedContainer"></div></div>
         <div class="page" id="page-profile"><div id="profileContent"></div></div>
-        <div class="page" id="page-upload"><div class="upload-container" id="uploadPage"></div></div>
-        <div class="page" id="page-discover"><div style="padding:40px;text-align:center;color:var(--tg-hint);">🔍 Рекомендации Telegram</div></div>
-        <div class="page" id="page-inbox"><div style="padding:40px;text-align:center;color:var(--tg-hint);">📩 Уведомления будут здесь</div></div>
+        <div class="page" id="page-upload">
+            <div class="upload-container">
+                <h2>Загрузить видео</h2>
+                <div class="upload-area" id="uploadArea"><i class="fa-solid fa-cloud-upload-alt"></i><p>Выберите видео</p></div>
+                <input type="file" id="videoFile" accept="video/*">
+                <input type="text" class="upload-input" id="videoCaption" placeholder="Подпись...">
+                <input type="text" class="upload-input" id="videoMusic" placeholder="Музыка">
+                <button class="follow-btn" id="publishBtn">Опубликовать</button>
+            </div>
+        </div>
+        <div class="page" id="page-discover"><div style="padding:30px;text-align:center;color:var(--tg-hint)">🔍 Рекомендации Telegram</div></div>
+        <div class="page" id="page-inbox"><div style="padding:30px;text-align:center;color:var(--tg-hint)">💬 Уведомления</div></div>
     </div>
 
     <div class="bottom-nav">
@@ -521,204 +591,191 @@
 
 <div class="comment-modal" id="commentModal">
     <div class="comment-sheet">
-        <div class="comment-header"><h3>Комментарии (<span id="commentCountSpan">0</span>)</h3><span class="close-comments" id="closeComments" style="font-size:28px;cursor:pointer;">&times;</span></div>
+        <div class="comment-header"><h3>Комментарии (<span id="commentCountSpan">0</span>)</h3><span class="close-comments" id="closeComments">&times;</span></div>
         <div class="comment-list" id="commentList"></div>
         <div class="comment-input-area">
-            <input type="text" class="comment-input" id="commentInput" placeholder="Напишите комментарий...">
+            <input type="text" class="comment-input" id="commentInput" placeholder="Написать...">
             <button class="comment-send" id="sendComment">→</button>
         </div>
     </div>
 </div>
 
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-    (function() {
-        // ----- Telegram WebApp Init -----
-        const tg = window.Telegram?.WebApp;
-        if(tg) {
-            tg.expand();
-            tg.disableVerticalSwipes();
-            tg.ready();
-            tg.MainButton.hide();
-            // Применяем тему Telegram
-            const applyTheme = () => {
-                const root = document.documentElement;
-                const p = tg.themeParams;
-                if(p) {
-                    root.style.setProperty('--tg-bg', p.bg_color || '#000000');
-                    root.style.setProperty('--tg-text', p.text_color || '#ffffff');
-                    root.style.setProperty('--tg-hint', p.hint_color || '#aaaaaa');
-                    root.style.setProperty('--tg-button', p.button_color || '#40a7e3');
-                    root.style.setProperty('--tg-button-text', p.button_text_color || '#ffffff');
-                    root.style.setProperty('--tg-secondary-bg', p.secondary_bg_color || '#1f1f1f');
-                    root.style.setProperty('--tg-section-bg', p.section_bg_color || '#111111');
-                    root.style.setProperty('--tg-separator', p.section_separator_color || '#2c2c2c');
-                }
-            };
-            applyTheme();
-            tg.onEvent('themeChanged', applyTheme);
-        }
+    (function(){
+        // 1. Интеграция Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.disableVerticalSwipes();
+        tg.ready();
+        tg.MainButton.hide();
 
-        // ---------- ДАННЫЕ ----------
+        // Применяем тему Telegram динамически
+        function applyTelegramTheme() {
+            const root = document.documentElement;
+            root.style.setProperty('--tg-bg', tg.themeParams.bg_color || '#000000');
+            root.style.setProperty('--tg-text', tg.themeParams.text_color || '#ffffff');
+            root.style.setProperty('--tg-hint', tg.themeParams.hint_color || '#aaaaaa');
+            root.style.setProperty('--tg-button', tg.themeParams.button_color || '#3b88c3');
+            root.style.setProperty('--tg-button-text', tg.themeParams.button_text_color || '#ffffff');
+            root.style.setProperty('--tg-secondary-bg', tg.themeParams.secondary_bg_color || '#1f1f1f');
+            root.style.setProperty('--tg-section-separator', tg.themeParams.section_separator_color || '#2c2c2c');
+            root.style.setProperty('--tg-accent', tg.themeParams.accent_text_color || '#6ab2f2');
+        }
+        applyTelegramTheme();
+        tg.onEvent('themeChanged', applyTelegramTheme);
+
+        // Haptic
+        function hapticLight() { tg.HapticFeedback.impactOccurred('light'); }
+        function hapticSuccess() { tg.HapticFeedback.notificationOccurred('success'); }
+        
+        // Данные
         const currentUser = {
-            id: 'me_tg',
-            username: 'tiktok_tg',
+            id: tg.initDataUnsafe?.user?.id || 'user1',
+            username: tg.initDataUnsafe?.user?.username || 'telegramer',
             avatar: 'https://i.pravatar.cc/150?img=7',
             verified: true,
             followers: 15800,
             following: 420,
-            bio: '🔥 Telegram Mini App • TikTok vibe'
+            bio: '✨ Telegram Creator'
         };
+        
         const users = [
             currentUser,
-            { id: 'user2', username: 'alice_tok', avatar: 'https://i.pravatar.cc/150?img=1', verified: true, followers: 8900, following: 210, bio: '✨ dancer' },
-            { id: 'user3', username: 'dmitry_code', avatar: 'https://i.pravatar.cc/150?img=2', verified: false, followers: 4300, following: 180, bio: 'dev & creator' },
-            { id: 'user4', username: 'luna_cat', avatar: 'https://i.pravatar.cc/150?img=3', verified: true, followers: 11200, following: 560, bio: 'lofi girl' },
+            { id: 'user2', username: 'emma.tok', avatar: 'https://i.pravatar.cc/150?img=1', verified: true, followers: 5600, following: 180, bio: '🎵 dancer' },
+            { id: 'user3', username: 'david.codes', avatar: 'https://i.pravatar.cc/150?img=2', verified: false, followers: 3200, following: 240, bio: 'dev' },
+            { id: 'user4', username: 'luna.moon', avatar: 'https://i.pravatar.cc/150?img=3', verified: true, followers: 8900, following: 430, bio: 'astro' }
         ];
-
+        
         let followingRelations = new Set();
-        followingRelations.add('me_tg_follows_user2');
-
         let videos = [
-            { id: 'v1', userId: 'user2', url: 'https://assets.mixkit.co/videos/40858/40858-720.mp4', caption: 'Танцевальный вайб ✨', music: 'оригинальный звук', likes: 23400, comments: 120, saves: 3400 },
-            { id: 'v2', userId: 'user3', url: 'https://assets.mixkit.co/videos/39818/39818-720.mp4', caption: 'Ночной город 🌃', music: 'phonk.wav', likes: 8700, comments: 45, saves: 1200 },
-            { id: 'v3', userId: 'me_tg', url: 'https://assets.mixkit.co/videos/40745/40745-720.mp4', caption: 'Закат над морем', music: 'lo-fi dream', likes: 15000, comments: 89, saves: 2300 },
-            { id: 'v4', userId: 'user4', url: 'https://assets.mixkit.co/videos/40426/40426-720.mp4', caption: 'Уютное утро ☕', music: 'джаз', likes: 5600, comments: 34, saves: 900 },
-            { id: 'v5', userId: 'user2', url: 'https://assets.mixkit.co/videos/40874/40874-720.mp4', caption: 'Шум прибоя', music: 'волны', likes: 34200, comments: 210, saves: 5600 },
+            { id: 'v1', userId: 'user2', url: 'https://assets.mixkit.co/videos/40858/40858-720.mp4', caption: '🔥 Танцы под луной', music: 'оригинальный звук', likes: 23400, comments: 120, saves: 3400 },
+            { id: 'v2', userId: 'user3', url: 'https://assets.mixkit.co/videos/39818/39818-720.mp4', caption: 'Городские ритмы', music: 'фонк', likes: 8700, comments: 45, saves: 1200 },
+            { id: 'v3', userId: 'user1', url: 'https://assets.mixkit.co/videos/40745/40745-720.mp4', caption: 'Закат и мечты', music: 'лофи', likes: 15000, comments: 89, saves: 2300 },
+            { id: 'v4', userId: 'user4', url: 'https://assets.mixkit.co/videos/40426/40426-720.mp4', caption: 'Утренний кофе', music: 'джаз', likes: 5600, comments: 34, saves: 900 },
+            { id: 'v5', userId: 'user2', url: 'https://assets.mixkit.co/videos/40874/40874-720.mp4', caption: 'Волны спокойствия', music: 'прибой', likes: 34200, comments: 210, saves: 5600 }
         ];
-
+        
         let likedVideos = new Map();
         let savedVideos = new Map();
         let videoComments = new Map();
-        videos.forEach(v => {
-            videoComments.set(v.id, [
-                { user: 'tg_fan', text: 'Классный контент!' },
-                { user: 'user_mini', text: '🔥🔥' }
-            ]);
-        });
-
+        videos.forEach(v => videoComments.set(v.id, [{ user: 'fan123', text: 'Красота!' }, { user: 'telegramer', text: '🔥' }]));
+        
         function formatCount(num) {
-            if (num >= 1e6) return (num/1e6).toFixed(1)+'M';
-            if (num >= 1000) return (num/1000).toFixed(1)+'K';
+            if(num>=1e6) return (num/1e6).toFixed(1)+'M';
+            if(num>=1e3) return (num/1e3).toFixed(1)+'K';
             return num.toString();
         }
-
-        // лайк с обратной связью Haptic
-        function likeVideo(videoId, likeIcon, likeCountSpan, heartOverlay = null) {
+        
+        function likeVideo(videoId, likeIcon, likeCountSpan, heartOverlay){
             const liked = !likedVideos.get(videoId);
             likedVideos.set(videoId, liked);
-            const video = videos.find(v => v.id === videoId);
-            if(liked) video.likes += 1;
-            else video.likes -= 1;
+            const video = videos.find(v=>v.id===videoId);
+            if(liked) video.likes+=1; else video.likes-=1;
             likeIcon.classList.toggle('fa-regular');
             likeIcon.classList.toggle('fa-solid');
             likeIcon.classList.toggle('liked', liked);
             likeCountSpan.innerText = formatCount(video.likes);
-            if(heartOverlay) {
+            if(heartOverlay){
                 heartOverlay.classList.remove('show');
                 void heartOverlay.offsetWidth;
                 heartOverlay.classList.add('show');
             }
-            if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            hapticLight();
         }
-
-        // создание карточки видео
-        function createVideoCard(video) {
-            const user = users.find(u => u.id === video.userId) || users[0];
+        
+        function createVideoCard(video){
+            const user = users.find(u=>u.id===video.userId) || users[0];
             const card = document.createElement('div');
             card.className = 'video-card';
             card.dataset.videoId = video.id;
-
-            const isLiked = likedVideos.get(video.id) || false;
-            const isSaved = savedVideos.get(video.id) || false;
-
+            const isLiked = likedVideos.get(video.id)||false;
+            const isSaved = savedVideos.get(video.id)||false;
             card.innerHTML = `
                 <video class="bg-video" src="${video.url}" loop playsinline></video>
                 <div class="heart-overlay"><i class="fa-solid fa-heart"></i></div>
                 <div class="video-info">
                     <div class="user-row" data-userid="${user.id}">
-                        <img class="avatar" src="${user.avatar}" loading="lazy">
+                        <img class="avatar" src="${user.avatar}">
                         <span class="username">${user.username}</span>
                         ${user.verified ? '<i class="fa-solid fa-circle-check verified"></i>' : ''}
                     </div>
                     <div class="caption">${video.caption}</div>
-                    <div class="music-row">
-                        <div class="music-icon"><i class="fa-solid fa-music"></i></div>
-                        <span>${video.music}</span>
-                    </div>
+                    <div class="music-row"><div class="music-icon"><i class="fa-solid fa-music"></i></div><span>${video.music}</span></div>
                 </div>
                 <div class="action-bar">
-                    <div class="action-item like-item">
-                        <i class="fa-regular fa-heart ${isLiked ? 'liked' : ''}" data-action="like"></i>
-                        <span class="count like-count">${formatCount(video.likes)}</span>
-                    </div>
-                    <div class="action-item comment-item">
-                        <i class="fa-regular fa-comment" data-action="comment"></i>
-                        <span class="count comment-count">${formatCount(video.comments)}</span>
-                    </div>
-                    <div class="action-item save-item">
-                        <i class="fa-regular fa-bookmark ${isSaved ? 'saved' : ''}" data-action="save"></i>
-                        <span class="count save-count">${formatCount(video.saves)}</span>
-                    </div>
-                    <div class="action-item share-item">
-                        <i class="fa-solid fa-share" data-action="share"></i>
-                        <span class="count">12K</span>
-                    </div>
+                    <div class="action-item"><i class="${isLiked ? 'fa-solid fa-heart liked' : 'fa-regular fa-heart'}" data-action="like"></i><span class="count like-count">${formatCount(video.likes)}</span></div>
+                    <div class="action-item"><i class="fa-regular fa-comment" data-action="comment"></i><span class="count comment-count">${formatCount(video.comments)}</span></div>
+                    <div class="action-item"><i class="${isSaved ? 'fa-solid fa-bookmark saved' : 'fa-regular fa-bookmark'}" data-action="save"></i><span class="count save-count">${formatCount(video.saves)}</span></div>
+                    <div class="action-item"><i class="fa-solid fa-share" data-action="share"></i><span class="count">12K</span></div>
                 </div>
             `;
-
             const videoEl = card.querySelector('.bg-video');
+            videoEl.volume = 1.0;
+            videoEl.muted = false;
+            videoEl.addEventListener('click', (e)=>{ e.stopPropagation(); videoEl.paused ? videoEl.play() : videoEl.pause(); });
             const heartOverlay = card.querySelector('.heart-overlay');
             const likeIcon = card.querySelector('[data-action="like"]');
             const likeCountSpan = card.querySelector('.like-count');
-            const saveIcon = card.querySelector('[data-action="save"]');
-
-            videoEl.volume = 0.8;
-            videoEl.muted = false;
-            videoEl.addEventListener('click', (e) => { e.stopPropagation(); videoEl.paused ? videoEl.play() : videoEl.pause(); });
-            videoEl.addEventListener('dblclick', (e) => {
+            videoEl.addEventListener('dblclick', (e)=>{
                 e.stopPropagation();
                 likeVideo(video.id, likeIcon, likeCountSpan, heartOverlay);
             });
-            likeIcon.addEventListener('click', (e) => { e.stopPropagation(); likeVideo(video.id, likeIcon, likeCountSpan, null); });
-            saveIcon.addEventListener('click', (e) => {
+            likeIcon.addEventListener('click', (e)=>{
                 e.stopPropagation();
+                likeVideo(video.id, likeIcon, likeCountSpan, null);
+            });
+            card.querySelector('[data-action="save"]').addEventListener('click', (e)=>{
+                e.stopPropagation();
+                const saveIcon = e.currentTarget;
                 const newSaved = !savedVideos.get(video.id);
                 savedVideos.set(video.id, newSaved);
                 saveIcon.classList.toggle('fa-regular');
                 saveIcon.classList.toggle('fa-solid');
                 saveIcon.classList.toggle('saved', newSaved);
-                if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                hapticLight();
             });
-            card.querySelector('[data-action="comment"]').addEventListener('click', (e) => { e.stopPropagation(); openCommentsForVideo(video.id); });
-            card.querySelector('[data-action="share"]').addEventListener('click', () => { if(tg) tg.showAlert('Поделиться ссылкой (демо)'); else alert('Поделиться'); });
-            card.querySelector('.user-row').addEventListener('click', (e) => { e.stopPropagation(); renderProfile(user.id); showPage('profile'); });
+            card.querySelector('[data-action="comment"]').addEventListener('click', (e)=>{
+                e.stopPropagation();
+                openCommentsForVideo(video.id);
+            });
+            card.querySelector('[data-action="share"]').addEventListener('click', ()=>{
+                tg.showAlert(`Поделиться видео: ${video.caption}`);
+                hapticSuccess();
+            });
+            card.querySelector('.user-row').addEventListener('click', (e)=>{
+                e.stopPropagation();
+                renderProfile(user.id);
+                showPage('profile');
+            });
             return card;
         }
-
+        
         let allVideos = [...videos];
         const feed = document.getElementById('feedContainer');
-        function renderFeed() {
+        function renderFeed(){
             feed.innerHTML = '';
-            const shuffled = [...allVideos].sort(() => Math.random() - 0.5);
-            shuffled.forEach(v => feed.appendChild(createVideoCard(v)));
+            const shuffled = [...allVideos].sort(()=>Math.random()-0.5);
+            shuffled.forEach(v=>feed.appendChild(createVideoCard(v)));
             const spinner = document.createElement('div');
             spinner.className = 'loading-spinner';
             spinner.id = 'loadingSpinner';
-            spinner.innerHTML = `<div class="spinner"></div><span>Загрузка новых видео...</span>`;
+            spinner.innerHTML = `<div class="spinner"></div><span>Загрузка...</span>`;
             feed.appendChild(spinner);
-            setupVideoAutoplay();
+            setupAutoplayObserver();
             setupInfiniteScroll();
         }
-
-        function loadMoreVideos() {
+        
+        function loadMore(){
             const oldSpinner = document.getElementById('loadingSpinner');
             if(oldSpinner) oldSpinner.remove();
             for(let i=0;i<2;i++){
-                const base = videos[Math.floor(Math.random() * videos.length)];
-                const newId = base.id + '_copy_' + Date.now() + i;
-                const newVideo = { ...base, id: newId, likes: base.likes, comments: base.comments };
+                const base = videos[Math.floor(Math.random()*videos.length)];
+                const newId = base.id+'_'+Date.now()+i;
+                const newVideo = {...base, id:newId, likes: base.likes, comments:base.comments};
                 videos.push(newVideo);
                 allVideos.push(newVideo);
+                videoComments.set(newVideo.id, []);
                 feed.appendChild(createVideoCard(newVideo));
             }
             const newSpinner = document.createElement('div');
@@ -727,37 +784,39 @@
             newSpinner.innerHTML = `<div class="spinner"></div><span>Ещё видео...</span>`;
             feed.appendChild(newSpinner);
             setupInfiniteScroll();
-            setupVideoAutoplay();
-            if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            setupAutoplayObserver();
         }
-
-        function setupInfiniteScroll() {
+        
+        function setupInfiniteScroll(){
             const spinner = document.getElementById('loadingSpinner');
             if(!spinner) return;
-            const observer = new IntersectionObserver((entries) => {
-                if(entries[0].isIntersecting) loadMoreVideos();
-            }, { root: feed, threshold: 0.1 });
+            const observer = new IntersectionObserver(entries=>{
+                if(entries[0].isIntersecting) loadMore();
+            }, {root: feed, threshold:0.2});
             observer.observe(spinner);
         }
-
-        function setupVideoAutoplay() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
+        
+        function setupAutoplayObserver(){
+            const obs = new IntersectionObserver((entries)=>{
+                entries.forEach(entry=>{
                     const video = entry.target.querySelector('.bg-video');
                     if(!video) return;
-                    if(entry.isIntersecting) { video.play().catch(e=>console.log); video.muted=false; video.volume=0.8; }
-                    else video.pause();
+                    if(entry.isIntersecting){
+                        video.play().catch(e=>console.log);
+                        video.muted = false;
+                        video.volume = 1.0;
+                    } else video.pause();
                 });
-            }, { root: feed, threshold: 0.6 });
-            document.querySelectorAll('.video-card').forEach(card => observer.observe(card));
+            }, {root: feed, threshold:0.6});
+            document.querySelectorAll('.video-card').forEach(c=>obs.observe(c));
         }
-
-        // профиль в Telegram стиле
-        function renderProfile(userId) {
-            const user = users.find(u => u.id === userId) || users[0];
+        
+        // Профиль
+        function renderProfile(userId){
+            const user = users.find(u=>u.id===userId)||users[0];
             const isMe = userId === currentUser.id;
             const isFollowing = followingRelations.has(`${currentUser.id}_follows_${userId}`);
-            const userVideos = videos.filter(v => v.userId === userId);
+            const userVideos = videos.filter(v=>v.userId===userId);
             let html = `
                 <div class="profile-header">
                     <img class="profile-avatar" src="${user.avatar}">
@@ -767,23 +826,25 @@
                         <div class="stat"><span class="stat-number">${formatCount(user.following)}</span><span class="stat-label">подписки</span></div>
                     </div>
                     <div class="profile-bio">${user.bio}</div>
-                    ${!isMe ? `<button class="follow-btn ${isFollowing ? 'following' : ''}" id="followBtn">${isFollowing ? 'Подписки' : 'Подписаться'}</button>` : ''}
+                    ${!isMe ? `<button class="follow-btn ${isFollowing?'following':''}" id="followBtn">${isFollowing?'Подписки':'Подписаться'}</button>` : ''}
                 </div>
                 <div class="video-grid" id="profileVideoGrid"></div>
             `;
             document.getElementById('profileContent').innerHTML = html;
             const grid = document.getElementById('profileVideoGrid');
-            userVideos.forEach(v => {
+            userVideos.forEach(v=>{
                 const vid = document.createElement('video');
                 vid.src = v.url;
                 vid.className = 'grid-video';
                 vid.muted = true;
-                vid.addEventListener('click', () => tg?.showAlert('Предпросмотр видео'));
+                vid.loop = true;
+                vid.addEventListener('click',()=> tg.showAlert('Видео из профиля'));
                 grid.appendChild(vid);
             });
             if(!isMe){
-                document.getElementById('followBtn')?.addEventListener('click', () => {
-                    if(followingRelations.has(`${currentUser.id}_follows_${userId}`)){
+                document.getElementById('followBtn')?.addEventListener('click',()=>{
+                    const following = followingRelations.has(`${currentUser.id}_follows_${userId}`);
+                    if(following){
                         followingRelations.delete(`${currentUser.id}_follows_${userId}`);
                         user.followers -=1;
                     } else {
@@ -791,34 +852,83 @@
                         user.followers +=1;
                     }
                     renderProfile(userId);
-                    if(tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+                    hapticLight();
                 });
             }
         }
-
-        // Загрузка страницы (Upload UI)
-        const uploadContainer = document.getElementById('uploadPage');
-        uploadContainer.innerHTML = `
-            <h2 style="margin-bottom:16px;">📤 Загрузить видео</h2>
-            <div class="upload-area" id="uploadArea"><i class="fa-solid fa-cloud-upload-alt" style="font-size:48px;"></i><p>Выберите файл</p></div>
-            <input type="file" id="videoFile" accept="video/*" style="display:none">
-            <input type="text" class="upload-input" id="videoCaption" placeholder="Подпись...">
-            <input type="text" class="upload-input" id="videoMusic" placeholder="Музыка (звук)">
-            <button class="follow-btn" id="publishBtn">Опубликовать</button>
-        `;
+        
+        // Комментарии
+        const modal = document.getElementById('commentModal');
+        let currentVideoId = null;
+        window.openCommentsForVideo = function(videoId){
+            currentVideoId = videoId;
+            const comments = videoComments.get(videoId)||[];
+            const list = document.getElementById('commentList');
+            list.innerHTML = '';
+            comments.forEach(c=>{
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                div.innerHTML = `<div class="comment-avatar"></div><div class="comment-content"><div class="comment-name">${c.user}</div><div class="comment-text">${c.text}</div></div>`;
+                list.appendChild(div);
+            });
+            document.getElementById('commentCountSpan').innerText = comments.length;
+            modal.classList.add('show');
+        };
+        document.getElementById('closeComments').addEventListener('click',()=>modal.classList.remove('show'));
+        document.getElementById('sendComment').addEventListener('click',()=>{
+            const input = document.getElementById('commentInput');
+            if(!currentVideoId || !input.value.trim()) return;
+            const comments = videoComments.get(currentVideoId);
+            comments.push({ user: currentUser.username, text: input.value.trim() });
+            const video = videos.find(v=>v.id===currentVideoId);
+            video.comments +=1;
+            input.value = '';
+            openCommentsForVideo(currentVideoId);
+            hapticLight();
+        });
+        modal.addEventListener('click',(e)=>{ if(e.target===modal) modal.classList.remove('show'); });
+        
+        // Навигация
+        function showPage(pageId){
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+            const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(n=>n.dataset.page===pageId);
+            if(activeNav) activeNav.classList.add('active');
+            if(pageId==='profile') renderProfile(currentUser.id);
+            if(pageId==='feed') setupAutoplayObserver();
+        }
+        document.querySelectorAll('.nav-item').forEach(item=>{
+            item.addEventListener('click',()=>{
+                const page = item.dataset.page;
+                if(page) showPage(page);
+                else if(item.classList.contains('plus-button')) showPage('upload');
+            });
+        });
+        document.querySelectorAll('.tab').forEach(tab=>{
+            tab.addEventListener('click',function(){
+                document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+                this.classList.add('active');
+                if(this.dataset.tab==='home') showPage('feed');
+                else if(this.dataset.tab==='friends') showPage('discover');
+            });
+        });
+        document.getElementById('navProfile').addEventListener('click',()=>renderProfile(currentUser.id));
+        
+        // Upload
         let uploadedBlob = null;
-        document.getElementById('uploadArea')?.addEventListener('click',()=> document.getElementById('videoFile').click());
-        document.getElementById('videoFile')?.addEventListener('change', (e) => {
-            if(e.target.files[0]) {
+        document.getElementById('uploadArea').addEventListener('click',()=>document.getElementById('videoFile').click());
+        document.getElementById('videoFile').addEventListener('change',(e)=>{
+            if(e.target.files[0]){
                 uploadedBlob = URL.createObjectURL(e.target.files[0]);
-                tg?.showAlert('Видео готово к загрузке');
+                tg.showAlert('Видео выбрано');
             }
         });
-        document.getElementById('publishBtn')?.addEventListener('click', () => {
-            if(!uploadedBlob) { tg?.showAlert('Выберите видео'); return; }
-            const caption = document.getElementById('videoCaption').value || 'Новый ролик';
+        document.getElementById('publishBtn').addEventListener('click',()=>{
+            if(!uploadedBlob){ tg.showAlert('Выберите видео'); return; }
+            const caption = document.getElementById('videoCaption').value || 'Новое видео';
             const music = document.getElementById('videoMusic').value || 'оригинальный звук';
-            const newVid = {
+            const newVideo = {
                 id: 'upload_'+Date.now(),
                 userId: currentUser.id,
                 url: uploadedBlob,
@@ -826,67 +936,18 @@
                 music: music,
                 likes: 0, comments: 0, saves: 0
             };
-            videos.push(newVid);
+            videos.push(newVideo);
             allVideos = videos;
-            videoComments.set(newVid.id, []);
+            videoComments.set(newVideo.id, []);
             showPage('feed');
             renderFeed();
-            if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            document.getElementById('videoCaption').value = '';
+            document.getElementById('videoMusic').value = '';
+            uploadedBlob = null;
+            hapticSuccess();
         });
-
-        // Комментарии
-        const modal = document.getElementById('commentModal');
-        let currentVideoId = null;
-        window.openCommentsForVideo = function(videoId) {
-            currentVideoId = videoId;
-            const comments = videoComments.get(videoId) || [];
-            const listDiv = document.getElementById('commentList');
-            listDiv.innerHTML = '';
-            comments.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'comment-item';
-                div.innerHTML = `<div class="comment-avatar"></div><div class="comment-content"><div class="comment-name">${c.user}</div><div class="comment-text">${c.text}</div></div>`;
-                listDiv.appendChild(div);
-            });
-            document.getElementById('commentCountSpan').innerText = comments.length;
-            modal.classList.add('show');
-        };
-        document.getElementById('closeComments').onclick = () => modal.classList.remove('show');
-        document.getElementById('sendComment').onclick = () => {
-            if(!currentVideoId || !document.getElementById('commentInput').value.trim()) return;
-            const comments = videoComments.get(currentVideoId);
-            comments.push({ user: currentUser.username, text: document.getElementById('commentInput').value.trim() });
-            const video = videos.find(v=>v.id === currentVideoId);
-            video.comments += 1;
-            document.getElementById('commentInput').value = '';
-            openCommentsForVideo(currentVideoId);
-        };
-        modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('show'); });
-
-        // Навигация
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.dataset.page === pageId);
-            if(activeNav) activeNav.classList.add('active');
-            if(pageId === 'profile') renderProfile(currentUser.id);
-            if(pageId === 'feed') renderFeed();
-        }
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => { const page = item.dataset.page; if(page) showPage(page); });
-        });
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                if(this.dataset.tab === 'home') showPage('feed');
-                else showPage('discover');
-            });
-        });
-        document.getElementById('navProfile').addEventListener('click', () => renderProfile(currentUser.id));
+        
         renderFeed();
-        if(tg) tg.ready();
     })();
 </script>
 </body>
