@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Telegram Tik · Cloud Mini App</title>
+    <title>Telegram Tik · GameJolt Cloud</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Telegram Theme Variables */
+        /* Telegram Theme Variables — полная адаптация */
         :root {
             --tg-bg-color: var(--tg-theme-bg-color, #000000);
             --tg-text-color: var(--tg-theme-text-color, #ffffff);
@@ -475,14 +475,6 @@
             font-size: 16px;
         }
 
-        .upload-progress {
-            background: var(--tg-secondary-bg-color);
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            color: var(--tg-button-color);
-        }
-
         .comment-modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -588,25 +580,18 @@
             cursor: pointer;
         }
 
-        .toast {
+        .upload-status {
             position: fixed;
-            bottom: 100px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--tg-secondary-bg-color);
-            color: var(--tg-text-color);
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
             z-index: 200;
-            opacity: 0;
-            transition: 0.3s;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .toast.show {
-            opacity: 1;
+            display: none;
+            border: 1px solid var(--tg-button-color);
         }
     </style>
 </head>
@@ -625,9 +610,7 @@
 
         <div class="pages-container">
             <div class="page active" id="page-feed">
-                <div class="feed-container" id="feedContainer">
-                    <div class="loading-spinner"><div class="spinner"></div><span>Загрузка видео...</span></div>
-                </div>
+                <div class="feed-container" id="feedContainer"></div>
             </div>
             <div class="page" id="page-profile">
                 <div id="profileContent"></div>
@@ -643,11 +626,10 @@
                     <input type="text" class="upload-input" id="videoCaption" placeholder="Описание...">
                     <input type="text" class="upload-input" id="videoMusic" placeholder="Музыка">
                     <button class="follow-btn" id="publishBtn">Опубликовать</button>
-                    <div id="uploadProgress" class="upload-progress" style="display: none;"></div>
                 </div>
             </div>
             <div class="page" id="page-discover">
-                <div style="padding:20px;color:var(--tg-hint-color);text-align:center;">Рекомендации и поиск</div>
+                <div style="padding:20px;color:var(--tg-hint-color);text-align:center;">Рекомендации</div>
             </div>
             <div class="page" id="page-inbox">
                 <div style="padding:20px;color:var(--tg-hint-color);text-align:center;">Уведомления</div>
@@ -677,19 +659,18 @@
         </div>
     </div>
 
-    <div id="toast" class="toast"></div>
+    <div class="upload-status" id="uploadStatus">Загрузка...</div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         (function() {
-            // ==================== TELEGRAM INIT ====================
+            // ==================== TELEGRAM WEBAPP INIT ====================
             const tg = window.Telegram.WebApp;
             tg.expand();
             tg.disableVerticalSwipes();
             tg.MainButton.hide();
             tg.ready();
 
-            // Применение темы
             function applyTelegramTheme() {
                 const root = document.documentElement;
                 const tp = tg.themeParams;
@@ -707,385 +688,340 @@
             applyTelegramTheme();
             tg.onEvent('themeChanged', applyTelegramTheme);
 
-            // ==================== GAME JOLT API SETUP ====================
-            const GAME_ID = 1059240;
-            const PRIVATE_KEY = '7fc4e6f9e8966f0c40bebd4dbe3f6322';
-            const GJ_API = 'https://api.gamejolt.com/api/game/v1_2';
+            // ==================== GAMEJOLT API CONFIG ====================
+            const GJ_CONFIG = {
+                gameId: 1059240,
+                privateKey: '7fc4e6f9e8966f0c40bebd4dbe3f6322',
+                apiUrl: 'https://api.gamejolt.com/api/game/v1_2'
+            };
 
-            // MD5 Implementation
+            // MD5 implementation
             function md5(string) {
-                function rotateLeft(lValue, iShiftBits) {
-                    return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
+                function md5cycle(x, k) {
+                    var a = x[0], b = x[1], c = x[2], d = x[3];
+                    a = ff(a, b, c, d, k[0], 7, -680876936);
+                    d = ff(d, a, b, c, k[1], 12, -389564586);
+                    c = ff(c, d, a, b, k[2], 17, 606105819);
+                    b = ff(b, c, d, a, k[3], 22, -1044525330);
+                    a = ff(a, b, c, d, k[4], 7, -176418897);
+                    d = ff(d, a, b, c, k[5], 12, 1200080426);
+                    c = ff(c, d, a, b, k[6], 17, -1473231341);
+                    b = ff(b, c, d, a, k[7], 22, -45705983);
+                    a = ff(a, b, c, d, k[8], 7, 1770035416);
+                    d = ff(d, a, b, c, k[9], 12, -1958414417);
+                    c = ff(c, d, a, b, k[10], 17, -42063);
+                    b = ff(b, c, d, a, k[11], 22, -1990404162);
+                    a = ff(a, b, c, d, k[12], 7, 1804603682);
+                    d = ff(d, a, b, c, k[13], 12, -40341101);
+                    c = ff(c, d, a, b, k[14], 17, -1502002290);
+                    b = ff(b, c, d, a, k[15], 22, 1236535329);
+                    a = gg(a, b, c, d, k[1], 5, -165796510);
+                    d = gg(d, a, b, c, k[6], 9, -1069501632);
+                    c = gg(c, d, a, b, k[11], 14, 643717713);
+                    b = gg(b, c, d, a, k[0], 20, -373897302);
+                    a = gg(a, b, c, d, k[5], 5, -701558691);
+                    d = gg(d, a, b, c, k[10], 9, 38016083);
+                    c = gg(c, d, a, b, k[15], 14, -660478335);
+                    b = gg(b, c, d, a, k[4], 20, -405537848);
+                    a = gg(a, b, c, d, k[9], 5, 568446438);
+                    d = gg(d, a, b, c, k[14], 9, -1019803690);
+                    c = gg(c, d, a, b, k[3], 14, -187363961);
+                    b = gg(b, c, d, a, k[8], 20, 1163531501);
+                    a = gg(a, b, c, d, k[13], 5, -1444681467);
+                    d = gg(d, a, b, c, k[2], 9, -51403784);
+                    c = gg(c, d, a, b, k[7], 14, 1735328473);
+                    b = gg(b, c, d, a, k[12], 20, -1926607734);
+                    a = hh(a, b, c, d, k[5], 4, -378558);
+                    d = hh(d, a, b, c, k[8], 11, -2022574463);
+                    c = hh(c, d, a, b, k[11], 16, 1839030562);
+                    b = hh(b, c, d, a, k[14], 23, -35309556);
+                    a = hh(a, b, c, d, k[1], 4, -1530992060);
+                    d = hh(d, a, b, c, k[4], 11, 1272893353);
+                    c = hh(c, d, a, b, k[7], 16, -155497632);
+                    b = hh(b, c, d, a, k[10], 23, -1094730640);
+                    a = hh(a, b, c, d, k[13], 4, 681279174);
+                    d = hh(d, a, b, c, k[0], 11, -358537222);
+                    c = hh(c, d, a, b, k[3], 16, -722521979);
+                    b = hh(b, c, d, a, k[6], 23, 76029189);
+                    a = hh(a, b, c, d, k[9], 4, -640364487);
+                    d = hh(d, a, b, c, k[12], 11, -421815835);
+                    c = hh(c, d, a, b, k[15], 16, 530742520);
+                    b = hh(b, c, d, a, k[2], 23, -995338651);
+                    a = ii(a, b, c, d, k[0], 6, -198630844);
+                    d = ii(d, a, b, c, k[7], 10, 1126891415);
+                    c = ii(c, d, a, b, k[14], 15, -1416354905);
+                    b = ii(b, c, d, a, k[5], 21, -57434055);
+                    a = ii(a, b, c, d, k[12], 6, 1700485571);
+                    d = ii(d, a, b, c, k[3], 10, -1894986606);
+                    c = ii(c, d, a, b, k[10], 15, -1051523);
+                    b = ii(b, c, d, a, k[1], 21, -2054922799);
+                    a = ii(a, b, c, d, k[8], 6, 1873313359);
+                    d = ii(d, a, b, c, k[15], 10, -30611744);
+                    c = ii(c, d, a, b, k[6], 15, -1560198380);
+                    b = ii(b, c, d, a, k[13], 21, 1309151649);
+                    a = ii(a, b, c, d, k[4], 6, -145523070);
+                    d = ii(d, a, b, c, k[11], 10, -1120210379);
+                    c = ii(c, d, a, b, k[2], 15, 718787259);
+                    b = ii(b, c, d, a, k[9], 21, -343485551);
+                    x[0] = add32(a, x[0]);
+                    x[1] = add32(b, x[1]);
+                    x[2] = add32(c, x[2]);
+                    x[3] = add32(d, x[3]);
                 }
-                function addUnsigned(lX, lY) {
-                    let lX4, lY4, lX8, lY8, lResult;
-                    lX8 = (lX & 0x80000000);
-                    lY8 = (lY & 0x80000000);
-                    lX4 = (lX & 0x40000000);
-                    lY4 = (lY & 0x40000000);
-                    lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
-                    if (lX4 & lY4) return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
-                    if (lX4 | lY4) {
-                        if (lResult & 0x40000000) return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
-                        else return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
-                    } else return (lResult ^ lX8 ^ lY8);
+                function cmn(q, a, b, x, s, t) { return add32(rol(add32(add32(a, q), add32(x, t)), s), b); }
+                function ff(a, b, c, d, x, s, t) { return cmn((b & c) | ((~b) & d), a, b, x, s, t); }
+                function gg(a, b, c, d, x, s, t) { return cmn((b & d) | (c & (~d)), a, b, x, s, t); }
+                function hh(a, b, c, d, x, s, t) { return cmn(b ^ c ^ d, a, b, x, s, t); }
+                function ii(a, b, c, d, x, s, t) { return cmn(c ^ (b | (~d)), a, b, x, s, t); }
+                function rol(num, cnt) { return (num << cnt) | (num >>> (32 - cnt)); }
+                function add32(a, b) { return (a + b) & 0xFFFFFFFF; }
+                function str2binl(str) {
+                    var bin = [], mask = (1 << 8) - 1;
+                    for (var i = 0; i < str.length * 8; i += 8)
+                        bin[i >> 5] |= (str.charCodeAt(i / 8) & mask) << (i % 32);
+                    return bin;
                 }
-                function F(x, y, z) { return (x & y) | ((~x) & z); }
-                function G(x, y, z) { return (x & z) | (y & (~z)); }
-                function H(x, y, z) { return (x ^ y ^ z); }
-                function I(x, y, z) { return (y ^ (x | (~z))); }
-                function FF(a, b, c, d, x, s, ac) {
-                    a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac));
-                    return addUnsigned(rotateLeft(a, s), b);
-                }
-                function GG(a, b, c, d, x, s, ac) {
-                    a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac));
-                    return addUnsigned(rotateLeft(a, s), b);
-                }
-                function HH(a, b, c, d, x, s, ac) {
-                    a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac));
-                    return addUnsigned(rotateLeft(a, s), b);
-                }
-                function II(a, b, c, d, x, s, ac) {
-                    a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac));
-                    return addUnsigned(rotateLeft(a, s), b);
-                }
-                function convertToWordArray(string) {
-                    let wordArray = [];
-                    let wordCount = ((string.length + 8) >> 6) + 1;
-                    for (let i = 0; i < wordCount * 16; i++) wordArray[i] = 0;
-                    for (let i = 0; i < string.length; i++) wordArray[i >> 2] |= string.charCodeAt(i) << (i % 4) * 8;
-                    wordArray[string.length >> 2] |= 0x80 << (string.length % 4) * 8;
-                    wordArray[wordCount * 16 - 2] = string.length * 8;
-                    return wordArray;
-                }
-                function wordToHex(wordArray) {
-                    let hex = "";
-                    for (let i = 0; i < wordArray.length; i++) {
-                        let word = wordArray[i];
-                        hex += ((word >> 24) & 0xFF).toString(16).padStart(2, '0');
-                        hex += ((word >> 16) & 0xFF).toString(16).padStart(2, '0');
-                        hex += ((word >> 8) & 0xFF).toString(16).padStart(2, '0');
-                        hex += (word & 0xFF).toString(16).padStart(2, '0');
+                function binl2hex(binarray) {
+                    var hex_tab = '0123456789abcdef', str = '';
+                    for (var i = 0; i < binarray.length * 4; i++) {
+                        str += hex_tab.charAt((binarray[i >> 2] >> ((i % 4) * 8 + 4)) & 0xF) +
+                               hex_tab.charAt((binarray[i >> 2] >> ((i % 4) * 8)) & 0xF);
                     }
-                    return hex;
+                    return str;
                 }
-                let x = convertToWordArray(string);
-                let a = 0x67452301;
-                let b = 0xEFCDAB89;
-                let c = 0x98BADCFE;
-                let d = 0x10325476;
-                for (let k = 0; k < x.length; k += 16) {
-                    let AA = a, BB = b, CC = c, DD = d;
-                    a = FF(a, b, c, d, x[k + 0], 7, 0xD76AA478);
-                    d = FF(d, a, b, c, x[k + 1], 12, 0xE8C7B756);
-                    c = FF(c, d, a, b, x[k + 2], 17, 0x242070DB);
-                    b = FF(b, c, d, a, x[k + 3], 22, 0xC1BDCEEE);
-                    a = FF(a, b, c, d, x[k + 4], 7, 0xF57C0FAF);
-                    d = FF(d, a, b, c, x[k + 5], 12, 0x4787C62A);
-                    c = FF(c, d, a, b, x[k + 6], 17, 0xA8304613);
-                    b = FF(b, c, d, a, x[k + 7], 22, 0xFD469501);
-                    a = FF(a, b, c, d, x[k + 8], 7, 0x698098D8);
-                    d = FF(d, a, b, c, x[k + 9], 12, 0x8B44F7AF);
-                    c = FF(c, d, a, b, x[k + 10], 17, 0xFFFF5BB1);
-                    b = FF(b, c, d, a, x[k + 11], 22, 0x895CD7BE);
-                    a = FF(a, b, c, d, x[k + 12], 7, 0x6B901122);
-                    d = FF(d, a, b, c, x[k + 13], 12, 0xFD987193);
-                    c = FF(c, d, a, b, x[k + 14], 17, 0xA679438E);
-                    b = FF(b, c, d, a, x[k + 15], 22, 0x49B40821);
-                    a = GG(a, b, c, d, x[k + 1], 5, 0xF61E2562);
-                    d = GG(d, a, b, c, x[k + 6], 9, 0xC040B340);
-                    c = GG(c, d, a, b, x[k + 11], 14, 0x265E5A51);
-                    b = GG(b, c, d, a, x[k + 0], 20, 0xE9B6C7AA);
-                    a = GG(a, b, c, d, x[k + 5], 5, 0xD62F105D);
-                    d = GG(d, a, b, c, x[k + 10], 9, 0x02441453);
-                    c = GG(c, d, a, b, x[k + 15], 14, 0xD8A1E681);
-                    b = GG(b, c, d, a, x[k + 4], 20, 0xE7D3FBC8);
-                    a = GG(a, b, c, d, x[k + 9], 5, 0x21E1CDE6);
-                    d = GG(d, a, b, c, x[k + 14], 9, 0xC33707D6);
-                    c = GG(c, d, a, b, x[k + 3], 14, 0xF4D50D87);
-                    b = GG(b, c, d, a, x[k + 8], 20, 0x455A14ED);
-                    a = GG(a, b, c, d, x[k + 13], 5, 0xA9E3E905);
-                    d = GG(d, a, b, c, x[k + 2], 9, 0xFCEFA3F8);
-                    c = GG(c, d, a, b, x[k + 7], 14, 0x676F02D9);
-                    b = GG(b, c, d, a, x[k + 12], 20, 0x8D2A4C8A);
-                    a = HH(a, b, c, d, x[k + 5], 4, 0xFFFA3942);
-                    d = HH(d, a, b, c, x[k + 8], 11, 0x8771F681);
-                    c = HH(c, d, a, b, x[k + 11], 16, 0x6D9D6122);
-                    b = HH(b, c, d, a, x[k + 14], 23, 0xFDE5380C);
-                    a = HH(a, b, c, d, x[k + 1], 4, 0xA4BEEA44);
-                    d = HH(d, a, b, c, x[k + 4], 11, 0x4BDECFA9);
-                    c = HH(c, d, a, b, x[k + 7], 16, 0xF6BB4B60);
-                    b = HH(b, c, d, a, x[k + 10], 23, 0xBEBFBC70);
-                    a = HH(a, b, c, d, x[k + 13], 4, 0x289B7EC6);
-                    d = HH(d, a, b, c, x[k + 0], 11, 0xEAA127FA);
-                    c = HH(c, d, a, b, x[k + 3], 16, 0xD4EF3085);
-                    b = HH(b, c, d, a, x[k + 6], 23, 0x04881D05);
-                    a = HH(a, b, c, d, x[k + 9], 4, 0xD9D4D039);
-                    d = HH(d, a, b, c, x[k + 12], 11, 0xE6DB99E5);
-                    c = HH(c, d, a, b, x[k + 15], 16, 0x1FA27CF8);
-                    b = HH(b, c, d, a, x[k + 2], 23, 0xC4AC5665);
-                    a = II(a, b, c, d, x[k + 0], 6, 0xF4292244);
-                    d = II(d, a, b, c, x[k + 7], 10, 0x432AFF97);
-                    c = II(c, d, a, b, x[k + 14], 15, 0xAB9423A7);
-                    b = II(b, c, d, a, x[k + 5], 21, 0xFC93A039);
-                    a = II(a, b, c, d, x[k + 12], 6, 0x655B59C3);
-                    d = II(d, a, b, c, x[k + 3], 10, 0x8F0CCC92);
-                    c = II(c, d, a, b, x[k + 10], 15, 0xFFEFF47D);
-                    b = II(b, c, d, a, x[k + 1], 21, 0x85845DD1);
-                    a = II(a, b, c, d, x[k + 8], 6, 0x6FA87E4F);
-                    d = II(d, a, b, c, x[k + 15], 10, 0xFE2CE6E0);
-                    c = II(c, d, a, b, x[k + 6], 15, 0xA3014314);
-                    b = II(b, c, d, a, x[k + 13], 21, 0x4E0811A1);
-                    a = II(a, b, c, d, x[k + 4], 6, 0xF7537E82);
-                    d = II(d, a, b, c, x[k + 11], 10, 0xBD3AF235);
-                    c = II(c, d, a, b, x[k + 2], 15, 0x2AD7D2BB);
-                    b = II(b, c, d, a, x[k + 9], 21, 0xEB86D391);
-                    a = addUnsigned(a, AA);
-                    b = addUnsigned(b, BB);
-                    c = addUnsigned(c, CC);
-                    d = addUnsigned(d, DD);
-                }
-                return wordToHex([a, b, c, d]);
+                var x = str2binl(string);
+                var len = string.length * 8;
+                x[len >> 5] |= 0x80 << (len % 32);
+                x[(((len + 64) >>> 9) << 4) + 14] = len;
+                md5cycle(x, x);
+                return binl2hex(x);
             }
 
-            function gjRequest(endpoint, params = {}, useAuth = false) {
+            // GameJolt API helper
+            function gjRequest(endpoint, params, useAuth = false) {
                 return new Promise((resolve, reject) => {
-                    let url = `${GJ_API}${endpoint}?game_id=${GAME_ID}`;
-                    if (useAuth && currentUser && currentUser.username && currentUser.token) {
-                        url += `&username=${encodeURIComponent(currentUser.username)}&user_token=${encodeURIComponent(currentUser.token)}`;
-                    }
+                    let url = `${GJ_CONFIG.apiUrl}${endpoint}?game_id=${GJ_CONFIG.gameId}&format=json`;
                     for (let key in params) {
                         url += `&${key}=${encodeURIComponent(params[key])}`;
                     }
-                    const signature = md5(url + PRIVATE_KEY);
-                    url += `&signature=${signature}&format=json`;
-                    
-                    fetch(url)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.response && data.response.success === 'true') {
-                                resolve(data.response);
-                            } else {
-                                reject(data.response || { message: 'Request failed' });
-                            }
-                        })
-                        .catch(reject);
-                });
-            }
-
-            // ==================== DATA STORE HELPERS ====================
-            async function dataStoreSet(key, value, isUser = false) {
-                const result = await gjRequest('/data-store/set/', {
-                    key: key,
-                    data: JSON.stringify(value)
-                }, isUser);
-                return result;
-            }
-
-            async function dataStoreGet(key, isUser = false) {
-                const result = await gjRequest('/data-store/', { key: key }, isUser);
-                if (result.success === 'true' && result.data) {
-                    try {
-                        return JSON.parse(result.data);
-                    } catch(e) {
-                        return result.data;
+                    if (useAuth && currentUser && currentUser.username && currentUser.token) {
+                        url += `&username=${encodeURIComponent(currentUser.username)}&user_token=${encodeURIComponent(currentUser.token)}`;
                     }
-                }
-                return null;
+                    const signature = md5(url + GJ_CONFIG.privateKey);
+                    url += `&signature=${signature}`;
+                    
+                    fetch(url).then(res => res.json()).then(data => {
+                        if (data.response && data.response.success === 'true') {
+                            resolve(data.response);
+                        } else {
+                            reject(data.response || { message: 'Unknown error' });
+                        }
+                    }).catch(reject);
+                });
             }
 
-            // ==================== YEETYOURFILES UPLOAD ====================
-            const YYF_URL = 'https://yyf.mubilop.com';
+            // Data Store helpers
+            async function dataStoreSet(key, value, isUserStore = true) {
+                return gjRequest('/data-store/set/', { key: key, data: JSON.stringify(value) }, isUserStore);
+            }
+            async function dataStoreGet(key, isUserStore = true) {
+                try {
+                    const res = await gjRequest('/data-store/', { key: key }, isUserStore);
+                    return res.data ? JSON.parse(res.data) : null;
+                } catch(e) { return null; }
+            }
+            async function dataStoreRemove(key, isUserStore = true) {
+                return gjRequest('/data-store/remove/', { key: key }, isUserStore);
+            }
 
-            async function uploadToYYF(file, fileName) {
+            // ==================== YEETYOURFILES INTEGRATION ====================
+            const YYF_URL = 'https://yyf.mubilop.com';
+            
+            async function uploadToYYF(fileBlob, fileName) {
                 const formData = new FormData();
-                formData.append('file', file, fileName);
-                
-                const response = await fetch(`${YYF_URL}/api/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) throw new Error('Upload to YYF failed');
+                formData.append('file', fileBlob, fileName);
+                const response = await fetch(`${YYF_URL}/api/upload`, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Upload failed');
                 const result = await response.json();
-                return `${YYF_URL}${result.fileUrl}`;
+                return {
+                    fileId: result.fileId,
+                    fileUrl: YYF_URL + result.fileUrl,
+                    shortHash: result.shortHash
+                };
             }
 
             // ==================== CURRENT USER ====================
             const tgUser = tg.initDataUnsafe?.user;
             let currentUser = {
-                id: tgUser?.id?.toString() || 'guest_' + Date.now(),
+                id: tgUser?.id?.toString() || 'user_' + Date.now(),
                 username: tgUser?.username || tgUser?.first_name || 'telegram_user',
-                avatar: tgUser?.photo_url || 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70),
+                avatar: `https://avatars.dicebear.com/api/avataaars/${tgUser?.id || 'default'}.svg`,
                 token: null,
                 followers: 0,
                 following: 0,
-                bio: 'Пользователь Telegram'
+                bio: 'TikTok on Telegram'
             };
-
-            // Загрузка/регистрация пользователя в Game Jolt Data Store
-            async function loadOrCreateUser() {
-                try {
-                    let userData = await dataStoreGet(`user_${currentUser.id}`, false);
-                    if (!userData) {
-                        userData = {
-                            id: currentUser.id,
-                            username: currentUser.username,
-                            avatar: currentUser.avatar,
-                            bio: currentUser.bio,
-                            followers: 0,
-                            following: [],
-                            videos: [],
-                            createdAt: Date.now()
-                        };
-                        await dataStoreSet(`user_${currentUser.id}`, userData, false);
-                    } else {
-                        currentUser.username = userData.username;
-                        currentUser.avatar = userData.avatar;
-                        currentUser.bio = userData.bio;
-                        currentUser.followers = userData.followers || 0;
-                        currentUser.following = userData.following || [];
-                    }
-                    currentUser.userData = userData;
-                    return userData;
-                } catch(e) {
-                    console.error('Failed to load user:', e);
-                    return null;
+            
+            // Generate token or use existing
+            async function initUser() {
+                let stored = await dataStoreGet(`user_${currentUser.id}`, false);
+                if (stored && stored.token) {
+                    currentUser.token = stored.token;
+                    currentUser.followers = stored.followers || 0;
+                    currentUser.following = stored.following || 0;
+                    currentUser.bio = stored.bio || currentUser.bio;
+                } else {
+                    currentUser.token = md5(currentUser.id + GJ_CONFIG.privateKey + Date.now()).substring(0, 32);
+                    await dataStoreSet(`user_${currentUser.id}`, {
+                        id: currentUser.id,
+                        username: currentUser.username,
+                        token: currentUser.token,
+                        followers: 0,
+                        following: 0,
+                        bio: currentUser.bio,
+                        avatar: currentUser.avatar
+                    }, false);
                 }
             }
 
-            // Сохранение пользователя
-            async function saveUser() {
-                if (currentUser.userData) {
-                    await dataStoreSet(`user_${currentUser.id}`, currentUser.userData, false);
+            // ==================== VIDEO STORAGE ====================
+            let videosCache = [];
+            
+            async function loadAllVideos() {
+                const videosData = await dataStoreGet('global_videos', false);
+                if (videosData && videosData.videos) {
+                    videosCache = videosData.videos;
+                } else {
+                    videosCache = [];
+                }
+                return videosCache;
+            }
+            
+            async function saveVideo(video) {
+                videosCache.unshift(video);
+                await dataStoreSet('global_videos', { videos: videosCache }, false);
+            }
+            
+            async function updateVideo(videoId, updates) {
+                const index = videosCache.findIndex(v => v.id === videoId);
+                if (index !== -1) {
+                    videosCache[index] = { ...videosCache[index], ...updates };
+                    await dataStoreSet('global_videos', { videos: videosCache }, false);
                 }
             }
-
-            // ==================== VIDEO MANAGEMENT ====================
-            let allVideos = [];
-            let likedVideos = new Map();
-            let savedVideos = new Map();
-            let videoComments = new Map();
-
-            async function loadVideos() {
-                try {
-                    const videosData = await dataStoreGet('all_videos', false);
-                    if (videosData && Array.isArray(videosData)) {
-                        allVideos = videosData;
-                    } else {
-                        allVideos = [];
-                    }
-                    
-                    for (let video of allVideos) {
-                        const comments = await dataStoreGet(`comments_${video.id}`, false);
-                        if (comments) videoComments.set(video.id, comments);
-                        else videoComments.set(video.id, []);
-                    }
-                } catch(e) {
-                    console.error('Failed to load videos:', e);
-                }
-            }
-
-            async function saveVideos() {
-                await dataStoreSet('all_videos', allVideos, false);
-            }
-
-            async function saveComments(videoId) {
-                await dataStoreSet(`comments_${videoId}`, videoComments.get(videoId) || [], false);
-            }
-
-            async function addVideo(videoData) {
-                const newVideo = {
-                    id: 'vid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
-                    userId: currentUser.id,
-                    username: currentUser.username,
-                    userAvatar: currentUser.avatar,
-                    url: videoData.url,
-                    caption: videoData.caption,
-                    music: videoData.music,
-                    likes: 0,
-                    comments: 0,
-                    saves: 0,
-                    timestamp: Date.now()
-                };
-                allVideos.unshift(newVideo);
-                videoComments.set(newVideo.id, []);
-                await saveVideos();
-                
-                if (currentUser.userData) {
-                    if (!currentUser.userData.videos) currentUser.userData.videos = [];
-                    currentUser.userData.videos.push(newVideo.id);
-                    await saveUser();
-                }
-                
-                return newVideo;
-            }
-
-            async function likeVideo(videoId, increment = true) {
-                const video = allVideos.find(v => v.id === videoId);
+            
+            async function addComment(videoId, userId, username, text) {
+                const video = videosCache.find(v => v.id === videoId);
                 if (video) {
-                    if (increment) {
-                        video.likes++;
-                        likedVideos.set(videoId, true);
-                    } else {
-                        video.likes--;
-                        likedVideos.set(videoId, false);
-                    }
-                    await saveVideos();
+                    if (!video.commentsList) video.commentsList = [];
+                    video.commentsList.push({ userId, username, text, timestamp: Date.now() });
+                    video.comments = video.commentsList.length;
+                    await updateVideo(videoId, { comments: video.comments, commentsList: video.commentsList });
                 }
             }
-
-            async function addComment(videoId, user, text) {
-                const comments = videoComments.get(videoId) || [];
-                comments.push({ user: user, text: text, timestamp: Date.now() });
-                videoComments.set(videoId, comments);
-                const video = allVideos.find(v => v.id === videoId);
-                if (video) video.comments = comments.length;
-                await saveComments(videoId);
-                await saveVideos();
+            
+            async function likeVideo(videoId, userId) {
+                const video = videosCache.find(v => v.id === videoId);
+                if (video) {
+                    if (!video.likesList) video.likesList = [];
+                    if (!video.likesList.includes(userId)) {
+                        video.likesList.push(userId);
+                        video.likes = video.likesList.length;
+                        await updateVideo(videoId, { likes: video.likes, likesList: video.likesList });
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            async function unlikeVideo(videoId, userId) {
+                const video = videosCache.find(v => v.id === videoId);
+                if (video && video.likesList) {
+                    const index = video.likesList.indexOf(userId);
+                    if (index !== -1) {
+                        video.likesList.splice(index, 1);
+                        video.likes = video.likesList.length;
+                        await updateVideo(videoId, { likes: video.likes, likesList: video.likesList });
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            async function saveVideoToUser(videoId, userId) {
+                const userData = await dataStoreGet(`user_${userId}`, false);
+                if (userData) {
+                    if (!userData.savedVideos) userData.savedVideos = [];
+                    if (!userData.savedVideos.includes(videoId)) {
+                        userData.savedVideos.push(videoId);
+                        await dataStoreSet(`user_${userId}`, userData, false);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            async function unsaveVideo(videoId, userId) {
+                const userData = await dataStoreGet(`user_${userId}`, false);
+                if (userData && userData.savedVideos) {
+                    const index = userData.savedVideos.indexOf(videoId);
+                    if (index !== -1) {
+                        userData.savedVideos.splice(index, 1);
+                        await dataStoreSet(`user_${userId}`, userData, false);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            async function isVideoLiked(videoId, userId) {
+                const video = videosCache.find(v => v.id === videoId);
+                return video?.likesList?.includes(userId) || false;
+            }
+            
+            async function isVideoSaved(videoId, userId) {
+                const userData = await dataStoreGet(`user_${userId}`, false);
+                return userData?.savedVideos?.includes(videoId) || false;
             }
 
             // ==================== UI RENDERING ====================
-            const feedContainer = document.getElementById('feedContainer');
-            
             function formatCount(num) {
                 if (num >= 1000000) return (num/1000000).toFixed(1)+'M';
                 if (num >= 1000) return (num/1000).toFixed(1)+'K';
                 return num.toString();
             }
-
-            function createVideoCard(video) {
+            
+            async function createVideoCard(video) {
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 card.dataset.videoId = video.id;
                 
-                const isLiked = likedVideos.get(video.id) || false;
-                const isSaved = savedVideos.get(video.id) || false;
+                const isLiked = await isVideoLiked(video.id, currentUser.id);
+                const isSaved = await isVideoSaved(video.id, currentUser.id);
                 
                 card.innerHTML = `
                     <video class="bg-video" src="${video.url}" loop playsinline></video>
                     <div class="heart-overlay"><i class="fa-solid fa-heart"></i></div>
                     <div class="video-info">
                         <div class="user-row" data-userid="${video.userId}">
-                            <img class="avatar" src="${video.userAvatar || 'https://i.pravatar.cc/150?img=1'}">
+                            <img class="avatar" src="${video.userAvatar || 'https://avatars.dicebear.com/api/avataaars/default.svg'}">
                             <span class="username">${video.username}</span>
                             <span class="live-badge">LIVE</span>
                         </div>
-                        <div class="caption">${video.caption || ''}</div>
+                        <div class="caption">${video.caption}</div>
                         <div class="music-row">
                             <div class="music-icon"><i class="fa-solid fa-music"></i></div>
-                            <span>${video.music || 'оригинальный звук'}</span>
+                            <span>${video.music}</span>
                         </div>
                     </div>
                     <div class="action-bar">
                         <div class="action-item like-item">
                             <i class="fa-${isLiked ? 'solid' : 'regular'} fa-heart ${isLiked ? 'liked' : ''}" data-action="like"></i>
-                            <span class="count like-count">${formatCount(video.likes || 0)}</span>
+                            <span class="count like-count">${formatCount(video.likes)}</span>
                         </div>
                         <div class="action-item comment-item">
                             <i class="fa-regular fa-comment" data-action="comment"></i>
-                            <span class="count comment-count">${formatCount(video.comments || 0)}</span>
+                            <span class="count comment-count">${formatCount(video.comments)}</span>
                         </div>
                         <div class="action-item save-item">
                             <i class="fa-${isSaved ? 'solid' : 'regular'} fa-bookmark ${isSaved ? 'saved' : ''}" data-action="save"></i>
@@ -1104,67 +1040,79 @@
                 
                 videoEl.addEventListener('dblclick', async (e) => {
                     e.stopPropagation();
-                    await likeVideo(video.id, true);
+                    const liked = await isVideoLiked(video.id, currentUser.id);
+                    if (liked) {
+                        await unlikeVideo(video.id, currentUser.id);
+                    } else {
+                        await likeVideo(video.id, currentUser.id);
+                    }
+                    const newLiked = await isVideoLiked(video.id, currentUser.id);
                     const likeIcon = card.querySelector('[data-action="like"]');
-                    const likeCount = card.querySelector('.like-count');
-                    likeIcon.classList.remove('fa-regular');
-                    likeIcon.classList.add('fa-solid', 'liked');
-                    likeCount.innerText = formatCount(video.likes);
-                    const heartOverlay = card.querySelector('.heart-overlay');
-                    heartOverlay.classList.remove('show');
-                    void heartOverlay.offsetWidth;
-                    heartOverlay.classList.add('show');
+                    const likeCountSpan = card.querySelector('.like-count');
+                    likeIcon.className = `fa-${newLiked ? 'solid' : 'regular'} fa-heart ${newLiked ? 'liked' : ''}`;
+                    likeCountSpan.innerText = formatCount(video.likes);
+                    if (!newLiked) {
+                        const heartOverlay = card.querySelector('.heart-overlay');
+                        heartOverlay.classList.remove('show');
+                        void heartOverlay.offsetWidth;
+                        heartOverlay.classList.add('show');
+                    }
                     tg.HapticFeedback.impactOccurred('light');
                 });
                 
                 card.querySelector('[data-action="like"]').addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const wasLiked = likedVideos.get(video.id);
-                    await likeVideo(video.id, !wasLiked);
-                    const icon = card.querySelector('[data-action="like"]');
-                    const countSpan = card.querySelector('.like-count');
-                    if (!wasLiked) {
-                        icon.classList.remove('fa-regular');
-                        icon.classList.add('fa-solid', 'liked');
+                    const liked = await isVideoLiked(video.id, currentUser.id);
+                    if (liked) {
+                        await unlikeVideo(video.id, currentUser.id);
                     } else {
-                        icon.classList.remove('fa-solid', 'liked');
-                        icon.classList.add('fa-regular');
+                        await likeVideo(video.id, currentUser.id);
                     }
-                    countSpan.innerText = formatCount(video.likes);
+                    const newLiked = await isVideoLiked(video.id, currentUser.id);
+                    const likeIcon = card.querySelector('[data-action="like"]');
+                    const likeCountSpan = card.querySelector('.like-count');
+                    likeIcon.className = `fa-${newLiked ? 'solid' : 'regular'} fa-heart ${newLiked ? 'liked' : ''}`;
+                    likeCountSpan.innerText = formatCount(video.likes);
                     tg.HapticFeedback.impactOccurred('light');
                 });
                 
-                card.querySelector('[data-action="save"]').addEventListener('click', (e) => {
+                card.querySelector('[data-action="save"]').addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const newSaved = !savedVideos.get(video.id);
-                    savedVideos.set(video.id, newSaved);
-                    const icon = card.querySelector('[data-action="save"]');
-                    icon.classList.toggle('fa-regular');
-                    icon.classList.toggle('fa-solid');
-                    icon.classList.toggle('saved', newSaved);
+                    const saved = await isVideoSaved(video.id, currentUser.id);
+                    if (saved) {
+                        await unsaveVideo(video.id, currentUser.id);
+                    } else {
+                        await saveVideoToUser(video.id, currentUser.id);
+                    }
+                    const newSaved = await isVideoSaved(video.id, currentUser.id);
+                    const saveIcon = card.querySelector('[data-action="save"]');
+                    saveIcon.className = `fa-${newSaved ? 'solid' : 'regular'} fa-bookmark ${newSaved ? 'saved' : ''}`;
+                    tg.HapticFeedback.impactOccurred('light');
                 });
                 
-                card.querySelector('[data-action="comment"]').addEventListener('click', () => openComments(video.id));
-                
-                card.querySelector('[data-action="share"]').addEventListener('click', () => {
-                    tg.showAlert(`Поделиться видео: ${video.caption}`);
-                });
-                
+                card.querySelector('[data-action="comment"]').addEventListener('click', () => openCommentsForVideo(video.id));
+                card.querySelector('[data-action="share"]').addEventListener('click', () => tg.showAlert(`Поделиться: ${video.url}`));
                 card.querySelector('.user-row').addEventListener('click', () => {
-                    showProfile(video.userId);
+                    renderProfile(video.userId);
+                    showPage('profile');
                 });
                 
                 return card;
             }
             
-            function renderFeed() {
+            let feedContainer = document.getElementById('feedContainer');
+            
+            async function renderFeed() {
+                feedContainer.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><span>Загрузка...</span></div>';
+                await loadAllVideos();
                 feedContainer.innerHTML = '';
-                if (allVideos.length === 0) {
-                    feedContainer.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tg-hint-color);">Нет видео. Загрузите первое!</div>';
-                    return;
+                for (let video of videosCache.slice().reverse()) {
+                    feedContainer.appendChild(await createVideoCard(video));
                 }
-                const shuffled = [...allVideos].sort(() => Math.random() - 0.5);
-                shuffled.forEach(v => feedContainer.appendChild(createVideoCard(v)));
+                const spinner = document.createElement('div');
+                spinner.className = 'loading-spinner';
+                spinner.innerHTML = '<div class="spinner"></div><span>Загружаем ещё...</span>';
+                feedContainer.appendChild(spinner);
                 setupVideoAutoplay();
             }
             
@@ -1174,7 +1122,7 @@
                         const video = entry.target.querySelector('.bg-video');
                         if (video) {
                             if (entry.isIntersecting) {
-                                video.play().catch(e => {});
+                                video.play().catch(e=>{});
                                 video.volume = 1.0;
                                 video.muted = false;
                             } else {
@@ -1182,116 +1130,100 @@
                             }
                         }
                     });
-                }, { root: feedContainer, threshold: 0.6 });
+                }, { threshold: 0.6 });
                 document.querySelectorAll('.video-card').forEach(c => observer.observe(c));
             }
             
             // ==================== PROFILE ====================
-            async function showProfile(userId) {
-                let userData;
-                if (userId === currentUser.id) {
-                    userData = currentUser.userData;
-                } else {
-                    userData = await dataStoreGet(`user_${userId}`, false);
-                }
-                if (!userData) {
-                    tg.showAlert('Пользователь не найден');
-                    return;
-                }
-                
-                const userVideos = allVideos.filter(v => v.userId === userId);
-                const isFollowing = currentUser.userData?.following?.includes(userId) || false;
+            async function renderProfile(userId) {
+                const userData = await dataStoreGet(`user_${userId}`, false);
+                const userVideos = videosCache.filter(v => v.userId === userId);
                 const isMe = userId === currentUser.id;
+                const isFollowing = currentUser.followingList?.includes(userId) || false;
                 
-                const profileContent = document.getElementById('profileContent');
-                profileContent.innerHTML = `
+                let html = `
                     <div class="profile-header">
                         <div class="profile-top">
-                            <img class="profile-avatar" src="${userData.avatar || 'https://i.pravatar.cc/150?img=1'}">
+                            <img class="profile-avatar" src="${userData?.avatar || 'https://avatars.dicebear.com/api/avataaars/default.svg'}">
                             <div class="profile-stats">
                                 <div class="stat"><span class="stat-number">${userVideos.length}</span><span class="stat-label">видео</span></div>
-                                <div class="stat"><span class="stat-number">${formatCount(userData.followers || 0)}</span><span class="stat-label">подписчики</span></div>
-                                <div class="stat"><span class="stat-number">${formatCount(userData.following?.length || 0)}</span><span class="stat-label">подписки</span></div>
+                                <div class="stat"><span class="stat-number">${formatCount(userData?.followers || 0)}</span><span class="stat-label">подписчики</span></div>
+                                <div class="stat"><span class="stat-number">${formatCount(userData?.following || 0)}</span><span class="stat-label">подписки</span></div>
                             </div>
                         </div>
-                        <div class="profile-bio"><strong>${userData.username}</strong> · ${userData.bio || ''}</div>
+                        <div class="profile-bio"><strong>${userData?.username || userId}</strong> · ${userData?.bio || ''}</div>
                         ${!isMe ? `<button class="follow-btn ${isFollowing ? 'following' : ''}" id="followBtn">${isFollowing ? 'Отписаться' : 'Подписаться'}</button>` : ''}
                     </div>
                     <div class="video-grid" id="profileVideoGrid"></div>
                 `;
-                
+                document.getElementById('profileContent').innerHTML = html;
                 const grid = document.getElementById('profileVideoGrid');
-                userVideos.forEach(v => {
+                for (let v of userVideos) {
                     const vid = document.createElement('video');
                     vid.src = v.url;
                     vid.className = 'grid-video';
                     vid.muted = true;
                     vid.loop = true;
-                    vid.addEventListener('click', () => {
-                        showPage('feed');
-                        setTimeout(() => {
-                            const targetCard = document.querySelector(`.video-card[data-video-id="${v.id}"]`);
-                            if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
-                    });
                     grid.appendChild(vid);
-                });
-                
-                if (!isMe && document.getElementById('followBtn')) {
-                    document.getElementById('followBtn').onclick = async () => {
-                        if (!currentUser.userData) return;
-                        if (isFollowing) {
-                            currentUser.userData.following = currentUser.userData.following.filter(id => id !== userId);
-                            userData.followers = (userData.followers || 1) - 1;
-                        } else {
-                            currentUser.userData.following.push(userId);
-                            userData.followers = (userData.followers || 0) + 1;
-                        }
-                        await saveUser();
-                        await dataStoreSet(`user_${userId}`, userData, false);
-                        showProfile(userId);
-                        tg.HapticFeedback.notificationOccurred('success');
-                    };
                 }
-                
-                showPage('profile');
+                if (!isMe && document.getElementById('followBtn')) {
+                    document.getElementById('followBtn').addEventListener('click', async () => {
+                        let currentUserData = await dataStoreGet(`user_${currentUser.id}`, false);
+                        if (!currentUserData.followingList) currentUserData.followingList = [];
+                        if (isFollowing) {
+                            currentUserData.followingList = currentUserData.followingList.filter(id => id !== userId);
+                            if (userData) userData.followers = Math.max(0, (userData.followers || 0) - 1);
+                            await dataStoreSet(`user_${userId}`, userData, false);
+                        } else {
+                            currentUserData.followingList.push(userId);
+                            if (userData) userData.followers = (userData.followers || 0) + 1;
+                            await dataStoreSet(`user_${userId}`, userData, false);
+                        }
+                        await dataStoreSet(`user_${currentUser.id}`, currentUserData, false);
+                        renderProfile(userId);
+                        tg.HapticFeedback.notificationOccurred('success');
+                    });
+                }
             }
             
             // ==================== COMMENTS ====================
             const modal = document.getElementById('commentModal');
             let currentVideoId = null;
             
-            async function openComments(videoId) {
+            window.openCommentsForVideo = async function(videoId) {
                 currentVideoId = videoId;
-                const comments = videoComments.get(videoId) || [];
-                const commentList = document.getElementById('commentList');
-                commentList.innerHTML = comments.map(c => `
+                const video = videosCache.find(v => v.id === videoId);
+                const comments = video?.commentsList || [];
+                const commentListDiv = document.getElementById('commentList');
+                commentListDiv.innerHTML = comments.map(c => `
                     <div class="comment-item">
                         <div class="comment-avatar"></div>
                         <div class="comment-content">
-                            <div class="comment-name">${c.user}</div>
+                            <div class="comment-name">${c.username}</div>
                             <div class="comment-text">${c.text}</div>
                         </div>
                     </div>
                 `).join('');
                 document.getElementById('commentCountSpan').innerText = comments.length;
                 modal.classList.add('show');
-            }
+            };
             
             document.getElementById('closeComments').onclick = () => modal.classList.remove('show');
             document.getElementById('sendComment').onclick = async () => {
                 if (!currentVideoId) return;
                 const input = document.getElementById('commentInput');
                 if (!input.value.trim()) return;
-                await addComment(currentVideoId, currentUser.username, input.value.trim());
+                await addComment(currentVideoId, currentUser.id, currentUser.username, input.value.trim());
                 input.value = '';
-                openComments(currentVideoId);
+                await loadAllVideos();
+                openCommentsForVideo(currentVideoId);
                 tg.HapticFeedback.impactOccurred('light');
             };
-            modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show'); };
             
             // ==================== UPLOAD ====================
+            const uploadStatusDiv = document.getElementById('uploadStatus');
             let selectedFile = null;
+            
             document.getElementById('uploadArea').onclick = () => document.getElementById('videoFile').click();
             document.getElementById('videoFile').onchange = (e) => {
                 if (e.target.files[0]) selectedFile = e.target.files[0];
@@ -1302,44 +1234,45 @@
                     tg.showAlert('Выберите видео');
                     return;
                 }
-                
-                const caption = document.getElementById('videoCaption').value || 'Новое видео';
-                const music = document.getElementById('videoMusic').value || 'оригинальный звук';
-                const progressDiv = document.getElementById('uploadProgress');
-                progressDiv.style.display = 'block';
-                progressDiv.innerHTML = '<div class="spinner" style="display:inline-block;margin-right:8px;"></div> Загрузка видео...';
+                uploadStatusDiv.style.display = 'block';
+                uploadStatusDiv.innerText = 'Загрузка на сервер...';
                 
                 try {
-                    const videoUrl = await uploadToYYF(selectedFile, selectedFile.name);
-                    progressDiv.innerHTML = '<div class="spinner" style="display:inline-block;margin-right:8px;"></div> Сохранение данных...';
+                    const uploadResult = await uploadToYYF(selectedFile, selectedFile.name);
+                    uploadStatusDiv.innerText = 'Публикация...';
                     
-                    await addVideo({
-                        url: videoUrl,
-                        caption: caption,
-                        music: music
-                    });
+                    const newVideo = {
+                        id: 'vid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
+                        userId: currentUser.id,
+                        username: currentUser.username,
+                        userAvatar: currentUser.avatar,
+                        url: uploadResult.fileUrl,
+                        caption: document.getElementById('videoCaption').value || 'Новое видео',
+                        music: document.getElementById('videoMusic').value || 'оригинальный звук',
+                        likes: 0,
+                        comments: 0,
+                        saves: 0,
+                        likesList: [],
+                        commentsList: [],
+                        timestamp: Date.now()
+                    };
                     
-                    progressDiv.style.display = 'none';
-                    showToast('Видео опубликовано!');
+                    await saveVideo(newVideo);
+                    uploadStatusDiv.style.display = 'none';
+                    tg.showAlert('Видео опубликовано!');
+                    showPage('feed');
+                    await renderFeed();
+                    
                     document.getElementById('videoCaption').value = '';
                     document.getElementById('videoMusic').value = '';
                     document.getElementById('videoFile').value = '';
                     selectedFile = null;
-                    showPage('feed');
-                    renderFeed();
                     tg.HapticFeedback.notificationOccurred('success');
-                } catch(e) {
-                    progressDiv.style.display = 'none';
-                    tg.showAlert('Ошибка загрузки: ' + e.message);
+                } catch (err) {
+                    uploadStatusDiv.style.display = 'none';
+                    tg.showAlert('Ошибка загрузки: ' + err.message);
                 }
             };
-            
-            function showToast(message) {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 2000);
-            }
             
             // ==================== NAVIGATION ====================
             const pages = document.querySelectorAll('.page');
@@ -1349,7 +1282,7 @@
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.dataset.page === pageId);
                 if (activeNav) activeNav.classList.add('active');
-                if (pageId === 'profile') showProfile(currentUser.id);
+                if (pageId === 'profile') renderProfile(currentUser.id);
                 if (pageId === 'feed') renderFeed();
             }
             
@@ -1368,16 +1301,23 @@
                 });
             });
             
-            document.getElementById('navProfile').addEventListener('click', () => showProfile(currentUser.id));
+            document.getElementById('navProfile').addEventListener('click', () => renderProfile(currentUser.id));
             
             // ==================== INIT ====================
-            async function init() {
-                await loadOrCreateUser();
-                await loadVideos();
-                renderFeed();
-            }
-            
-            init();
+            (async function init() {
+                await initUser();
+                await loadAllVideos();
+                if (videosCache.length === 0) {
+                    // Add sample videos
+                    const sampleVideos = [
+                        { id: 'sample1', userId: 'sample_user1', username: 'tiktok_star', userAvatar: 'https://avatars.dicebear.com/api/avataaars/1.svg', url: 'https://assets.mixkit.co/videos/40858/40858-720.mp4', caption: 'Первый день в Telegram Tik!', music: 'оригинальный звук', likes: 1500, comments: 45, saves: 120, likesList: [], commentsList: [] },
+                        { id: 'sample2', userId: 'sample_user2', username: 'content_creator', userAvatar: 'https://avatars.dicebear.com/api/avataaars/2.svg', url: 'https://assets.mixkit.co/videos/39818/39818-720.mp4', caption: 'Городские ритмы', music: 'фонк', likes: 870, comments: 23, saves: 89, likesList: [], commentsList: [] }
+                    ];
+                    for (let v of sampleVideos) await saveVideo(v);
+                    await loadAllVideos();
+                }
+                await renderFeed();
+            })();
         })();
     </script>
 </body>
