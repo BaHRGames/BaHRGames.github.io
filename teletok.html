@@ -3,24 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Telegram Tik · Mini App</title>
+    <title>Telegram TikTok · Mini App</title>
+    <!-- Font Awesome + Telegram SDK -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Telegram Theme Variables — полная адаптация под тему Telegram */
-        :root {
-            --tg-bg-color: var(--tg-theme-bg-color, #000000);
-            --tg-text-color: var(--tg-theme-text-color, #ffffff);
-            --tg-hint-color: var(--tg-theme-hint-color, #aaaaaa);
-            --tg-link-color: var(--tg-theme-link-color, #6c9ee7);
-            --tg-button-color: var(--tg-theme-button-color, #3f8ef0);
-            --tg-button-text-color: var(--tg-theme-button-text-color, #ffffff);
-            --tg-secondary-bg-color: var(--tg-theme-secondary-bg-color, #1f1f1f);
-            --tg-header-bg-color: var(--tg-theme-header-bg-color, #000000);
-            --tg-accent-text-color: var(--tg-theme-accent-text-color, #3f8ef0);
-            --tg-section-separator-color: var(--tg-theme-section-separator-color, #2c2c2c);
-            --tg-destructive-text-color: var(--tg-theme-destructive-text-color, #ff5c5c);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -28,84 +15,85 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* Telegram Adaptive Theme (как во втором файле) */
+        :root {
+            --tg-bg: var(--tg-theme-bg-color, #000000);
+            --tg-text: var(--tg-theme-text-color, #ffffff);
+            --tg-hint: var(--tg-theme-hint-color, #aaaaaa);
+            --tg-link: var(--tg-theme-link-color, #6ab0f3);
+            --tg-button: var(--tg-theme-button-color, #40a7e3);
+            --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+            --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #1f1f1f);
+            --tg-section-bg: var(--tg-theme-section-bg-color, #111111);
+            --tg-separator: var(--tg-theme-section-separator-color, #2c2c2c);
+            --tg-destructive: var(--tg-theme-destructive-text-color, #e34a4a);
+        }
+
         body {
-            background-color: var(--tg-bg-color);
-            color: var(--tg-text-color);
+            background: var(--tg-bg);
+            color: var(--tg-text);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            overflow: hidden;
+            height: 100vh;
             touch-action: pan-y;
         }
 
+        /* Главный контейнер */
         .tiktok-app {
             width: 100vw;
             height: 100vh;
-            background-color: var(--tg-bg-color);
-            overflow: hidden;
-            position: relative;
+            background: var(--tg-bg);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
-        /* HEADER в стиле Telegram — чистый, без лишних градиентов */
+        /* HEADER в стиле Telegram Mini App (как в примере) */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
-            background-color: var(--tg-header-bg-color);
-            border-bottom: 1px solid var(--tg-section-separator-color);
+            padding: 12px 20px 8px;
+            background: transparent;
             z-index: 20;
             position: relative;
             flex-shrink: 0;
         }
-
         .header-left {
             display: flex;
-            gap: 24px;
+            gap: 20px;
             font-weight: 600;
             font-size: 18px;
         }
-
         .tab {
             opacity: 0.6;
             transition: 0.2s;
             cursor: pointer;
-            padding-bottom: 4px;
-            color: var(--tg-text-color);
+            padding: 4px 0;
+            color: var(--tg-text);
         }
-
         .tab.active {
             opacity: 1;
             font-weight: 600;
-            border-bottom: 2px solid var(--tg-button-color);
+            border-bottom: 2px solid var(--tg-button);
         }
-
         .header-right {
             display: flex;
-            gap: 20px;
+            gap: 18px;
             font-size: 20px;
-            color: var(--tg-hint-color);
+            color: var(--tg-text);
+            opacity: 0.8;
         }
-
         .header-right i {
             cursor: pointer;
-            transition: 0.2s;
         }
 
-        .header-right i:active {
-            transform: scale(0.92);
-        }
-
-        /* контейнер страниц */
+        /* Страницы */
         .pages-container {
             flex: 1;
             position: relative;
             overflow: hidden;
         }
-
         .page {
             width: 100%;
             height: 100%;
@@ -116,39 +104,33 @@
             display: none;
             scroll-behavior: smooth;
         }
-
         .page.active {
             display: block;
         }
 
-        /* Лента — TikTok style с сохранением Telegram фона */
+        /* Лента — style как у Telegram Cards */
         .feed-container {
             height: 100%;
             overflow-y: auto;
             scroll-snap-type: y mandatory;
             -ms-overflow-style: none;
             scrollbar-width: none;
-            background-color: var(--tg-bg-color);
         }
-
         .feed-container::-webkit-scrollbar {
             display: none;
         }
-
         .video-card {
             height: 100%;
             scroll-snap-align: start;
             scroll-snap-stop: always;
             position: relative;
+            background: var(--tg-bg);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             padding: 16px;
-            color: white;
-            background: #000;
-            overflow: hidden;
         }
-
         .bg-video {
             position: absolute;
             top: 0;
@@ -159,69 +141,72 @@
             pointer-events: auto;
             z-index: 0;
         }
-
-        /* мягкий градиент для читаемости текста (как в Telegram видео-сниппетах) */
+        /* градиент как в TikTok но мягче под Telegram */
         .video-card::after {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2) 100%);
+            background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
             pointer-events: none;
             z-index: 1;
         }
-
+        /* информация о видео */
         .video-info {
             position: relative;
             z-index: 2;
-            max-width: 70%;
+            max-width: 75%;
             pointer-events: none;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
-
         .user-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             margin-bottom: 8px;
             pointer-events: auto;
             cursor: pointer;
         }
-
         .avatar {
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 2px solid var(--tg-button-color);
+            border: 2px solid var(--tg-button);
             object-fit: cover;
-            background: var(--tg-secondary-bg-color);
+            background: var(--tg-secondary-bg);
         }
-
         .username {
             font-weight: 700;
             font-size: 16px;
-            text-shadow: 0 1px 2px black;
+            color: var(--tg-text);
         }
-
         .verified {
-            color: var(--tg-button-color);
+            color: var(--tg-button);
             font-size: 14px;
         }
-
         .caption {
             font-size: 14px;
             line-height: 1.3;
-            margin-bottom: 8px;
-            text-shadow: 0 1px 2px black;
+            margin-bottom: 6px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
-
         .music-row {
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 13px;
-            opacity: 0.9;
+            opacity: 0.85;
+        }
+        .music-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
+        /* Action bar (лайки, комменты) */
         .action-bar {
             position: absolute;
             right: 16px;
@@ -233,7 +218,6 @@
             gap: 20px;
             pointer-events: auto;
         }
-
         .action-item {
             display: flex;
             flex-direction: column;
@@ -241,120 +225,82 @@
             gap: 4px;
             font-size: 12px;
             font-weight: 600;
+            text-shadow: 0 2px 4px black;
         }
-
         .action-item i {
             font-size: 32px;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
             cursor: pointer;
             transition: 0.1s;
+            color: white;
         }
-
         .action-item i:active {
             transform: scale(1.15);
         }
-
         .action-item .count {
             font-size: 12px;
             font-weight: 600;
-            text-shadow: 0 1px 3px black;
         }
-
         .action-item .fa-heart.liked {
+            color: #ff3b5c;
             font-weight: 900;
-            color: var(--tg-destructive-text-color);
         }
-
         .action-item .fa-bookmark.saved {
-            font-weight: 900;
             color: #ffc107;
         }
 
+        /* сердечко двойного клика */
         .heart-overlay {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 80px;
-            color: var(--tg-destructive-text-color);
+            font-size: 90px;
+            color: #ff3b5c;
             opacity: 0;
             pointer-events: none;
             z-index: 10;
         }
-
         .heart-overlay.show {
-            animation: heartPop 0.5s ease;
+            animation: heartPop 0.5s ease forwards;
         }
-
         @keyframes heartPop {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4);}
+            30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2);}
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1);}
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8);}
         }
 
-        /* Telegram стиль для спиннера загрузки */
-        .loading-spinner {
-            height: 80px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--tg-hint-color);
-            font-size: 14px;
-            gap: 8px;
-            background: var(--tg-bg-color);
-            scroll-snap-align: start;
-        }
-
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid var(--tg-section-separator-color);
-            border-top: 3px solid var(--tg-button-color);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Bottom Nav в стиле Telegram — плоские, аккуратные */
+        /* Нижняя навигация Telegram style */
         .bottom-nav {
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 8px 16px 14px;
-            background-color: var(--tg-header-bg-color);
-            border-top: 1px solid var(--tg-section-separator-color);
+            padding: 8px 16px 12px;
+            background: var(--tg-section-bg);
+            border-top: 1px solid var(--tg-separator);
             flex-shrink: 0;
             z-index: 20;
         }
-
         .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             font-size: 12px;
-            color: var(--tg-hint-color);
+            color: var(--tg-hint);
             transition: 0.2s;
             cursor: pointer;
         }
-
         .nav-item i {
-            font-size: 22px;
+            font-size: 24px;
             margin-bottom: 2px;
         }
-
         .nav-item.active {
-            color: var(--tg-button-color);
+            color: var(--tg-button);
         }
-
-        .nav-item .label {
-            font-size: 11px;
-            font-weight: 500;
-        }
-
         .plus-button {
-            background-color: var(--tg-button-color);
-            color: var(--tg-button-text-color);
+            background: var(--tg-button);
+            color: var(--tg-button-text);
             width: 44px;
             height: 30px;
             border-radius: 20px;
@@ -363,657 +309,585 @@
             justify-content: center;
             font-size: 22px;
             font-weight: bold;
-            box-shadow: none;
         }
 
-        .live-badge {
-            background: var(--tg-destructive-text-color);
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-size: 9px;
-            font-weight: bold;
-            margin-left: 6px;
-        }
-
-        /* Профиль — карточка пользователя в стиле Telegram (как в примере) */
-        .profile-header {
-            padding: 20px 16px;
-            background: var(--tg-secondary-bg-color);
+        /* Спиннер загрузки */
+        .loading-spinner {
+            height: 80px;
             display: flex;
-            flex-direction: column;
-            gap: 16px;
-            border-bottom: 1px solid var(--tg-section-separator-color);
-        }
-
-        .profile-top {
-            display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 18px;
+            gap: 12px;
+            color: var(--tg-hint);
+            background: var(--tg-bg);
+            scroll-snap-align: start;
         }
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--tg-separator);
+            border-top: 3px solid var(--tg-button);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ПРОФИЛЬ в стиле Telegram */
+        .profile-header {
+            padding: 20px;
+            background: var(--tg-secondary-bg);
+            border-radius: 0;
+            margin-bottom: 2px;
+        }
         .profile-avatar {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            border: 3px solid var(--tg-button-color);
+            border: 3px solid var(--tg-button);
             object-fit: cover;
-            background: var(--tg-bg-color);
+            margin-bottom: 12px;
         }
-
         .profile-stats {
             display: flex;
-            gap: 28px;
-            flex: 1;
-            justify-content: center;
+            gap: 32px;
+            margin: 16px 0;
         }
-
         .stat {
             text-align: center;
         }
-
         .stat-number {
             font-size: 20px;
             font-weight: 700;
-            color: var(--tg-text-color);
         }
-
         .stat-label {
             font-size: 12px;
-            color: var(--tg-hint-color);
+            color: var(--tg-hint);
         }
-
-        .profile-bio {
-            font-size: 14px;
-            color: var(--tg-text-color);
-        }
-
         .follow-btn {
-            background: var(--tg-button-color);
+            background: var(--tg-button);
             border: none;
             border-radius: 30px;
-            padding: 12px;
-            color: var(--tg-button-text-color);
+            padding: 10px;
+            color: var(--tg-button-text);
             font-weight: 600;
+            width: 100%;
             cursor: pointer;
-            transition: 0.2s;
+            margin-top: 8px;
         }
-
         .follow-btn.following {
-            background: var(--tg-secondary-bg-color);
-            color: var(--tg-text-color);
-            border: 1px solid var(--tg-section-separator-color);
+            background: var(--tg-secondary-bg);
+            color: var(--tg-text);
+            border: 1px solid var(--tg-separator);
         }
-
-        .follow-btn:active {
-            transform: scale(0.96);
-        }
-
         .video-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 2px;
-            background: var(--tg-bg-color);
+            background: var(--tg-bg);
         }
-
         .grid-video {
             aspect-ratio: 9/16;
-            background: var(--tg-secondary-bg-color);
+            background: var(--tg-secondary-bg);
             object-fit: cover;
             width: 100%;
-            cursor: pointer;
         }
 
-        /* upload section в стиле Telegram */
+        /* Upload секция */
         .upload-container {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            padding: 24px;
+            background: var(--tg-section-bg);
+            height: 100%;
         }
-
         .upload-area {
-            border: 2px dashed var(--tg-section-separator-color);
-            border-radius: 28px;
-            padding: 40px;
+            border: 2px dashed var(--tg-separator);
+            border-radius: 24px;
+            padding: 30px;
             text-align: center;
+            background: var(--tg-secondary-bg);
             cursor: pointer;
-            background: var(--tg-secondary-bg-color);
         }
-
-        .upload-area i {
-            font-size: 48px;
-            color: var(--tg-hint-color);
-        }
-
         .upload-input {
-            background: var(--tg-secondary-bg-color);
-            border: 1px solid var(--tg-section-separator-color);
+            background: var(--tg-secondary-bg);
+            border: 1px solid var(--tg-separator);
             border-radius: 16px;
-            padding: 14px;
-            color: var(--tg-text-color);
-            font-size: 16px;
+            padding: 12px;
+            color: var(--tg-text);
+            width: 100%;
+            margin: 12px 0;
         }
-
-        /* Модалка комментариев в стиле Telegram sheet */
+        /* Модалка комментариев */
         .comment-modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(8px);
-            z-index: 100;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(10px);
+            z-index: 200;
             display: flex;
             align-items: flex-end;
-            justify-content: center;
             visibility: hidden;
             opacity: 0;
             transition: 0.2s;
         }
-
         .comment-modal.show {
             visibility: visible;
             opacity: 1;
         }
-
         .comment-sheet {
-            background: var(--tg-secondary-bg-color);
+            background: var(--tg-section-bg);
             width: 100%;
-            border-top-left-radius: 28px;
-            border-top-right-radius: 28px;
+            border-radius: 24px 24px 0 0;
             padding: 20px;
-            color: var(--tg-text-color);
-            transform: translateY(100%);
-            transition: 0.2s;
             max-height: 65%;
             overflow-y: auto;
+            transform: translateY(100%);
+            transition: 0.2s;
         }
-
         .comment-modal.show .comment-sheet {
             transform: translateY(0);
         }
-
         .comment-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
-
-        .close-comments {
-            font-size: 28px;
-            cursor: pointer;
-            color: var(--tg-hint-color);
-        }
-
         .comment-list {
             display: flex;
             flex-direction: column;
             gap: 16px;
             margin-bottom: 20px;
         }
-
         .comment-item {
             display: flex;
             gap: 12px;
         }
-
         .comment-avatar {
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: var(--tg-button-color);
-            flex-shrink: 0;
+            background: var(--tg-button);
         }
-
-        .comment-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .comment-text {
-            font-size: 14px;
-            color: var(--tg-hint-color);
-        }
-
         .comment-input-area {
             display: flex;
             gap: 12px;
             margin-top: 12px;
         }
-
         .comment-input {
             flex: 1;
-            background: var(--tg-bg-color);
-            border: 1px solid var(--tg-section-separator-color);
-            border-radius: 28px;
-            padding: 12px 18px;
-            color: var(--tg-text-color);
-            font-size: 14px;
-        }
-
-        .comment-send {
-            background: var(--tg-button-color);
+            background: var(--tg-secondary-bg);
             border: none;
-            border-radius: 28px;
+            border-radius: 30px;
+            padding: 12px 16px;
+            color: var(--tg-text);
+        }
+        .comment-send {
+            background: var(--tg-button);
+            border: none;
+            border-radius: 30px;
             padding: 0 20px;
-            color: var(--tg-button-text-color);
+            color: var(--tg-button-text);
             font-weight: 600;
-            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="tiktok-app">
-        <div class="header">
-            <div class="header-left">
-                <span class="tab active" data-tab="home">Для вас</span>
-                <span class="tab" data-tab="friends">Подписки</span>
-            </div>
-            <div class="header-right">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <i class="fa-regular fa-circle-check"></i>
-            </div>
+<div class="tiktok-app">
+    <div class="header">
+        <div class="header-left">
+            <span class="tab active" data-tab="home">Для тебя</span>
+            <span class="tab" data-tab="friends">Друзья</span>
         </div>
-
-        <div class="pages-container">
-            <div class="page active" id="page-feed">
-                <div class="feed-container" id="feedContainer"></div>
-            </div>
-            <div class="page" id="page-profile">
-                <div id="profileContent"></div>
-            </div>
-            <div class="page" id="page-upload">
-                <div class="upload-container">
-                    <h2>Новое видео</h2>
-                    <div class="upload-area" id="uploadArea">
-                        <i class="fa-solid fa-cloud-upload-alt"></i>
-                        <p>Выберите видео</p>
-                    </div>
-                    <input type="file" id="videoFile" accept="video/*">
-                    <input type="text" class="upload-input" id="videoCaption" placeholder="Описание...">
-                    <input type="text" class="upload-input" id="videoMusic" placeholder="Музыка">
-                    <button class="follow-btn" id="publishBtn">Опубликовать</button>
-                </div>
-            </div>
-            <div class="page" id="page-discover">
-                <div style="padding:20px;color:var(--tg-hint-color);text-align:center;">Рекомендации и поиск</div>
-            </div>
-            <div class="page" id="page-inbox">
-                <div style="padding:20px;color:var(--tg-hint-color);text-align:center;">Уведомления</div>
-            </div>
-        </div>
-
-        <div class="bottom-nav">
-            <div class="nav-item active" data-page="feed"><i class="fa-solid fa-house"></i><span class="label">Главная</span></div>
-            <div class="nav-item" data-page="discover"><i class="fa-solid fa-compass"></i><span class="label">Открыть</span></div>
-            <div class="nav-item plus-button" data-page="upload"><i class="fa-solid fa-plus"></i></div>
-            <div class="nav-item" data-page="inbox"><i class="fa-regular fa-envelope"></i><span class="label">Сообщения</span></div>
-            <div class="nav-item" data-page="profile" id="navProfile"><i class="fa-regular fa-user"></i><span class="label">Профиль</span></div>
+        <div class="header-right">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <i class="fa-regular fa-circle-check"></i>
         </div>
     </div>
 
-    <div class="comment-modal" id="commentModal">
-        <div class="comment-sheet">
-            <div class="comment-header">
-                <h3>Комментарии (<span id="commentCountSpan">0</span>)</h3>
-                <span class="close-comments" id="closeComments">&times;</span>
-            </div>
-            <div class="comment-list" id="commentList"></div>
-            <div class="comment-input-area">
-                <input type="text" class="comment-input" placeholder="Написать комментарий..." id="commentInput">
-                <button class="comment-send" id="sendComment">→</button>
-            </div>
-        </div>
+    <div class="pages-container">
+        <div class="page active" id="page-feed"><div class="feed-container" id="feedContainer"></div></div>
+        <div class="page" id="page-profile"><div id="profileContent"></div></div>
+        <div class="page" id="page-upload"><div class="upload-container" id="uploadPage"></div></div>
+        <div class="page" id="page-discover"><div style="padding:40px;text-align:center;color:var(--tg-hint);">🔍 Рекомендации Telegram</div></div>
+        <div class="page" id="page-inbox"><div style="padding:40px;text-align:center;color:var(--tg-hint);">📩 Уведомления будут здесь</div></div>
     </div>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        (function() {
-            // Инициализация Telegram WebApp
-            const tg = window.Telegram.WebApp;
+    <div class="bottom-nav">
+        <div class="nav-item active" data-page="feed"><i class="fa-solid fa-house"></i><span>Главная</span></div>
+        <div class="nav-item" data-page="discover"><i class="fa-solid fa-compass"></i><span>Открыть</span></div>
+        <div class="nav-item plus-button" data-page="upload"><i class="fa-solid fa-plus"></i></div>
+        <div class="nav-item" data-page="inbox"><i class="fa-regular fa-envelope"></i><span>Входящие</span></div>
+        <div class="nav-item" data-page="profile" id="navProfile"><i class="fa-regular fa-user"></i><span>Я</span></div>
+    </div>
+</div>
+
+<div class="comment-modal" id="commentModal">
+    <div class="comment-sheet">
+        <div class="comment-header"><h3>Комментарии (<span id="commentCountSpan">0</span>)</h3><span class="close-comments" id="closeComments" style="font-size:28px;cursor:pointer;">&times;</span></div>
+        <div class="comment-list" id="commentList"></div>
+        <div class="comment-input-area">
+            <input type="text" class="comment-input" id="commentInput" placeholder="Напишите комментарий...">
+            <button class="comment-send" id="sendComment">→</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- Telegram WebApp Init -----
+        const tg = window.Telegram?.WebApp;
+        if(tg) {
             tg.expand();
             tg.disableVerticalSwipes();
-            tg.MainButton.hide();
             tg.ready();
-
-            // Применение темы Telegram
-            function applyTelegramTheme() {
+            tg.MainButton.hide();
+            // Применяем тему Telegram
+            const applyTheme = () => {
                 const root = document.documentElement;
-                const tp = tg.themeParams;
-                if (tp) {
-                    root.style.setProperty('--tg-theme-bg-color', tp.bg_color || '#000000');
-                    root.style.setProperty('--tg-theme-text-color', tp.text_color || '#ffffff');
-                    root.style.setProperty('--tg-theme-hint-color', tp.hint_color || '#aaaaaa');
-                    root.style.setProperty('--tg-theme-button-color', tp.button_color || '#3f8ef0');
-                    root.style.setProperty('--tg-theme-button-text-color', tp.button_text_color || '#ffffff');
-                    root.style.setProperty('--tg-theme-secondary-bg-color', tp.secondary_bg_color || '#1f1f1f');
-                    root.style.setProperty('--tg-theme-section-separator-color', tp.section_separator_color || '#2c2c2c');
-                    root.style.setProperty('--tg-theme-destructive-text-color', tp.destructive_text_color || '#ff5c5c');
+                const p = tg.themeParams;
+                if(p) {
+                    root.style.setProperty('--tg-bg', p.bg_color || '#000000');
+                    root.style.setProperty('--tg-text', p.text_color || '#ffffff');
+                    root.style.setProperty('--tg-hint', p.hint_color || '#aaaaaa');
+                    root.style.setProperty('--tg-button', p.button_color || '#40a7e3');
+                    root.style.setProperty('--tg-button-text', p.button_text_color || '#ffffff');
+                    root.style.setProperty('--tg-secondary-bg', p.secondary_bg_color || '#1f1f1f');
+                    root.style.setProperty('--tg-section-bg', p.section_bg_color || '#111111');
+                    root.style.setProperty('--tg-separator', p.section_separator_color || '#2c2c2c');
                 }
-            }
-            applyTelegramTheme();
-            tg.onEvent('themeChanged', applyTelegramTheme);
-
-            // Хранение данных
-            const currentUser = {
-                id: tg.initDataUnsafe?.user?.id || 'user_tg',
-                username: tg.initDataUnsafe?.user?.username || 'telegram_fan',
-                avatar: 'https://i.pravatar.cc/150?img=7',
-                verified: true,
-                followers: 14200,
-                following: 412,
-                bio: '🔥 Creator · Telegram Mini App'
             };
-            if (tg.initDataUnsafe?.user?.first_name) {
-                currentUser.username = tg.initDataUnsafe.user.first_name;
+            applyTheme();
+            tg.onEvent('themeChanged', applyTheme);
+        }
+
+        // ---------- ДАННЫЕ ----------
+        const currentUser = {
+            id: 'me_tg',
+            username: 'tiktok_tg',
+            avatar: 'https://i.pravatar.cc/150?img=7',
+            verified: true,
+            followers: 15800,
+            following: 420,
+            bio: '🔥 Telegram Mini App • TikTok vibe'
+        };
+        const users = [
+            currentUser,
+            { id: 'user2', username: 'alice_tok', avatar: 'https://i.pravatar.cc/150?img=1', verified: true, followers: 8900, following: 210, bio: '✨ dancer' },
+            { id: 'user3', username: 'dmitry_code', avatar: 'https://i.pravatar.cc/150?img=2', verified: false, followers: 4300, following: 180, bio: 'dev & creator' },
+            { id: 'user4', username: 'luna_cat', avatar: 'https://i.pravatar.cc/150?img=3', verified: true, followers: 11200, following: 560, bio: 'lofi girl' },
+        ];
+
+        let followingRelations = new Set();
+        followingRelations.add('me_tg_follows_user2');
+
+        let videos = [
+            { id: 'v1', userId: 'user2', url: 'https://assets.mixkit.co/videos/40858/40858-720.mp4', caption: 'Танцевальный вайб ✨', music: 'оригинальный звук', likes: 23400, comments: 120, saves: 3400 },
+            { id: 'v2', userId: 'user3', url: 'https://assets.mixkit.co/videos/39818/39818-720.mp4', caption: 'Ночной город 🌃', music: 'phonk.wav', likes: 8700, comments: 45, saves: 1200 },
+            { id: 'v3', userId: 'me_tg', url: 'https://assets.mixkit.co/videos/40745/40745-720.mp4', caption: 'Закат над морем', music: 'lo-fi dream', likes: 15000, comments: 89, saves: 2300 },
+            { id: 'v4', userId: 'user4', url: 'https://assets.mixkit.co/videos/40426/40426-720.mp4', caption: 'Уютное утро ☕', music: 'джаз', likes: 5600, comments: 34, saves: 900 },
+            { id: 'v5', userId: 'user2', url: 'https://assets.mixkit.co/videos/40874/40874-720.mp4', caption: 'Шум прибоя', music: 'волны', likes: 34200, comments: 210, saves: 5600 },
+        ];
+
+        let likedVideos = new Map();
+        let savedVideos = new Map();
+        let videoComments = new Map();
+        videos.forEach(v => {
+            videoComments.set(v.id, [
+                { user: 'tg_fan', text: 'Классный контент!' },
+                { user: 'user_mini', text: '🔥🔥' }
+            ]);
+        });
+
+        function formatCount(num) {
+            if (num >= 1e6) return (num/1e6).toFixed(1)+'M';
+            if (num >= 1000) return (num/1000).toFixed(1)+'K';
+            return num.toString();
+        }
+
+        // лайк с обратной связью Haptic
+        function likeVideo(videoId, likeIcon, likeCountSpan, heartOverlay = null) {
+            const liked = !likedVideos.get(videoId);
+            likedVideos.set(videoId, liked);
+            const video = videos.find(v => v.id === videoId);
+            if(liked) video.likes += 1;
+            else video.likes -= 1;
+            likeIcon.classList.toggle('fa-regular');
+            likeIcon.classList.toggle('fa-solid');
+            likeIcon.classList.toggle('liked', liked);
+            likeCountSpan.innerText = formatCount(video.likes);
+            if(heartOverlay) {
+                heartOverlay.classList.remove('show');
+                void heartOverlay.offsetWidth;
+                heartOverlay.classList.add('show');
             }
+            if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        }
 
-            const users = [
-                currentUser,
-                { id: 'user2', username: 'emma_tok', avatar: 'https://i.pravatar.cc/150?img=1', verified: true, followers: 5600, following: 180, bio: '✨' },
-                { id: 'user3', username: 'david.codes', avatar: 'https://i.pravatar.cc/150?img=2', verified: false, followers: 3200, following: 240, bio: 'dev' },
-                { id: 'user4', username: 'luna.moon', avatar: 'https://i.pravatar.cc/150?img=3', verified: true, followers: 8900, following: 430, bio: 'luna' },
-            ];
+        // создание карточки видео
+        function createVideoCard(video) {
+            const user = users.find(u => u.id === video.userId) || users[0];
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.dataset.videoId = video.id;
 
-            let followingRelations = new Set();
-            let videos = [
-                { id: 'v1', userId: 'user2', url: 'https://assets.mixkit.co/videos/40858/40858-720.mp4', caption: 'Танцы под луной ✨', music: 'оригинальный звук', likes: 23400, comments: 120, saves: 3400 },
-                { id: 'v2', userId: 'user3', url: 'https://assets.mixkit.co/videos/39818/39818-720.mp4', caption: 'Городские ритмы', music: 'фонк', likes: 8700, comments: 45, saves: 1200 },
-                { id: 'v3', userId: 'user1', url: 'https://assets.mixkit.co/videos/40745/40745-720.mp4', caption: 'Закат мечты', music: 'лофи', likes: 15000, comments: 89, saves: 2300 },
-                { id: 'v4', userId: 'user4', url: 'https://assets.mixkit.co/videos/40426/40426-720.mp4', caption: 'Утренний кофе', music: 'джаз', likes: 5600, comments: 34, saves: 900 },
-                { id: 'v5', userId: 'user2', url: 'https://assets.mixkit.co/videos/40874/40874-720.mp4', caption: 'Море зовет', music: 'волны', likes: 34200, comments: 210, saves: 5600 },
-            ];
+            const isLiked = likedVideos.get(video.id) || false;
+            const isSaved = savedVideos.get(video.id) || false;
 
-            let likedVideos = new Map();
-            let savedVideos = new Map();
-            let videoComments = new Map();
-            videos.forEach(v => {
-                videoComments.set(v.id, [
-                    { user: 'fan_tg', text: 'Крутой контент! 🔥' },
-                    { user: 'viewer', text: 'Супер 👏' }
-                ]);
+            card.innerHTML = `
+                <video class="bg-video" src="${video.url}" loop playsinline></video>
+                <div class="heart-overlay"><i class="fa-solid fa-heart"></i></div>
+                <div class="video-info">
+                    <div class="user-row" data-userid="${user.id}">
+                        <img class="avatar" src="${user.avatar}" loading="lazy">
+                        <span class="username">${user.username}</span>
+                        ${user.verified ? '<i class="fa-solid fa-circle-check verified"></i>' : ''}
+                    </div>
+                    <div class="caption">${video.caption}</div>
+                    <div class="music-row">
+                        <div class="music-icon"><i class="fa-solid fa-music"></i></div>
+                        <span>${video.music}</span>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <div class="action-item like-item">
+                        <i class="fa-regular fa-heart ${isLiked ? 'liked' : ''}" data-action="like"></i>
+                        <span class="count like-count">${formatCount(video.likes)}</span>
+                    </div>
+                    <div class="action-item comment-item">
+                        <i class="fa-regular fa-comment" data-action="comment"></i>
+                        <span class="count comment-count">${formatCount(video.comments)}</span>
+                    </div>
+                    <div class="action-item save-item">
+                        <i class="fa-regular fa-bookmark ${isSaved ? 'saved' : ''}" data-action="save"></i>
+                        <span class="count save-count">${formatCount(video.saves)}</span>
+                    </div>
+                    <div class="action-item share-item">
+                        <i class="fa-solid fa-share" data-action="share"></i>
+                        <span class="count">12K</span>
+                    </div>
+                </div>
+            `;
+
+            const videoEl = card.querySelector('.bg-video');
+            const heartOverlay = card.querySelector('.heart-overlay');
+            const likeIcon = card.querySelector('[data-action="like"]');
+            const likeCountSpan = card.querySelector('.like-count');
+            const saveIcon = card.querySelector('[data-action="save"]');
+
+            videoEl.volume = 0.8;
+            videoEl.muted = false;
+            videoEl.addEventListener('click', (e) => { e.stopPropagation(); videoEl.paused ? videoEl.play() : videoEl.pause(); });
+            videoEl.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                likeVideo(video.id, likeIcon, likeCountSpan, heartOverlay);
             });
-
-            function formatCount(num) {
-                if (num >= 1000000) return (num/1000000).toFixed(1)+'M';
-                if (num >= 1000) return (num/1000).toFixed(1)+'K';
-                return num.toString();
-            }
-
-            function likeVideo(videoId, likeIcon, likeCountSpan, heartOverlay = null) {
-                const liked = !likedVideos.get(videoId);
-                likedVideos.set(videoId, liked);
-                const video = videos.find(v => v.id === videoId);
-                if (liked) video.likes += 1;
-                else video.likes -= 1;
-                likeIcon.classList.toggle('fa-regular');
-                likeIcon.classList.toggle('fa-solid');
-                likeIcon.classList.toggle('liked', liked);
-                likeCountSpan.innerText = formatCount(video.likes);
-                if (heartOverlay) {
-                    heartOverlay.classList.remove('show');
-                    void heartOverlay.offsetWidth;
-                    heartOverlay.classList.add('show');
-                }
-                tg.HapticFeedback.impactOccurred('light');
-            }
-
-            function createVideoCard(video) {
-                const user = users.find(u => u.id === video.userId) || users[0];
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                card.dataset.videoId = video.id;
-                const isLiked = likedVideos.get(video.id) || false;
-                const isSaved = savedVideos.get(video.id) || false;
-                card.innerHTML = `
-                    <video class="bg-video" src="${video.url}" loop playsinline></video>
-                    <div class="heart-overlay"><i class="fa-solid fa-heart"></i></div>
-                    <div class="video-info">
-                        <div class="user-row" data-userid="${user.id}">
-                            <img class="avatar" src="${user.avatar}">
-                            <span class="username">${user.username}</span>
-                            ${user.verified ? '<i class="fa-solid fa-circle-check verified"></i>' : ''}
-                            <span class="live-badge">LIVE</span>
-                        </div>
-                        <div class="caption">${video.caption}</div>
-                        <div class="music-row">
-                            <div class="music-icon"><i class="fa-solid fa-music"></i></div>
-                            <span>${video.music}</span>
-                        </div>
-                    </div>
-                    <div class="action-bar">
-                        <div class="action-item like-item">
-                            <i class="fa-regular fa-heart ${isLiked ? 'liked' : ''}" data-action="like"></i>
-                            <span class="count like-count">${formatCount(video.likes)}</span>
-                        </div>
-                        <div class="action-item comment-item">
-                            <i class="fa-regular fa-comment" data-action="comment"></i>
-                            <span class="count comment-count">${formatCount(video.comments)}</span>
-                        </div>
-                        <div class="action-item save-item">
-                            <i class="fa-regular fa-bookmark ${isSaved ? 'saved' : ''}" data-action="save"></i>
-                            <span class="count save-count">${formatCount(video.saves)}</span>
-                        </div>
-                        <div class="action-item share-item">
-                            <i class="fa-solid fa-share" data-action="share"></i>
-                            <span class="count">12K</span>
-                        </div>
-                    </div>
-                `;
-                const videoEl = card.querySelector('.bg-video');
-                videoEl.volume = 1.0;
-                videoEl.muted = false;
-                videoEl.addEventListener('click', (e) => e.stopPropagation());
-                videoEl.addEventListener('dblclick', (e) => {
-                    e.stopPropagation();
-                    likeVideo(video.id, card.querySelector('[data-action="like"]'), card.querySelector('.like-count'), card.querySelector('.heart-overlay'));
-                });
-                card.querySelector('[data-action="like"]').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    likeVideo(video.id, card.querySelector('[data-action="like"]'), card.querySelector('.like-count'), null);
-                });
-                card.querySelector('[data-action="save"]').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const newSaved = !savedVideos.get(video.id);
-                    savedVideos.set(video.id, newSaved);
-                    const icon = card.querySelector('[data-action="save"]');
-                    icon.classList.toggle('fa-regular');
-                    icon.classList.toggle('fa-solid');
-                    icon.classList.toggle('saved', newSaved);
-                });
-                card.querySelector('[data-action="comment"]').addEventListener('click', () => openCommentsForVideo(video.id));
-                card.querySelector('[data-action="share"]').addEventListener('click', () => {
-                    tg.showAlert(`Поделиться видео: ${video.caption}`);
-                });
-                card.querySelector('.user-row').addEventListener('click', () => {
-                    renderProfile(user.id);
-                    showPage('profile');
-                });
-                return card;
-            }
-
-            let allVideos = [...videos];
-            const feed = document.getElementById('feedContainer');
-            function renderFeed() {
-                feed.innerHTML = '';
-                const shuffled = [...allVideos].sort(() => Math.random() - 0.5);
-                shuffled.forEach(v => feed.appendChild(createVideoCard(v)));
-                const spinner = document.createElement('div');
-                spinner.className = 'loading-spinner';
-                spinner.id = 'loadingSpinner';
-                spinner.innerHTML = `<div class="spinner"></div><span>Загрузка новых видео...</span>`;
-                feed.appendChild(spinner);
-                setupVideoAutoplay();
-                setupInfiniteScroll();
-            }
-
-            function loadMoreVideos() {
-                const oldSpinner = document.getElementById('loadingSpinner');
-                if (oldSpinner) oldSpinner.remove();
-                for (let i = 0; i < 2; i++) {
-                    const base = videos[Math.floor(Math.random() * videos.length)];
-                    const newVideo = { ...base, id: base.id + '_' + Date.now() + i, likes: base.likes, comments: base.comments };
-                    videos.push(newVideo);
-                    allVideos.push(newVideo);
-                    feed.appendChild(createVideoCard(newVideo));
-                }
-                const newSpinner = document.createElement('div');
-                newSpinner.className = 'loading-spinner';
-                newSpinner.id = 'loadingSpinner';
-                newSpinner.innerHTML = `<div class="spinner"></div><span>Ещё видео...</span>`;
-                feed.appendChild(newSpinner);
-                setupVideoAutoplay();
-                setupInfiniteScroll();
-            }
-
-            function setupInfiniteScroll() {
-                const spinner = document.getElementById('loadingSpinner');
-                if (!spinner) return;
-                const observer = new IntersectionObserver((entries) => {
-                    if (entries[0].isIntersecting) loadMoreVideos();
-                }, { root: feed, threshold: 0.1 });
-                observer.observe(spinner);
-            }
-
-            function setupVideoAutoplay() {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        const video = entry.target.querySelector('.bg-video');
-                        if (video) {
-                            if (entry.isIntersecting) { video.play().catch(e=>{}); video.volume=1.0; video.muted=false; }
-                            else video.pause();
-                        }
-                    });
-                }, { root: feed, threshold: 0.6 });
-                document.querySelectorAll('.video-card').forEach(c => observer.observe(c));
-            }
-
-            function renderProfile(userId) {
-                const user = users.find(u => u.id === userId) || users[0];
-                const isMe = userId === currentUser.id;
-                const isFollowing = followingRelations.has(`${currentUser.id}_follows_${userId}`);
-                const userVideos = videos.filter(v => v.userId === userId);
-                let html = `
-                    <div class="profile-header">
-                        <div class="profile-top">
-                            <img class="profile-avatar" src="${user.avatar}">
-                            <div class="profile-stats">
-                                <div class="stat"><span class="stat-number">${userVideos.length}</span><span class="stat-label">видео</span></div>
-                                <div class="stat"><span class="stat-number">${formatCount(user.followers)}</span><span class="stat-label">подписчики</span></div>
-                                <div class="stat"><span class="stat-number">${formatCount(user.following)}</span><span class="stat-label">подписки</span></div>
-                            </div>
-                        </div>
-                        <div class="profile-bio"><strong>${user.username}</strong> · ${user.bio}</div>
-                        ${!isMe ? `<button class="follow-btn ${isFollowing ? 'following' : ''}" id="followBtn">${isFollowing ? 'Отписаться' : 'Подписаться'}</button>` : ''}
-                    </div>
-                    <div class="video-grid" id="profileVideoGrid"></div>
-                `;
-                document.getElementById('profileContent').innerHTML = html;
-                const grid = document.getElementById('profileVideoGrid');
-                userVideos.forEach(v => {
-                    const vid = document.createElement('video');
-                    vid.src = v.url;
-                    vid.className = 'grid-video';
-                    vid.muted = true;
-                    vid.loop = true;
-                    grid.appendChild(vid);
-                });
-                if (!isMe && document.getElementById('followBtn')) {
-                    document.getElementById('followBtn').addEventListener('click', () => {
-                        if (followingRelations.has(`${currentUser.id}_follows_${userId}`)) {
-                            followingRelations.delete(`${currentUser.id}_follows_${userId}`);
-                            user.followers -= 1;
-                        } else {
-                            followingRelations.add(`${currentUser.id}_follows_${userId}`);
-                            user.followers += 1;
-                        }
-                        renderProfile(userId);
-                        tg.HapticFeedback.notificationOccurred('success');
-                    });
-                }
-            }
-
-            // комментарии
-            const modal = document.getElementById('commentModal');
-            let currentVideoId = null;
-            window.openCommentsForVideo = function(videoId) {
-                currentVideoId = videoId;
-                const comments = videoComments.get(videoId) || [];
-                const commentListDiv = document.getElementById('commentList');
-                commentListDiv.innerHTML = comments.map(c => `
-                    <div class="comment-item">
-                        <div class="comment-avatar"></div>
-                        <div class="comment-content">
-                            <div class="comment-name">${c.user}</div>
-                            <div class="comment-text">${c.text}</div>
-                        </div>
-                    </div>
-                `).join('');
-                document.getElementById('commentCountSpan').innerText = comments.length;
-                modal.classList.add('show');
-            };
-            document.getElementById('closeComments').onclick = () => modal.classList.remove('show');
-            document.getElementById('sendComment').onclick = () => {
-                if (!currentVideoId) return;
-                const input = document.getElementById('commentInput');
-                if (!input.value.trim()) return;
-                const comments = videoComments.get(currentVideoId);
-                comments.push({ user: currentUser.username, text: input.value.trim() });
-                const video = videos.find(v => v.id === currentVideoId);
-                video.comments += 1;
-                input.value = '';
-                openCommentsForVideo(currentVideoId);
-                tg.HapticFeedback.impactOccurred('light');
-            };
-
-            // навигация
-            const pages = document.querySelectorAll('.page');
-            function showPage(pageId) {
-                pages.forEach(p => p.classList.remove('active'));
-                document.getElementById(`page-${pageId}`).classList.add('active');
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.dataset.page === pageId);
-                if (activeNav) activeNav.classList.add('active');
-                if (pageId === 'profile') renderProfile(currentUser.id);
-                if (pageId === 'feed') renderFeed();
-            }
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const page = item.dataset.page;
-                    if (page) showPage(page);
-                });
+            likeIcon.addEventListener('click', (e) => { e.stopPropagation(); likeVideo(video.id, likeIcon, likeCountSpan, null); });
+            saveIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const newSaved = !savedVideos.get(video.id);
+                savedVideos.set(video.id, newSaved);
+                saveIcon.classList.toggle('fa-regular');
+                saveIcon.classList.toggle('fa-solid');
+                saveIcon.classList.toggle('saved', newSaved);
+                if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    showPage(this.dataset.tab === 'home' ? 'feed' : 'discover');
-                });
-            });
-            document.getElementById('navProfile').addEventListener('click', () => renderProfile(currentUser.id));
-            document.getElementById('uploadArea').onclick = () => document.getElementById('videoFile').click();
-            let uploadedBlob = null;
-            document.getElementById('videoFile').onchange = (e) => {
-                if(e.target.files[0]) uploadedBlob = URL.createObjectURL(e.target.files[0]);
-            };
-            document.getElementById('publishBtn').onclick = () => {
-                if(!uploadedBlob) { tg.showAlert('Выберите видео'); return; }
-                const newVideo = {
-                    id: 'upload_'+Date.now(),
-                    userId: currentUser.id,
-                    url: uploadedBlob,
-                    caption: document.getElementById('videoCaption').value || 'Новое видео',
-                    music: document.getElementById('videoMusic').value || 'оригинальный звук',
-                    likes: 0, comments: 0, saves: 0
-                };
+            card.querySelector('[data-action="comment"]').addEventListener('click', (e) => { e.stopPropagation(); openCommentsForVideo(video.id); });
+            card.querySelector('[data-action="share"]').addEventListener('click', () => { if(tg) tg.showAlert('Поделиться ссылкой (демо)'); else alert('Поделиться'); });
+            card.querySelector('.user-row').addEventListener('click', (e) => { e.stopPropagation(); renderProfile(user.id); showPage('profile'); });
+            return card;
+        }
+
+        let allVideos = [...videos];
+        const feed = document.getElementById('feedContainer');
+        function renderFeed() {
+            feed.innerHTML = '';
+            const shuffled = [...allVideos].sort(() => Math.random() - 0.5);
+            shuffled.forEach(v => feed.appendChild(createVideoCard(v)));
+            const spinner = document.createElement('div');
+            spinner.className = 'loading-spinner';
+            spinner.id = 'loadingSpinner';
+            spinner.innerHTML = `<div class="spinner"></div><span>Загрузка новых видео...</span>`;
+            feed.appendChild(spinner);
+            setupVideoAutoplay();
+            setupInfiniteScroll();
+        }
+
+        function loadMoreVideos() {
+            const oldSpinner = document.getElementById('loadingSpinner');
+            if(oldSpinner) oldSpinner.remove();
+            for(let i=0;i<2;i++){
+                const base = videos[Math.floor(Math.random() * videos.length)];
+                const newId = base.id + '_copy_' + Date.now() + i;
+                const newVideo = { ...base, id: newId, likes: base.likes, comments: base.comments };
                 videos.push(newVideo);
-                allVideos = videos;
-                videoComments.set(newVideo.id, []);
-                showPage('feed');
-                renderFeed();
-                tg.HapticFeedback.notificationOccurred('success');
+                allVideos.push(newVideo);
+                feed.appendChild(createVideoCard(newVideo));
+            }
+            const newSpinner = document.createElement('div');
+            newSpinner.className = 'loading-spinner';
+            newSpinner.id = 'loadingSpinner';
+            newSpinner.innerHTML = `<div class="spinner"></div><span>Ещё видео...</span>`;
+            feed.appendChild(newSpinner);
+            setupInfiniteScroll();
+            setupVideoAutoplay();
+            if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function setupInfiniteScroll() {
+            const spinner = document.getElementById('loadingSpinner');
+            if(!spinner) return;
+            const observer = new IntersectionObserver((entries) => {
+                if(entries[0].isIntersecting) loadMoreVideos();
+            }, { root: feed, threshold: 0.1 });
+            observer.observe(spinner);
+        }
+
+        function setupVideoAutoplay() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target.querySelector('.bg-video');
+                    if(!video) return;
+                    if(entry.isIntersecting) { video.play().catch(e=>console.log); video.muted=false; video.volume=0.8; }
+                    else video.pause();
+                });
+            }, { root: feed, threshold: 0.6 });
+            document.querySelectorAll('.video-card').forEach(card => observer.observe(card));
+        }
+
+        // профиль в Telegram стиле
+        function renderProfile(userId) {
+            const user = users.find(u => u.id === userId) || users[0];
+            const isMe = userId === currentUser.id;
+            const isFollowing = followingRelations.has(`${currentUser.id}_follows_${userId}`);
+            const userVideos = videos.filter(v => v.userId === userId);
+            let html = `
+                <div class="profile-header">
+                    <img class="profile-avatar" src="${user.avatar}">
+                    <div class="profile-stats">
+                        <div class="stat"><span class="stat-number">${userVideos.length}</span><span class="stat-label">видео</span></div>
+                        <div class="stat"><span class="stat-number">${formatCount(user.followers)}</span><span class="stat-label">подписчики</span></div>
+                        <div class="stat"><span class="stat-number">${formatCount(user.following)}</span><span class="stat-label">подписки</span></div>
+                    </div>
+                    <div class="profile-bio">${user.bio}</div>
+                    ${!isMe ? `<button class="follow-btn ${isFollowing ? 'following' : ''}" id="followBtn">${isFollowing ? 'Подписки' : 'Подписаться'}</button>` : ''}
+                </div>
+                <div class="video-grid" id="profileVideoGrid"></div>
+            `;
+            document.getElementById('profileContent').innerHTML = html;
+            const grid = document.getElementById('profileVideoGrid');
+            userVideos.forEach(v => {
+                const vid = document.createElement('video');
+                vid.src = v.url;
+                vid.className = 'grid-video';
+                vid.muted = true;
+                vid.addEventListener('click', () => tg?.showAlert('Предпросмотр видео'));
+                grid.appendChild(vid);
+            });
+            if(!isMe){
+                document.getElementById('followBtn')?.addEventListener('click', () => {
+                    if(followingRelations.has(`${currentUser.id}_follows_${userId}`)){
+                        followingRelations.delete(`${currentUser.id}_follows_${userId}`);
+                        user.followers -=1;
+                    } else {
+                        followingRelations.add(`${currentUser.id}_follows_${userId}`);
+                        user.followers +=1;
+                    }
+                    renderProfile(userId);
+                    if(tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+                });
+            }
+        }
+
+        // Загрузка страницы (Upload UI)
+        const uploadContainer = document.getElementById('uploadPage');
+        uploadContainer.innerHTML = `
+            <h2 style="margin-bottom:16px;">📤 Загрузить видео</h2>
+            <div class="upload-area" id="uploadArea"><i class="fa-solid fa-cloud-upload-alt" style="font-size:48px;"></i><p>Выберите файл</p></div>
+            <input type="file" id="videoFile" accept="video/*" style="display:none">
+            <input type="text" class="upload-input" id="videoCaption" placeholder="Подпись...">
+            <input type="text" class="upload-input" id="videoMusic" placeholder="Музыка (звук)">
+            <button class="follow-btn" id="publishBtn">Опубликовать</button>
+        `;
+        let uploadedBlob = null;
+        document.getElementById('uploadArea')?.addEventListener('click',()=> document.getElementById('videoFile').click());
+        document.getElementById('videoFile')?.addEventListener('change', (e) => {
+            if(e.target.files[0]) {
+                uploadedBlob = URL.createObjectURL(e.target.files[0]);
+                tg?.showAlert('Видео готово к загрузке');
+            }
+        });
+        document.getElementById('publishBtn')?.addEventListener('click', () => {
+            if(!uploadedBlob) { tg?.showAlert('Выберите видео'); return; }
+            const caption = document.getElementById('videoCaption').value || 'Новый ролик';
+            const music = document.getElementById('videoMusic').value || 'оригинальный звук';
+            const newVid = {
+                id: 'upload_'+Date.now(),
+                userId: currentUser.id,
+                url: uploadedBlob,
+                caption: caption,
+                music: music,
+                likes: 0, comments: 0, saves: 0
             };
+            videos.push(newVid);
+            allVideos = videos;
+            videoComments.set(newVid.id, []);
+            showPage('feed');
             renderFeed();
-        })();
-    </script>
+            if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        });
+
+        // Комментарии
+        const modal = document.getElementById('commentModal');
+        let currentVideoId = null;
+        window.openCommentsForVideo = function(videoId) {
+            currentVideoId = videoId;
+            const comments = videoComments.get(videoId) || [];
+            const listDiv = document.getElementById('commentList');
+            listDiv.innerHTML = '';
+            comments.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                div.innerHTML = `<div class="comment-avatar"></div><div class="comment-content"><div class="comment-name">${c.user}</div><div class="comment-text">${c.text}</div></div>`;
+                listDiv.appendChild(div);
+            });
+            document.getElementById('commentCountSpan').innerText = comments.length;
+            modal.classList.add('show');
+        };
+        document.getElementById('closeComments').onclick = () => modal.classList.remove('show');
+        document.getElementById('sendComment').onclick = () => {
+            if(!currentVideoId || !document.getElementById('commentInput').value.trim()) return;
+            const comments = videoComments.get(currentVideoId);
+            comments.push({ user: currentUser.username, text: document.getElementById('commentInput').value.trim() });
+            const video = videos.find(v=>v.id === currentVideoId);
+            video.comments += 1;
+            document.getElementById('commentInput').value = '';
+            openCommentsForVideo(currentVideoId);
+        };
+        modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('show'); });
+
+        // Навигация
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.dataset.page === pageId);
+            if(activeNav) activeNav.classList.add('active');
+            if(pageId === 'profile') renderProfile(currentUser.id);
+            if(pageId === 'feed') renderFeed();
+        }
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => { const page = item.dataset.page; if(page) showPage(page); });
+        });
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                if(this.dataset.tab === 'home') showPage('feed');
+                else showPage('discover');
+            });
+        });
+        document.getElementById('navProfile').addEventListener('click', () => renderProfile(currentUser.id));
+        renderFeed();
+        if(tg) tg.ready();
+    })();
+</script>
 </body>
 </html>
