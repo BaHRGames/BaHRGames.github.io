@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>World Of Hedgehogs - СКАЧАТЬ ТОРРЕНТ 2026</title>
+    <style>
+        body {
+            background: #4a3520;
+            margin: 0;
+            padding: 6px;
+            font-family: 'Tahoma', 'Arial', 'Verdana', sans-serif;
+        }
+        .wrapper {
+            max-width: 780px;
+            margin: 0 auto;
+            background: #dac292;
+            border: 5px ridge #7a5a3a;
+            padding: 8px 5px 12px 5px;
+            position: relative;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ecd9b4;
+        }
+        td, th {
+            border: 1px solid #a57248;
+            padding: 3px;
+            font-size: 11px;
+        }
+        .banner {
+            background: #f5c98e;
+            border: 3px ridge #b85c1a;
+            margin: 8px 0;
+            padding: 8px 4px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-down {
+            background: #2a6b2f;
+            border: 5px outset #1d4a1d;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 16px 5px;
+            text-align: center;
+            cursor: pointer;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            margin: 12px 0;
+        }
+        .btn-down:active {
+            border-style: inset;
+        }
+        .queue-box {
+            background: #3e2a1f;
+            padding: 12px;
+            color: #ffdd99;
+            font-weight: bold;
+            text-align: center;
+            font-size: 22px;
+            border: 2px solid #ffaa44;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            background: #5a4a32;
+            height: 28px;
+            margin: 12px 0;
+            border: 1px solid black;
+        }
+        .progress-fill {
+            background: #3c9e3c;
+            width: 0%;
+            height: 100%;
+            text-align: center;
+            color: white;
+            line-height: 28px;
+            font-size: 13px;
+        }
+        .quiz-block {
+            background: #c9aa7b;
+            border: 4px ridge #8b5a2b;
+            padding: 12px;
+            margin: 12px 0;
+        }
+        .img-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .select-img {
+            width: 85px;
+            height: 85px;
+            object-fit: cover;
+            border: 3px solid #4a3a2a;
+            cursor: pointer;
+            background: #a57c4a;
+        }
+        .select-img.selected {
+            border: 4px solid #00aa00;
+            box-shadow: 0 0 0 2px #000;
+        }
+        button {
+            background: #6f4e2e;
+            border: 2px outset #d9a066;
+            color: white;
+            padding: 8px 16px;
+            font-weight: bold;
+            margin: 6px 0;
+            cursor: pointer;
+        }
+        .warning-text {
+            background: #2f2216;
+            color: #ffaa66;
+            padding: 5px;
+            font-family: monospace;
+            font-size: 11px;
+            margin: 8px 0;
+        }
+        .inline-ad {
+            background: #ffe0aa;
+            border-left: 12px solid red;
+            padding: 6px;
+            margin: 8px 0;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .footer {
+            font-size: 9px;
+            text-align: center;
+            margin-top: 15px;
+            border-top: 1px dashed #aa8866;
+            padding: 6px;
+        }
+        
+        /* плавающие окна рекламы */
+        .floating-ad {
+            position: fixed;
+            background: #fff0c0;
+            border: 4px ridge #ff6600;
+            padding: 10px;
+            z-index: 9999;
+            width: 240px;
+            box-shadow: 5px 5px 15px black;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .floating-ad .close-btn {
+            float: right;
+            background: red;
+            color: white;
+            padding: 2px 8px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        .popup-timer {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin: 8px 0;
+        }
+        .toast-ad {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ffdd99;
+            border: 3px solid #cc4400;
+            padding: 12px;
+            z-index: 10000;
+            max-width: 260px;
+            cursor: pointer;
+            font-weight: bold;
+            animation: slideIn 0.3s;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper" id="app"></div>
+<div class="footer">⚡ Раздача: World Of Hedgehogs [v1.0] RePack от Hedgehog-Team ⚡ Сидов: 0 | Пиров: 1532 ⚡</div>
+
+<script>
+    const FINAL_LINK = "https://disk.yandex.ru/d/dWX3wUpChNoYYg";
+    const IMG_BASE = "https://raw.githubusercontent.com/BaHR6424/BaHR6424.github.io/refs/heads/main/WoHPrank/";
+    
+    const allImages = [
+        "сундук.png", "976.jpg", "1619447421_25-oir_mobi-p-milii-yezhik-zhivotnie-krasivo-foto-25.jpg",
+        "fire-in-the-hole-v0-9es2ixzt2yac1.png", "fixik_nolik.png", "GameBanner.jpg",
+        "images (2).jpg", "photo_2024-01-25_12-15-16-transformed.png", "photo_2024-01-28_09-28-51.jpg",
+        "tmb_152194_3299.jpg", "Каратист.png"
+    ];
+    
+    const AD_LINKS = [
+        "https://t.me/+npT0q5BpbnQ4MTFi", "https://t.me/+-5gXoN02mcsxNzIy", "https://t.me/PinBrawl",
+        "https://t.me/hedgehog_dating", "https://t.me/ezhik_bot", "https://t.me/hedge_casino",
+        "https://vk.com/hedgehog_world", "https://casino-x-fake.ru/hedgehog_bonus",
+        "https://joyreactor.cc/tag/ежики", "https://www.wildberries.ru/catalog/0/search.aspx?search=ежик"
+    ];
+    
+    function randAd() { return AD_LINKS[Math.floor(Math.random() * AD_LINKS.length)]; }
+    function openAd(link) { window.open(link, "_blank", "noopener,noreferrer"); }
+    
+    let currentScene = "START";
+    let queueInterval = null;
+    let quizStep = 0;
+    let quizChallenges = null;
+    let floatingAdsActive = [];
+    let toastTimeout = null;
+    
+    const container = document.getElementById("app");
+    
+    function removeFloatingAds() {
+        floatingAdsActive.forEach(ad => { if(ad && ad.remove) ad.remove(); });
+        floatingAdsActive = [];
+    }
+    
+    function showFloatingAd(delaySec = 2, duration = 15) {
+        setTimeout(() => {
+            let adDiv = document.createElement('div');
+            adDiv.className = 'floating-ad';
+            let leftPos = Math.random() * (window.innerWidth - 260);
+            let topPos = Math.random() * (window.innerHeight - 200);
+            if(leftPos < 10) leftPos = 10;
+            if(topPos < 50) topPos = 50;
+            adDiv.style.left = leftPos + 'px';
+            adDiv.style.top = topPos + 'px';
+            let adTexts = [
+                "🍇 Ёжиха 250 метров от вас! Хочет ежевику! ЖМИ! 🍇",
+                "🔥 СЛОТЫ 'КОЛЮЧИЙ ДЖЕКПОТ' - ЗАБЕРИ 5000$ 🔥",
+                "💊 Ускоритель загрузки TURBO HEDGE - +500% скорости!",
+                "📸 Фото голых ёжиков 18+ смотри тут!",
+                "🎮 Ключи активации World Of Hedgehogs бесплатно!",
+                "🍓 Доставка ежевики за 30 минут! Промокод HEDGE"
+            ];
+            let imgUse = allImages[Math.floor(Math.random() * allImages.length)];
+            adDiv.innerHTML = `<div class="close-btn" style="float:right;">✖</div>
+                               <img src="${IMG_BASE + imgUse}" style="width:100%; height:100px; object-fit:cover; margin:5px 0;">
+                               <div style="margin:8px 0;">🔔 ${adTexts[Math.floor(Math.random()*adTexts.length)]} 🔔</div>
+                               <div class="popup-timer" id="popupTimer${Date.now()}">⏱️ Закроется через 10 сек</div>`;
+            let link = randAd();
+            adDiv.setAttribute('data-link', link);
+            document.body.appendChild(adDiv);
+            floatingAdsActive.push(adDiv);
+            let timer = 10;
+            let timerSpan = adDiv.querySelector('.popup-timer');
+            let countInterval = setInterval(() => {
+                timer--;
+                if(timerSpan) timerSpan.innerText = `⏱️ Закроется через ${timer} сек`;
+                if(timer <= 0) {
+                    clearInterval(countInterval);
+                    if(adDiv && adDiv.remove) adDiv.remove();
+                    floatingAdsActive = floatingAdsActive.filter(a => a !== adDiv);
+                }
+            }, 1000);
+            adDiv.querySelector('.close-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearInterval(countInterval);
+                if(adDiv && adDiv.remove) adDiv.remove();
+                floatingAdsActive = floatingAdsActive.filter(a => a !== adDiv);
+            });
+            adDiv.addEventListener('click', (e) => {
+                if(e.target.classList.contains('close-btn')) return;
+                openAd(adDiv.getAttribute('data-link'));
+            });
+            setTimeout(() => {
+                if(adDiv && adDiv.remove) { adDiv.remove(); floatingAdsActive = floatingAdsActive.filter(a => a !== adDiv); }
+                clearInterval(countInterval);
+            }, duration * 1000);
+        }, delaySec * 1000);
+    }
+    
+    function showToastAd() {
+        if(toastTimeout) clearTimeout(toastTimeout);
+        let toast = document.createElement('div');
+        toast.className = 'toast-ad';
+        let adTexts = ["💘 Ёжиха ищет пару! ЖМИ СЮДА", "🍇 СКИДКА 90% НА ЕЖЕВИКУ", "🎰 КАЗИНО ДАРИТ 100 ФРИСПИНОВ"];
+        let randText = adTexts[Math.floor(Math.random()*adTexts.length)];
+        let imgRand = allImages[Math.floor(Math.random()*allImages.length)];
+        toast.innerHTML = `<img src="${IMG_BASE + imgRand}" style="width:50px; height:50px; float:left; margin-right:8px;"><div>${randText}</div><small>Нажми для перехода</small>`;
+        toast.setAttribute('data-link', randAd());
+        document.body.appendChild(toast);
+        toast.addEventListener('click', () => openAd(toast.getAttribute('data-link')));
+        setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000);
+        toastTimeout = setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000);
+    }
+    
+    function renderAdsBlock(count = 2) {
+        let html = '';
+        let adTexts = [
+            "🐹 Ёжиха 200 метров от вас! Хочет ежевику и ласку! Нажми здесь! 🐹",
+            "💘 Знакомства с одинокими ежихами! Без регистрации! 💘",
+            "🍓 Свежая ежевика с доставкой на дом! Скидка 50% по промокоду HEDGE",
+            "🎰 Казино 'Колючий Джекпот' - забрали уже 1 000 000 рублей!",
+            "⚡ Скачай Turbo Boost для World Of Hedgehogs +200 к фпс!",
+            "🦔 Смотри как ёжик победил медведя! Видео 18+",
+            "🔞 Взрослые ежики ждут твоего сообщения, переходи по ссылке!",
+            "💰 Зарабатывай с нашим партнерским программой! Выплаты каждый час!"
+        ];
+        for(let i=0; i<count; i++) {
+            let randomAd = adTexts[Math.floor(Math.random() * adTexts.length)];
+            let imgUse = allImages[Math.floor(Math.random() * allImages.length)];
+            html += `<div class="banner" data-link="${randAd()}"><img src="${IMG_BASE + imgUse}" style="width:40px; height:40px; object-fit:cover; vertical-align:middle; margin-right:8px;"> ${randomAd}</div>`;
+        }
+        return html;
+    }
+    
+    function attachGlobalClicks() {
+        document.querySelectorAll('.banner, .inline-ad, .ad-clickable').forEach(el => {
+            if(el.getAttribute('data-listener')) return;
+            el.setAttribute('data-listener', 'true');
+            let link = el.getAttribute('data-link');
+            if(!link) link = randAd();
+            el.addEventListener('click', (e) => { e.stopPropagation(); openAd(link); });
+        });
+        document.querySelectorAll('.img-clickable').forEach(img => {
+            if(img.getAttribute('data-listener')) return;
+            img.setAttribute('data-listener', 'true');
+            img.addEventListener('click', () => openAd(randAd()));
+        });
+    }
+    
+    function renderStart() {
+        if(queueInterval) clearInterval(queueInterval);
+        removeFloatingAds();
+        currentScene = "START";
+        let randomImages = [allImages[2], allImages[5], allImages[9], allImages[7]].map(x => IMG_BASE + x);
+        let imgRow = '';
+        randomImages.forEach(img => { imgRow += `<img src="${img}" class="select-img img-clickable" style="width:70px; height:70px; cursor:pointer;">`; });
+        let html = `
+            <div class="warning-text">⚠️ ВНИМАНИЕ! Торрент-файл содержит кряк! Отключите антивирус! ⚠️</div>
+            ${renderAdsBlock(2)}
+            <center><img src="${IMG_BASE + allImages[5]}" style="width:100%; max-width:280px; border:3px ridge #aa7744; margin:5px 0;" class="img-clickable"></center>
+            <h2 style="text-align:center; color:#5a3a1a;">🦔 WORLD OF HEDGEHOGS [CRACK ONLY] 🦔</h2>
+            <div class="btn-down" id="startDownloadBtn">▼ СКАЧАТЬ ТОРРЕНТ (34.7 GB) ▼</div>
+            ${imgRow}
+            <div class="inline-ad" data-link="https://t.me/+npT0q5BpbnQ4MTFi">🔥 КАНАЛ С КЛЮЧАМИ АКТИВАЦИИ! ЖМИ 🔥</div>
+            <div class="inline-ad" data-link="https://t.me/PinBrawl">🎲 ЕЖИКИ КАЗИНО - ФРИСПИНЫ ЗА РЕГУ 🎲</div>
+            <table width="100%"><tr><td bgcolor="#ccaa77"><center>⭐ Рейтинг торрента: 0.9/10 ⭐</center></td>
+            <td bgcolor="#aa8866"><center>🕒 Последняя активность: 2024 год</center></td></tr></table>
+            <div class="inline-ad" data-link="${randAd()}">🍇 Ёжиха Маша ищет спонсора для покупки ежевики! Нажми помочь! 🍇</div>
+            ${renderAdsBlock(1)}
+        `;
+        container.innerHTML = html;
+        attachGlobalClicks();
+        document.getElementById("startDownloadBtn")?.addEventListener("click", () => { startQueuePhase(); });
+        showFloatingAd(3, 12);
+        showToastAd();
+    }
+    
+    function startQueuePhase() {
+        if(queueInterval) clearInterval(queueInterval);
+        removeFloatingAds();
+        currentScene = "QUEUE";
+        let position = Math.floor(Math.random() * 950) + 350;
+        let percent = 0;
+        renderQueue(position, percent);
+        queueInterval = setInterval(() => {
+            if(currentScene !== "QUEUE") { clearInterval(queueInterval); return; }
+            if(position > 0) {
+                let decrease = Math.floor(Math.random() * 28) + 5;
+                position = Math.max(0, position - decrease);
+                percent = Math.min(100, Math.floor(((950+350 - position) / (950+350)) * 100));
+                renderQueue(position, percent);
+            } else {
+                clearInterval(queueInterval);
+                startTrials();
+            }
+        }, 700);
+        showFloatingAd(2, 10);
+    }
+    
+    function renderQueue(pos, perc) {
+        let ads = renderAdsBlock(1);
+        container.innerHTML = `
+            ${ads}
+            <div class="queue-box">⏳ ВЫ В ОЧЕРЕДИ НА ПОЛУЧЕНИЕ ССЫЛКИ ⏳<br><span style="font-size:40px;">${pos}</span><br>место в очереди</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${perc}%">${perc}%</div></div>
+            <div class="warning-text">⚡ Сервер перегружен! Нажмите на рекламу, чтобы повысить приоритет! ⚡</div>
+            <div class="inline-ad" data-link="${randAd()}">🚀 Получи VIP-статус и пропусти очередь! Всего 499 руб 🚀</div>
+            <button id="cancelQueueBtn">❌ Отменить загрузку</button>
+        `;
+        attachGlobalClicks();
+        document.getElementById("cancelQueueBtn")?.addEventListener("click", () => {
+            if(queueInterval) clearInterval(queueInterval);
+            renderStart();
+        });
+    }
+    
+    function startTrials() {
+        quizChallenges = [
+            { type: "image_select", name: "🦔 ПОДТВЕРДИТЕ, ЧТО ВЫ НЕ БОТ: ВЫБЕРИТЕ ВСЕХ ЁЖИКОВ НА КАРТИНКАХ", 
+              images: [allImages[1], allImages[2], allImages[4], allImages[8], allImages[10], allImages[0]], 
+              correctIdx: [1,2,4] },
+            { type: "code_input", name: "🔐 ВВЕДИТЕ АКТИВАЦИОННЫЙ КОД ИЗ ОПИСАНИЯ ТОРРЕНТА", correctCode: "HEDGE2026REPACK" },
+            { type: "double_ad", name: "📢 ПОДТВЕРДИТЕ ЧЕЛОВЕЧНОСТЬ: КЛИКНИТЕ ПО ДВУМ РАЗНЫМ РЕКЛАМНЫМ БЛОКАМ" },
+            { type: "timer_wait", name: "⏱️ ЗАЩИТА ОТ DDoS: ПОДОЖДИТЕ 8 СЕКУНД, НЕ ЗАКРЫВАЯ СТРАНИЦУ", seconds: 8 },
+            { type: "poll_hedge", name: "🍇 ОТВЕТЬТЕ НА ВОПРОС: ЧТО ЛЮБЯТ ЁЖИКИ БОЛЬШЕ ВСЕГО?", options: ["Ежевика", "Яблоки", "Грибы", "Мышки"], correct: "Ежевика" },
+            { type: "captcha_math", name: "🧮 РЕШИТЕ ПРИМЕР: 15 + 27 - 9 = ?", answer: "33" }
+        ];
+        quizStep = 0;
+        nextChallenge();
+    }
+    
+    function nextChallenge() {
+        if(quizStep >= quizChallenges.length) { finalRedirect(); return; }
+        const chal = quizChallenges[quizStep];
+        if(chal.type === "image_select") renderImageSelect(chal);
+        else if(chal.type === "code_input") renderCodeInput(chal);
+        else if(chal.type === "double_ad") renderDoubleAd(chal);
+        else if(chal.type === "timer_wait") renderTimerWait(chal);
+        else if(chal.type === "poll_hedge") renderPoll(chal);
+        else if(chal.type === "captcha_math") renderMathCaptcha(chal);
+        showFloatingAd(4, 12);
+        showToastAd();
+    }
+    
+    function renderImageSelect(chal) {
+        let imagesHtml = `<div class="quiz-block"><h3>${chal.name}</h3><div class="img-row" id="selectRow">`;
+        chal.images.forEach((img, idx) => {
+            let isHedgehog = chal.correctIdx.includes(idx);
+            let hint = isHedgehog ? "🦔" : "❓";
+            imagesHtml += `<div style="text-align:center;"><img src="${IMG_BASE + img}" class="select-img" data-idx="${idx}" style="width:85px;height:85px;"><div style="font-size:10px;">${hint}</div></div>`;
+        });
+        imagesHtml += `</div><button id="submitSelect">ПОДТВЕРДИТЬ ВЫБОР</button>
+                       <div class="warning-text">* Нажмите на картинки с ёжиками (появится зелёная рамка)</div>
+                       ${renderAdsBlock(2)}</div>`;
+        container.innerHTML = imagesHtml;
+        attachGlobalClicks();
+        let selected = new Set();
+        const imgs = document.querySelectorAll('.select-img');
+        imgs.forEach(img => {
+            img.addEventListener('click', (e) => {
+                e.stopPropagation();
+                let idx = parseInt(img.getAttribute('data-idx'));
+                if(selected.has(idx)) {
+                    selected.delete(idx);
+                    img.style.border = "3px solid #4a3a2a";
+                } else {
+                    selected.add(idx);
+                    img.style.border = "4px solid #00ff00";
+                }
+            });
+        });
+        document.getElementById("submitSelect")?.addEventListener("click", () => {
+            let correctSet = new Set(chal.correctIdx);
+            let ok = true;
+            for(let c of correctSet) if(!selected.has(c)) ok = false;
+            if(ok && selected.size === correctSet.size) {
+                quizStep++;
+                nextChallenge();
+            } else {
+                alert("❌ Вы не выбрали всех ёжиков! Посмотрите внимательно: ёжики на картинках 2,3 и 5 (счёт с 1). Попробуйте ещё раз.");
+                showFloatingAd(0, 8);
+            }
+        });
+    }
+    
+    function renderCodeInput(chal) {
+        let html = `<div class="quiz-block"><h3>${chal.name}</h3>
+                    <input type="text" id="codeField" style="width:100%; padding:8px; margin:8px 0;" placeholder="Введите код из торрент-описания">
+                    <button id="submitCode">ПРОВЕРИТЬ КОД</button>
+                    ${renderAdsBlock(2)}
+                    <div class="inline-ad" data-link="${randAd()}">📋 Не знаете код? Нажмите и получите подсказку за просмотр рекламы 📋</div>
+                    </div>`;
+        container.innerHTML = html;
+        attachGlobalClicks();
+        document.getElementById("submitCode")?.addEventListener("click", () => {
+            let val = document.getElementById("codeField")?.value.trim();
+            if(val === chal.correctCode) {
+                quizStep++;
+                nextChallenge();
+            } else {
+                alert("❌ Неверный код! Код указан в файле nfo. Либо нажмите на рекламу для автоматической вставки.");
+            }
+        });
+    }
+    
+    function renderDoubleAd(chal) {
+        let doubleClicksCount = 0;
+        let html = `<div class="quiz-block"><h3>${chal.name}</h3>
+                    <div id="doubleCounter">Кликов по рекламе: 0 / 2</div>
+                    <div class="banner" data-link="${randAd()}" style="background:#ffaa66;">🔥 РЕКЛАМА 1: СУПЕР-БОНУС ДЛЯ ИГРОКОВ 🔥</div>
+                    <div class="banner" data-link="${randAd()}" style="background:#ffaa66;">🍓 РЕКЛАМА 2: ДОСТАВКА ЕЖЕВИКИ БЕСПЛАТНО 🍓</div>
+                    <div class="banner" data-link="${randAd()}" style="background:#ffaa66;">⚡ РЕКЛАМА 3: ВИП-АККАУНТ WORLD OF HEDGEHOGS ⚡</div>
+                    <button id="confirmDouble" disabled>ПОДТВЕРДИТЬ 2 КЛИКА</button>
+                    ${renderAdsBlock(1)}</div>`;
+        container.innerHTML = html;
+        attachGlobalClicks();
+        let clickedSet = new Set();
+        const banners = document.querySelectorAll('.banner');
+        const confirmBtn = document.getElementById("confirmDouble");
+        const counterSpan = document.getElementById("doubleCounter");
+        banners.forEach(b => {
+            b.addEventListener('click', () => {
+                let text = b.innerText;
+                clickedSet.add(text);
+                if(counterSpan) counterSpan.innerText = `Кликов по рекламе: ${clickedSet.size} / 2`;
+                if(clickedSet.size >= 2 && confirmBtn) confirmBtn.disabled = false;
+            });
+        });
+        confirmBtn?.addEventListener("click", () => {
+            if(clickedSet.size >= 2) {
+                quizStep++;
+                nextChallenge();
+            } else alert("Нужно кликнуть по двум разным рекламным блокам!");
+        });
+    }
+    
+    function renderTimerWait(chal) {
+        let secondsLeft = chal.seconds;
+        let html = `<div class="quiz-block"><h3>${chal.name}</h3>
+                    <div id="timerDisplay" style="font-size:48px; text-align:center;">${secondsLeft}</div>
+                    <div class="warning-text">⏳ Не закрывайте страницу, идет проверка...</div>
+                    <div class="banner" data-link="${randAd()}" style="background:#dd9944;">🔔 Пока идет таймер, посмотрите выгодное предложение! 🔔</div>
+                    <button id="timerNextBtn" disabled>ОЖИДАНИЕ...</button></div>`;
+        container.innerHTML = html;
+        attachGlobalClicks();
+        let timer = secondsLeft;
+        const timerSpan = document.getElementById("timerDisplay");
+        const btn = document.getElementById("timerNextBtn");
+        const interval = setInterval(() => {
+            timer--;
+            if(timerSpan) timerSpan.innerText = timer;
+            if(timer <= 0) {
+                clearInterval(interval);
+                if(btn) { btn.disabled = false; btn.innerText = "ПРОДОЛЖИТЬ"; }
+            }
+        }, 1000);
+        btn?.addEventListener("click", () => {
+            if(timer <= 0) { quizStep++; nextChallenge(); }
+            else alert("Дождитесь окончания таймера!");
+        });
+    }
+    
+    function renderPoll(chal) {
+        let optsHtml = '';
+        chal.options.forEach(opt => { optsHtml += `<label style="display:block; margin:8px;"><input type="radio" name="poll" value="${opt}"> ${opt}</label>`; });
+        let html = `<div class="quiz-block"><h3>${chal.name}</h3>${optsHtml}<button id="submitPoll">ГОЛОСОВАТЬ</button>
+                    ${renderAdsBlock(2)}<div class="inline-ad" data-link="${randAd()}">🍇 Узнайте правильный ответ, нажав на рекламу! 🍇</div></div>`;
+        container.innerHTML = html;
+        attachGlobalClicks();
+        document.getElementById("submitPoll")?.addEventListener("click", () => {
+            let selected = document.querySelector('input[name="poll"]:checked');
+            if(selected && selected.value === chal.correct) { quizStep++; nextChallenge(); }
+            else { alert("❌ Неправильный ответ! Ёжики обожают ежевику! Попробуйте ещё раз."); }
+        });
+    }
+    
+    function renderMathCaptcha(chal) {
+        let html = `<div class="quiz-block"><h3>${chal.name}</h3>
+                    <input type="text" id="mathAnswer" style="width:100%; padding:8px; margin:8px 0;" placeholder="Введите число">
+                    <button id="submitMath">ОТВЕТИТЬ</button>${renderAdsBlock(2)}</div>`;
+        container.innerHTML = html;
+        attachGlobalClicks();
+        document.getElementById("submitMath")?.addEventListener("click", () => {
+            let val = document.getElementById("mathAnswer")?.value.trim();
+            if(val === chal.answer) { quizStep++; nextChallenge(); }
+            else { alert("❌ Неправильный ответ! Внимательнее, это защита от ботов."); }
+        });
+    }
+    
+    function finalRedirect() {
+        removeFloatingAds();
+        currentScene = "FINAL";
+        container.innerHTML = `
+            ${renderAdsBlock(1)}
+            <div style="background:#5f8b4c; padding:20px; text-align:center; border:5px ridge #ffcc77; margin:12px 0;">
+                <h2 style="color:#ffefb0;">✅ ВЕРИФИКАЦИЯ ПРОЙДЕНА ✅</h2>
+                <p>Ваша уникальная ссылка на скачивание World Of Hedgehogs готова!</p>
+                <div class="btn-down" id="finalDownloadBtn" style="background:#b33e2e;">📀 ПОЛУЧИТЬ ИГРУ 📀</div>
+                <div class="warning-text">🔒 Файл защищен паролем: hedgehog2026</div>
+            </div>
+            <div class="inline-ad" data-link="https://t.me/+npT0q5BpbnQ4MTFi">🎁 Подпишись на канал, чтобы не потерять доступ к игре! 🎁</div>
+        `;
+        attachGlobalClicks();
+        document.getElementById("finalDownloadBtn")?.addEventListener("click", () => {
+            window.open(FINAL_LINK, "_blank");
+        });
+        showToastAd();
+    }
+    
+    renderStart();
+    setInterval(() => { if(Math.random() > 0.7 && currentScene !== "FINAL") showFloatingAd(0, 10); }, 25000);
+    setInterval(() => { if(Math.random() > 0.8 && currentScene !== "FINAL") showToastAd(); }, 18000);
+</script>
+</body>
+</html>
